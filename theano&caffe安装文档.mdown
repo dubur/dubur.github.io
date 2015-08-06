@@ -1,0 +1,326 @@
+# Ubuntu 14.04安装caffe与theano
+
+说明，安装时为了支持python版本，且为了安装方便，最好首先安装anaconda，anaconda安装起来方便并且集成了许多科学计算库，主要为了配合theano使用
+
+如果想安装opencv、添加caffe matlab等等最好先看教程中相关部分最后再编译caffe比较保险
+
+## 1.安装build-essentials
+安装开发所需要的基本包（一般装完系统就有）
+sudo apt-get install build-essential
+
+## 2.安装NVIDIA驱动
+### 2.1 退出图形界面
+    1）由于有的带有gpu的电脑在启动时默认使用独显作为主要显示设备，因此我们需要将bios设置改为使用集显作为显示设备
+    2）进入ubuntu，按ctrl＋alt＋F1进入tty，登陆tty后输入：
+        sudo service lightdm stop
+    其他desktop manager也需要关闭
+### 2.2安装驱动
+准备工作：
+
+1）Verify the system has a CUDA-capable GPU.
+
+控制台输入以下命令：
+		
+	lspci | grep -i nvidia
+
+如果列出了当前NIVDIA显卡的信息则说明电脑的GPU事CUDA-capable的
+
+2）Verify the system is running a supported version of Linux.
+    	
+控制台输入以下命令:
+
+	uname -m && cat /etc/*release
+
+输出的结果中如果显示x86_64则说明电脑是x86架构的，在下载驱动安装包时选择对应的包即可
+
+3）Verify the system has gcc installed.
+
+控制台输入:
+
+	gcc --version
+确认gcc版本正确
+
+4）Download the NVIDIA CUDA Toolkit.
+
+从NVIDIA官网上下载对应的驱动安装包
+下载地址:
+	 
+	 https://developer.nvidia.com/cuda-downloads
+控制台输入以下命令：
+	 		
+	 sudo dpkg -i cuda-repo-<distro>_<version>_<architecture>.deb
+	 		sudo apt-get update
+	 		sudo apt-get install cuda
+	
+5)配置环境变量和lib库路径
+安装完成后需要在/etc/profile中添加环境变量, 在文件最后添加:
+		
+	PATH=/usr/local/cuda-7.0/bin:$PATH
+	export PATH
+		
+保存后使得环境变量立刻生效
+ 		
+ 	source /etc/profile
+ 		
+之后重新打开控制台即可
+在 /etc/ld.so.conf.d/加入文件 cuda.conf, 内容如下
+		
+	/usr/local/cuda-7.0/lib64
+ 	
+6）验证是否安装正确:
+
+ 	cd /usr/local/cuda-7.0/bin/
+ 	cuda-install-samples-7.0.sh <dir> 
+ 		
+dir为目标路径，脚本会把sample文件复制到指定路径下,之后进入该路径make就好了
+
+编译完成后进入bin/x86_64/linux/release
+
+执行./deviceQuery 如显示GPU信息说明cuda安装正确
+ 		
+## 3 安装atlas
+使用gpu加速需要安装blas库，这里选择atlas
+	
+	sudo apt-get install libatlas-base-dev
+
+## 4 下载caffe安装包与安装环境
+控制台输入: 
+	
+	git clone https://github.com/BVLC/caffe
+
+也可以到github上下载zip文件解压
+	
+安装caffe的依赖库:
+
+	sudo apt-get install libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev
+	sudo apt-get install --no-install-recommends libboost-all-dev
+	sudo apt-get install libgflags-dev libgoogle-glog-dev liblmdb-dev protobuf-compiler
+
+## 5 安装anaconda
+不使用ubuntu自带的python是因为anaconda集成了许多科学计算库如numpy、scipy等，而且安装theano也很方便
+	在anaconda官网上下载安装包直接安装即可，默认安装路径为
+	
+	~/anaconda
+	
+添加bin到PATH环境变量即可
+打开控制台输入python确认使用的是anaconda里面的python
+安装pip
+	
+	conda install pip
+
+## 6 安装Caffe所需要的Python环境
+然后执行如下命令安装编译caffe python wrapper 所需要的额外包
+
+	cd python
+	for req in $(cat requirements.txt); do sudo pip install $req; done
+
+在运行Caffe时，可能会报一些找不到libxxx.so的错误，而用 locate libxxx.so命令发现已经安装在anaconda中，这时首先想到的是在/etc/ld.so.conf.d/ 下面将 $your_anaconda_path/lib 加入 LD_LIBRARY_PATH中。 但是这样做可能导致登出后无法再进入桌面！！！原因（猜测）可能是anaconda的lib中有些内容于系统自带的lib产生冲突。
+
+正确的做法是：为了不让系统在启动时就将anaconda/lib加入系统库目录，可以在用户自己的~/.bashrc 中添加library path，比如我就在最后添加了两行
+	
+	# add library path
+	LD_LIBRARY_PATH=your_anaconda_path/lib:$LD_LIBRARY_PATH
+	export LD_LIBRARY_PATH
+	
+开启另一个终端后即生效，并且重启后能够顺利加载lightdm, 进入桌面环境。
+
+但在实际安装时注意先要等make和make test完之后再加这个路径否则会报错
+
+## 7 编译caffe
+完成了所有环境的配置，可以愉快的编译Caffe了！ 进入caffe根目录， 首先复制一份Makefile.config
+
+	cp Makefile.config.example Makefile.config
+	
+然后修改里面的内容，主要需要修改的参数包括
+
+BLAS (默认使用的是atlas)
+
+DEBUG 是否使用debug模式，打开此选项则可以在eclipse或者NSight中debug程序
+
+如要安装python caffe和mat caffe的话需要在Makefile.config中指定python路径和matlab路径
+
+完成设置后， 开始编译
+
+	make all
+	make test
+	make runtest
+	
+前两步成功说明caffe编译成功，make runtest是在运行caffe的各个测试脚本
+
+## 8 编译pycaffe
+控制台输入:
+	make pycaffe 
+
+之后设置环境变量
+在～/.bashrc中添加
+
+	PYTHONPATH=/path/tp/caffe/python:$PYTHONPATH
+	export PYTHONPATH
+	
+打开控制台输入python，之后import caffe，import成功就说明caffe安装成功了
+
+## 9 安装cudnn（可选）
+### 9.1编译caffe之后安装cudnn
+使用cudnn来加速GPU计算，cudnn支持caffe，theano和Torch7
+在官网免费获得cudnn压缩包
+下载之后控制台输入:
+    tar -xzvf cudnn-6.5-linux-R1.tgz
+	cd cudnn-6.5-linux-R1
+	sudo cp lib* /usr/local/cuda/lib64/
+	sudo cp cudnn.h /usr/local/cuda/include/
+之后建立软链接（首先删除原先文件夹下的软链接）:
+	cd /usr/local/cuda/lib64/
+	sudo rm -rf libcudnn.so libcudnn.so.6.5
+然后修改文件权限，并创建新的软连接:
+	sudo chmod u=rwx,g=rx,o=rx libcudnn.so.6.5.18（未必是18，我的机子上是48，相应改就可以了） 
+	sudo ln -s libcudnn.so.6.5.18 libcudnn.so.6.5
+	sudo ln -s libcudnn.so.6.5 libcudnn.so
+
+### 9.2编译caffe之前安装cudnn
+解压cudnn之后只需将对应的文件复制到对应目录中即可，同时在编译caffe时Makefile.config中
+    
+    use_cudnn:=1
+    
+去掉注释
+	
+	unpack the library  
+	gzip -d cudnn-6.5-linux-x64-v2.tar.gz  
+	tar xf cudnn-6.5-linux-x64-v2.tar  
+  
+    copy the library files into CUDA's include and lib folders  
+	sudo cp cudnn-6.5-linux-x64-v2/cudnn.h /usr/local/	cuda-7.0/include  
+	sudo cp cudnn-6.5-linux-x64-v2/libcudnn* /usr/local/	cuda-7.0/lib64  	
+	
+## 10 安装opencv(可选)
+opencv库在运行其他开源项目时可能需要用到因此也建议安装，这里安装的是支持GPU的，因此安装是需要添加支持GPU的选项
+
+opencv安装起来神烦，Github上有人已经写好了完整的安装脚本：	https://github.com/jayrambhia/Install-OpenCV
+
+下载该脚本，进入Ubuntu/2.4 目录, 给所有shell脚本加上可执行权限：
+	chmod +x *.sh
+	
+安装2.4.9版本:
+	sudo ./opencv2_4_9.sh
+	
+该脚本会去尝试下载2.4.9的压缩包，如果下载速度太慢建议还是自己先下载好，再把脚本中下载的语句注释掉，sh文件需要修改的是在cmake的那一行中添加一个编译参数 -D BUILD_TIFF=ON，否则在make caffe的时候会报类似
+
+    /usr/lib/libopencv_highgui.so.2.4: undefined reference to TIFFRGBAImageOK@LIBTIFF_4.0' 1> 
+的错误
+
+安装过程中可能会遇到两个问题:
+### 1编译过程中报错：
+	opencv-2.4.9/modules/gpu/src/nvidia/core/NCVPixelOperations.hpp(51): error: a storage class is not allowed in an explicit specialization
+			
+	http://www.samontab.com/web/2014/06/installing-opencv-2-4-9-in-ubuntu-14-04-lts/
+解决方法在此：http://code.opencv.org/issues/3814  下载 NCVPixelOperations.hpp 替换掉opencv2.4.9内的文件， 重新build
+
+### 2编译过程中报错：
+	nvcc fatal: Unsupported gpu architecture: 'compute xx'
+需要在cmake时添加参数指定你的GPU架构，参考这两篇blog:
+
+	http://blog.csdn.net/sysuwuhongpeng/article/details/45485719
+	http://blog.csdn.net/altenli/article/details/44199539
+		
+	
+## 11 caffe matlab(可选)
+### 1 安装matlab：
+
+参考教程：
+	
+	
+Caffe提供了MATLAB接口， 有需要用MATLAB的同学可以额外安装MATLAB。安装教程请自行搜索。 
+
+安装完成后添加图标 matlab图标在该网站可以下载
+
+	http://www.linuxidc.com/Linux/2011-01/31632.htm
+	
+图标放到/usr/local/MATLAB/下
+    
+控制台输入以下内容
+
+	sudo vi /usr/share/applications/Matlab.desktop
+
+复制代码
+
+	[Desktop Entry]
+	Type=Application
+	Name=Matlab
+	GenericName=Matlab R2014a
+	Comment=Matlab:The Language of Technical Computing
+	Exec=sh /usr/local/MATLAB/R2014a/bin/matlab -desktop
+	Icon=/usr/local/MATLAB/Matlab.png
+	Terminal=false
+	Categories=Development;Matlab;
+
+### 2 matlab wrapper
+
+控制台输入：
+	
+	make matcaffe
+	
+安装完后在运行matlab demo时遇到报错
+
+	“libhdf5.so.6 no such file or directory”
+	
+但是到anaconda的lib目录下发现是有对应文件的，可能是动态链接库的问题，解决方法是到anaconda/lib目录下执行ldconfig就可以了
+
+
+
+# 安装theano
+
+## 1 安装theano
+控制台输入 pip install theano即可
+
+## 2 配置theano使其支持gpu加速
+参考文档：
+	http://deeplearning.net/software/theano/tutorial/using_gpu.html
+	http://deeplearning.net/software/theano/install.html#gpu-linux
+	http://deeplearning.net/software/theano/library/config.html#config.init_gpu_device
+	
+在用户根目录下新建.theanorc配置文档，配置如下：
+
+	[global]
+	floatX = float32
+	device = gpu
+
+	[nvcc]
+	fastmath = True
+
+	[blas]
+	ldflags = -lf77blas -latlas -lgfortran #put your flags here
+	
+检验是否theano可以使用gpu加速，测试脚本如下：
+
+	from theano import function, config, shared, tensor, sandbox
+	import numpy
+	import time
+
+	vlen = 10 * 30 * 768  # 10 x #cores x # threads per core
+	iters = 1000
+
+	rng = numpy.random.RandomState(22)
+	x = shared(numpy.asarray(rng.rand(vlen), config.floatX))
+	f = function([], tensor.exp(x))
+	print f.maker.fgraph.toposort()
+	t0 = time.time()
+	for i in xrange(iters):
+	    r = f()
+	t1 = time.time()
+	print 'Looping %d times took' % iters, t1 - t0, 'seconds'
+	print 'Result is', r
+	if numpy.any([isinstance(x.op, tensor.Elemwise) and
+	              ('Gpu' not in type(x.op).__name__)
+	              for x in f.maker.fgraph.toposort()]):
+	    print 'Used the cpu'
+	else:
+	    print 'Used the gpu'
+	如果显示used the gpu说明theano在使用gpu加速
+
+# 安装torch
+Torch 安装过程简单，按照下面的链接一步步做就可以了
+	http://torch.ch/docs/getting-started.html#_
+
+
+
+	
+	
