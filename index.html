@@ -69,6 +69,16 @@
 <![endif]-->
   
 
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?de04554947ef5ddb1d9dd95ef6598c19";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
 
 
   <div class="container one-column 
@@ -107,6 +117,22 @@
           <a href="/" rel="section">
             <i class="menu-item-icon icon-next-home"></i> <br />
             首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            <i class="menu-item-icon icon-next-categories"></i> <br />
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            <i class="menu-item-icon icon-next-about"></i> <br />
+            关于
           </a>
         </li>
       
@@ -192,10 +218,10 @@
 
       
         
-          <span itemprop="articleBody"><h1 id="Ubuntu_14-04安装caffe与theano">Ubuntu 14.04安装caffe与theano</h1><p>说明，安装时为了支持python版本，且为了安装方便，最好首先安装anaconda，anaconda安装起来方便并且集成了许多科学计算库，主要为了配合theano使用</p>
+          <span itemprop="articleBody"><p>说明:安装时为了支持python版本，且为了安装方便，最好首先安装anaconda，anaconda安装起来方便并且集成了许多科学计算库，主要为了配合theano使用</p>
 <p>如果想安装opencv、添加caffe matlab等等最好先看教程中相关部分最后再编译caffe比较保险</p>
-<h2 id="1-安装build-essentials">1.安装build-essentials</h2><p>安装开发所需要的基本包（一般装完系统就有）<br>sudo apt-get install build-essential</p>
-<h2 id="2-安装NVIDIA驱动">2.安装NVIDIA驱动</h2><h3 id="2-1_退出图形界面">2.1 退出图形界面</h3><pre><code><span class="number">1</span>）由于有的带有gpu的电脑在启动时默认使用独显作为主要显示设备，因此我们需要将<span class="keyword">bios设置改为使用集显作为显示设备
+<h3 id="安装caffe">安装caffe</h3><h4 id="1-安装build-essentials">1.安装build-essentials</h4><p>安装开发所需要的基本包（一般装完系统就有）<br>sudo apt-get install build-essential</p>
+<h4 id="2-安装NVIDIA驱动">2.安装NVIDIA驱动</h4><h5 id="2-1_退出图形界面">2.1 退出图形界面</h5><pre><code><span class="number">1</span>）由于有的带有gpu的电脑在启动时默认使用独显作为主要显示设备，因此我们需要将<span class="keyword">bios设置改为使用集显作为显示设备
 </span><span class="number">2</span>）进入ubuntu，按ctrl＋alt＋<span class="literal">F1</span>进入tty，登陆tty后输入：
     sudo service lightdm stop
 其他desktop manager也需要关闭
@@ -222,9 +248,9 @@
 </code></pre><p>5)配置环境变量和lib库路径<br>安装完成后需要在/etc/profile中添加环境变量, 在文件最后添加:</p>
 <pre><code>PATH=/usr/local/cuda-<span class="number">7.0</span>/bin:<span class="variable">$PATH</span>
 export PATH
-</code></pre><p>保存后使得环境变量立刻生效</p>
+</code></pre><p>保存后使得环境变量立刻生效(或者重新打开控制台)</p>
 <pre><code><span class="keyword">source</span> <span class="regexp">/etc/</span>profile
-</code></pre><p>之后重新打开控制台即可<br>在 /etc/ld.so.conf.d/加入文件 cuda.conf, 内容如下</p>
+</code></pre><p>在 /etc/ld.so.conf.d/加入文件 cuda.conf, 内容如下</p>
 <pre><code><span class="regexp">/usr/</span>local<span class="regexp">/cuda-7.0/</span>lib64
 </code></pre><p>6）验证是否安装正确:</p>
 <pre><code><span class="keyword">cd</span> /usr/<span class="keyword">local</span>/cuda-7.0/bin/
@@ -232,20 +258,20 @@ cuda-install-samples-7.0.<span class="keyword">sh</span> &lt;<span class="keywor
 </code></pre><p>dir为目标路径，脚本会把sample文件复制到指定路径下,之后进入该路径make就好了</p>
 <p>编译完成后进入bin/x86_64/linux/release</p>
 <p>执行./deviceQuery 如显示GPU信息说明cuda安装正确</p>
-<h2 id="3_安装atlas">3 安装atlas</h2><p>使用gpu加速需要安装blas库，这里选择atlas</p>
+<h4 id="3_安装atlas">3 安装atlas</h4><p>使用gpu加速需要安装blas库，这里选择atlas</p>
 <pre><code>sudo apt-<span class="keyword">get</span> install libatlas-<span class="keyword">base</span>-dev
-</code></pre><h2 id="4_下载caffe安装包与安装环境">4 下载caffe安装包与安装环境</h2><p>控制台输入: </p>
+</code></pre><h4 id="4_下载caffe安装包与安装环境">4 下载caffe安装包与安装环境</h4><p>控制台输入: </p>
 <pre><code>git clone <span class="string">https:</span><span class="comment">//github.com/BVLC/caffe</span>
 </code></pre><p>也可以到github上下载zip文件解压</p>
 <p>安装caffe的依赖库:</p>
 <pre><code>sudo apt-<span class="built_in">get</span> install libprotobuf-<span class="built_in">dev</span> libleveldb-<span class="built_in">dev</span> libsnappy-<span class="built_in">dev</span> libopencv-<span class="built_in">dev</span> libhdf5-serial-<span class="built_in">dev</span>
 sudo apt-<span class="built_in">get</span> install --no-install-recommends libboost-<span class="built_in">all</span>-<span class="built_in">dev</span>
 sudo apt-<span class="built_in">get</span> install libgflags-<span class="built_in">dev</span> libgoogle-glog-<span class="built_in">dev</span> liblmdb-<span class="built_in">dev</span> protobuf-compiler
-</code></pre><h2 id="5_安装anaconda">5 安装anaconda</h2><p>不使用ubuntu自带的python是因为anaconda集成了许多科学计算库如numpy、scipy等，而且安装theano也很方便<br>    在anaconda官网上下载安装包直接安装即可，默认安装路径为</p>
+</code></pre><h4 id="5_安装anaconda">5 安装anaconda</h4><p>不使用ubuntu自带的python是因为anaconda集成了许多科学计算库如numpy、scipy等，而且安装theano也很方便<br>    在anaconda官网上下载安装包直接安装即可，默认安装路径为</p>
 <pre><code>~/anaconda
 </code></pre><p>添加bin到PATH环境变量即可<br>打开控制台输入python确认使用的是anaconda里面的python<br>安装pip</p>
 <pre><code>conda <span class="keyword">install</span> pip
-</code></pre><h2 id="6_安装Caffe所需要的Python环境">6 安装Caffe所需要的Python环境</h2><p>然后执行如下命令安装编译caffe python wrapper 所需要的额外包</p>
+</code></pre><h4 id="6_安装Caffe所需要的Python环境">6 安装Caffe所需要的Python环境</h4><p>然后执行如下命令安装编译caffe python wrapper 所需要的额外包</p>
 <pre><code>cd python
 <span class="keyword">for</span> req <span class="keyword">in</span> $(cat requirements.txt); do sudo pip install <span class="variable">$req</span>; done
 </code></pre><p>在运行Caffe时，可能会报一些找不到libxxx.so的错误，而用 locate libxxx.so命令发现已经安装在anaconda中，这时首先想到的是在/etc/ld.so.conf.d/ 下面将 $your_anaconda_path/lib 加入 LD_LIBRARY_PATH中。 但是这样做可能导致登出后无法再进入桌面！！！原因（猜测）可能是anaconda的lib中有些内容于系统自带的lib产生冲突。</p>
@@ -255,7 +281,7 @@ LD_LIBRARY_PATH=your_anaconda_path/lib:<span class="variable">$LD_LIBRARY_PATH</
 <span class="built_in">export</span> LD_LIBRARY_PATH
 </code></pre><p>开启另一个终端后即生效，并且重启后能够顺利加载lightdm, 进入桌面环境。</p>
 <p>但在实际安装时注意先要等make和make test完之后再加这个路径否则会报错</p>
-<h2 id="7_编译caffe">7 编译caffe</h2><p>完成了所有环境的配置，可以愉快的编译Caffe了！ 进入caffe根目录， 首先复制一份Makefile.config</p>
+<h4 id="7_编译caffe">7 编译caffe</h4><p>完成了所有环境的配置，可以愉快的编译Caffe了！ 进入caffe根目录， 首先复制一份Makefile.config</p>
 <pre><code><span class="tag">cp</span> <span class="tag">Makefile</span><span class="class">.config</span><span class="class">.example</span> <span class="tag">Makefile</span><span class="class">.config</span>
 </code></pre><p>然后修改里面的内容，主要需要修改的参数包括</p>
 <p>BLAS (默认使用的是atlas)</p>
@@ -266,13 +292,24 @@ LD_LIBRARY_PATH=your_anaconda_path/lib:<span class="variable">$LD_LIBRARY_PATH</
 <span class="keyword">make</span> test
 <span class="keyword">make</span> runtest
 </code></pre><p>前两步成功说明caffe编译成功，make runtest是在运行caffe的各个测试脚本</p>
-<h2 id="8_编译pycaffe">8 编译pycaffe</h2><p>控制台输入:<br>    make pycaffe </p>
+<h4 id="8_编译pycaffe">8 编译pycaffe</h4><p>控制台输入:<br>    make pycaffe </p>
 <p>之后设置环境变量<br>在～/.bashrc中添加</p>
 <pre><code>PYTHONPATH=/path/tp/caffe/python:<span class="variable">$PYTHONPATH</span>
 export PYTHONPATH
 </code></pre><p>打开控制台输入python，之后import caffe，import成功就说明caffe安装成功了</p>
-<h2 id="9_安装cudnn（可选）">9 安装cudnn（可选）</h2><h3 id="9-1编译caffe之后安装cudnn">9.1编译caffe之后安装cudnn</h3><p>使用cudnn来加速GPU计算，cudnn支持caffe，theano和Torch7<br>在官网免费获得cudnn压缩包<br>下载之后控制台输入:<br>    tar -xzvf cudnn-6.5-linux-R1.tgz<br>    cd cudnn-6.5-linux-R1<br>    sudo cp lib* /usr/local/cuda/lib64/<br>    sudo cp cudnn.h /usr/local/cuda/include/<br>之后建立软链接（首先删除原先文件夹下的软链接）:<br>    cd /usr/local/cuda/lib64/<br>    sudo rm -rf libcudnn.so libcudnn.so.6.5<br>然后修改文件权限，并创建新的软连接:<br>    sudo chmod u=rwx,g=rx,o=rx libcudnn.so.6.5.18（未必是18，我的机子上是48，相应改就可以了）<br>    sudo ln -s libcudnn.so.6.5.18 libcudnn.so.6.5<br>    sudo ln -s libcudnn.so.6.5 libcudnn.so</p>
-<h3 id="9-2编译caffe之前安装cudnn">9.2编译caffe之前安装cudnn</h3><p>解压cudnn之后只需将对应的文件复制到对应目录中即可，同时在编译caffe时Makefile.config中</p>
+<h4 id="9_安装cudnn（可选）">9 安装cudnn（可选）</h4><h5 id="9-1编译caffe之后安装cudnn">9.1编译caffe之后安装cudnn</h5><p>使用cudnn来加速GPU计算，cudnn支持caffe，theano和Torch7<br>在官网免费获得cudnn压缩包<br>下载之后控制台输入:</p>
+<pre><code><span class="label">tar</span> -xzvf cudnn-<span class="number">6</span>.<span class="number">5</span>-linux-<span class="literal">R1</span>.tgz
+<span class="label">cd</span> cudnn-<span class="number">6</span>.<span class="number">5</span>-linux-<span class="literal">R1</span>
+<span class="label">sudo</span> <span class="preprocessor">cp</span> lib* /usr/local/cuda/lib64/
+<span class="label">sudo</span> <span class="preprocessor">cp</span> cudnn.h /usr/local/cuda/<span class="preprocessor">include</span>/
+</code></pre><p>之后建立软链接（首先删除原先文件夹下的软链接）:</p>
+<pre><code><span class="keyword">cd</span> /usr/<span class="keyword">local</span>/cuda/lib64/
+sudo <span class="keyword">rm</span> -rf libcudnn.<span class="keyword">so</span> libcudnn.<span class="keyword">so</span>.6.5
+</code></pre><p>然后修改文件权限，并创建新的软连接:</p>
+<pre><code>sudo chmod u=rwx,g=rx,o=rx libcudnn.so<span class="number">.6</span><span class="number">.5</span><span class="number">.18</span>（未必是<span class="number">18</span>，我的机子上是<span class="number">48</span>，相应改就可以了） 
+sudo ln -s libcudnn.so<span class="number">.6</span><span class="number">.5</span><span class="number">.18</span> libcudnn.so<span class="number">.6</span><span class="number">.5</span>
+sudo ln -s libcudnn.so<span class="number">.6</span><span class="number">.5</span> libcudnn.so
+</code></pre><h5 id="9-2编译caffe之前安装cudnn">9.2编译caffe之前安装cudnn</h5><p>解压cudnn之后只需将对应的文件复制到对应目录中即可，同时在编译caffe时Makefile.config中</p>
 <pre><code><span class="label">use_cudnn:</span>=<span class="number">1</span>
 </code></pre><p>去掉注释</p>
 <pre><code>unpack the library  
@@ -282,7 +319,7 @@ tar xf cudnn-6.5-linux-x64-v2.tar
 <span class="keyword">copy</span> the library files into CUDA's <span class="keyword">include</span> and lib folders  
 sudo cp cudnn-6.5-linux-x64-v2/cudnn.<span class="keyword">h</span> /usr/<span class="keyword">local</span>/    cuda-7.0/<span class="keyword">include</span>  
 sudo cp cudnn-6.5-linux-x64-v2/libcudnn* /usr/<span class="keyword">local</span>/    cuda-7.0/lib64      
-</code></pre><h2 id="10_安装opencv(可选)">10 安装opencv(可选)</h2><p>opencv库在运行其他开源项目时可能需要用到因此也建议安装，这里安装的是支持GPU的，因此安装是需要添加支持GPU的选项</p>
+</code></pre><h4 id="10_安装opencv(可选)">10 安装opencv(可选)</h4><p>opencv库在运行其他开源项目时可能需要用到因此也建议安装，这里安装的是支持GPU的，因此安装是需要添加支持GPU的选项</p>
 <p>opencv安装起来神烦，Github上有人已经写好了完整的安装脚本：    <a href="https://github.com/jayrambhia/Install-OpenCV" target="_blank" rel="external">https://github.com/jayrambhia/Install-OpenCV</a></p>
 <p>下载该脚本，进入Ubuntu/2.4 目录, 给所有shell脚本加上可执行权限：<br>    chmod +x *.sh</p>
 <p>安装2.4.9版本:<br>    sudo ./opencv2_4_9.sh</p>
@@ -290,15 +327,21 @@ sudo cp cudnn-6.5-linux-x64-v2/libcudnn* /usr/<span class="keyword">local</span>
 <pre><code>/usr/lib/libopencv_highgui.so.<span class="number">2.4</span>: <span class="literal">undefined</span> reference <span class="keyword">to</span> TIFFRGBAImageOK<span class="property">@LIBTIFF_4</span>.<span class="number">0</span><span class="string">' 1&gt; </span>
 </code></pre><p>的错误</p>
 <p>安装过程中可能会遇到两个问题:</p>
-<h3 id="1编译过程中报错：">1编译过程中报错：</h3><pre><code>opencv-<span class="number">2.4</span>.<span class="number">9</span>/modules/gpu/src/nvidia/core/NCVPixelOperations.<span class="function"><span class="title">hpp</span><span class="params">(<span class="number">51</span>)</span></span>: error: <span class="tag">a</span> storage class is not allowed <span class="keyword">in</span> an explicit specialization
-
-http:<span class="comment">//www.samontab.com/web/2014/06/installing-opencv-2-4-9-in-ubuntu-14-04-lts/</span>
-</code></pre><p>解决方法在此：<a href="http://code.opencv.org/issues/3814" target="_blank" rel="external">http://code.opencv.org/issues/3814</a>  下载 NCVPixelOperations.hpp 替换掉opencv2.4.9内的文件， 重新build</p>
-<h3 id="2编译过程中报错：">2编译过程中报错：</h3><pre><code>nvcc <span class="string">fatal:</span> Unsupported gpu <span class="string">architecture:</span> <span class="string">'compute xx'</span>
+<ul>
+<li><p>1编译过程中报错：</p>
+<pre><code>opencv-<span class="number">2.4</span>.<span class="number">9</span>/modules/gpu/src/nvidia/core/NCVPixelOperations.<span class="function"><span class="title">hpp</span><span class="params">(<span class="number">51</span>)</span></span>: error: <span class="tag">a</span> storage class is not allowed <span class="keyword">in</span> an explicit specialization
+</code></pre><p>  <a href="http://www.samontab.com/web/2014/06/installing-opencv-2-4-9-in-ubuntu-14-04-lts/" target="_blank" rel="external">http://www.samontab.com/web/2014/06/installing-opencv-2-4-9-in-ubuntu-14-04-lts/</a></p>
+</li>
+</ul>
+<p>解决方法在此：<a href="http://code.opencv.org/issues/3814" target="_blank" rel="external">http://code.opencv.org/issues/3814</a>  下载 NCVPixelOperations.hpp 替换掉opencv2.4.9内的文件， 重新build</p>
+<ul>
+<li><p>2编译过程中报错：</p>
+<pre><code>nvcc <span class="string">fatal:</span> Unsupported gpu <span class="string">architecture:</span> <span class="string">'compute xx'</span>
 </code></pre><p>需要在cmake时添加参数指定你的GPU架构，参考这两篇blog:</p>
-<pre><code><span class="string">http:</span><span class="comment">//blog.csdn.net/sysuwuhongpeng/article/details/45485719</span>
-<span class="string">http:</span><span class="comment">//blog.csdn.net/altenli/article/details/44199539</span>
-</code></pre><h2 id="11_caffe_matlab(可选)">11 caffe matlab(可选)</h2><h3 id="1_安装matlab：">1 安装matlab：</h3><p>参考教程：</p>
+<p>  <a href="http://blog.csdn.net/sysuwuhongpeng/article/details/45485719" target="_blank" rel="external">http://blog.csdn.net/sysuwuhongpeng/article/details/45485719</a><br>  <a href="http://blog.csdn.net/altenli/article/details/44199539" target="_blank" rel="external">http://blog.csdn.net/altenli/article/details/44199539</a></p>
+</li>
+</ul>
+<h4 id="11_caffe_matlab(可选)">11 caffe matlab(可选)</h4><h5 id="1_安装matlab：">1 安装matlab：</h5><p>参考教程：</p>
 <p>Caffe提供了MATLAB接口， 有需要用MATLAB的同学可以额外安装MATLAB。安装教程请自行搜索。 </p>
 <p>安装完成后添加图标 matlab图标在该网站可以下载</p>
 <pre><code><span class="string">http:</span><span class="comment">//www.linuxidc.com/Linux/2011-01/31632.htm</span>
@@ -315,13 +358,13 @@ http:<span class="comment">//www.samontab.com/web/2014/06/installing-opencv-2-4-
 <span class="setting">Icon=<span class="value">/usr/local/MATLAB/Matlab.png</span></span>
 <span class="setting">Terminal=<span class="value"><span class="keyword">false</span></span></span>
 <span class="setting">Categories=<span class="value">Development;Matlab;</span></span>
-</code></pre><h3 id="2_matlab_wrapper">2 matlab wrapper</h3><p>控制台输入：</p>
+</code></pre><h5 id="2_matlab_wrapper">2 matlab wrapper</h5><p>控制台输入：</p>
 <pre><code><span class="built_in">make</span> matcaffe
 </code></pre><p>安装完后在运行matlab demo时遇到报错</p>
 <pre><code>“libhdf5.<span class="keyword">so</span>.<span class="number">6</span> <span class="keyword">no</span> such <span class="keyword">file</span> <span class="built_in">or</span> directory”
 </code></pre><p>但是到anaconda的lib目录下发现是有对应文件的，可能是动态链接库的问题，解决方法是到anaconda/lib目录下执行ldconfig就可以了</p>
-<h1 id="安装theano">安装theano</h1><h2 id="1_安装theano">1 安装theano</h2><p>控制台输入 pip install theano即可</p>
-<h2 id="2_配置theano使其支持gpu加速">2 配置theano使其支持gpu加速</h2><p>参考文档：<br>    <a href="http://deeplearning.net/software/theano/tutorial/using_gpu.html" target="_blank" rel="external">http://deeplearning.net/software/theano/tutorial/using_gpu.html</a><br>    <a href="http://deeplearning.net/software/theano/install.html#gpu-linux" target="_blank" rel="external">http://deeplearning.net/software/theano/install.html#gpu-linux</a><br>    <a href="http://deeplearning.net/software/theano/library/config.html#config.init_gpu_device" target="_blank" rel="external">http://deeplearning.net/software/theano/library/config.html#config.init_gpu_device</a></p>
+<h3 id="安装theano">安装theano</h3><h4 id="1_安装theano">1 安装theano</h4><p>控制台输入 pip install theano即可</p>
+<h4 id="2_配置theano使其支持gpu加速">2 配置theano使其支持gpu加速</h4><p>参考文档：<br>    <a href="http://deeplearning.net/software/theano/tutorial/using_gpu.html" target="_blank" rel="external">http://deeplearning.net/software/theano/tutorial/using_gpu.html</a><br>    <a href="http://deeplearning.net/software/theano/install.html#gpu-linux" target="_blank" rel="external">http://deeplearning.net/software/theano/install.html#gpu-linux</a><br>    <a href="http://deeplearning.net/software/theano/library/config.html#config.init_gpu_device" target="_blank" rel="external">http://deeplearning.net/software/theano/library/config.html#config.init_gpu_device</a></p>
 <p>在用户根目录下新建.theanorc配置文档，配置如下：</p>
 <pre><code><span class="title">[global]</span>
 <span class="setting">floatX = <span class="value">float32</span></span>
@@ -357,8 +400,7 @@ print <span class="string">'Result is'</span>, r
 <span class="keyword">else</span>:
     print <span class="string">'Used the gpu'</span>
 如果显示used <span class="operator">the</span> gpu说明theano在使用gpu加速
-</code></pre><h1 id="安装torch">安装torch</h1><p>Torch 安装过程简单，按照下面的链接一步步做就可以了<br>    <a href="http://torch.ch/docs/getting-started.html#_" target="_blank" rel="external">http://torch.ch/docs/getting-started.html#_</a></p>
-</span>
+</code></pre></span>
         
       
     </div>
@@ -481,8 +523,8 @@ print <span class="string">'Result is'</span>, r
 
       <section class="site-overview">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
-          <img class="site-author-image" src="/images/default_avatar.jpg" alt="John Doe" itemprop="image"/>
-          <p class="site-author-name" itemprop="name">John Doe</p>
+          <img class="site-author-image" src="/images/default_avatar.jpg" alt="John Yao" itemprop="image"/>
+          <p class="site-author-name" itemprop="name">John Yao</p>
         </div>
         <p class="site-description motion-element" itemprop="description"></p>
         <nav class="site-state motion-element">
@@ -494,15 +536,15 @@ print <span class="string">'Result is'</span>, r
           </div>
 
           <div class="site-state-item site-state-categories">
-            
+            <a href="/categories">
               <span class="site-state-item-count">0</span>
               <span class="site-state-item-name">分类</span>
-              
+              </a>
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">1</span>
+              <span class="site-state-item-count">2</span>
               <span class="site-state-item-name">标签</span>
               </a>
           </div>
@@ -540,7 +582,7 @@ print <span class="string">'Result is'</span>, r
   <span class="with-love">
     <i class="icon-next-heart"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">John Doe</span>
+  <span class="author" itemprop="copyrightHolder">John Yao</span>
 </div>
 
 <div class="powered-by">
