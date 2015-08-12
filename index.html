@@ -180,6 +180,74 @@
           
           
             
+              <a class="post-title-link" href="/2015/08/12/Fast RCNN论文笔记/" itemprop="url">
+                Fast RCNN论文笔记
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          发表于
+          <time itemprop="dateCreated" datetime="2015-08-12T16:17:30+08:00" content="2015-08-12">
+            2015-08-12
+          </time>
+        </span>
+
+        
+
+        
+          
+            <span class="post-comments-count">
+              &nbsp; | &nbsp;
+              <a href="/2015/08/12/Fast RCNN论文笔记/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/12/Fast RCNN论文笔记/" itemprop="commentsCount"></span>
+              </a>
+            </span>
+          
+        
+      </div>
+    </header>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody"></span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      
+      
+        <h1 class="post-title" itemprop="name headline">
+          
+          
+            
               <a class="post-title-link" href="/2015/08/12/RCNN论文笔记/" itemprop="url">
                 RCNN论文笔记
               </a>
@@ -233,9 +301,9 @@
 <li>使用已经训练好的CNN(dataset: ILSVRC2012 classification caffe implementation) 提取proposal的特征，为了将输入标准化，强制将每个proposal resize到227*227 </li>
 <li>CNN提取的特征输入到SVM中进行分类</li>
 </ul>
-<h3 id="Training">Training</h3><p>按照我的个人理解，为了让CNN有detection的能力，我们需要让网络具备分辨哪些proposal可能包含object，因为selective search选取的许多proposal其实没有object或者仅包含了object的一小部分。</p>
+<h3 id="Training">Training</h3><p>按照个人理解，为了让CNN有detection的能力，我们需要让网络具备分辨哪些proposal可能包含object，因为selective search选取的许多proposal其实没有object或者仅包含了object的一小部分。</p>
 <p>因此文中加了一步对CNN参数的调整(domain-specific fine-tuning),主要目的就是筛选proposal</p>
-<p>在实验部分作者也进行了对比，结果证明使用了fine-tuning比不使用fine－tuning要高8%的mAP</p>
+<p>在实验部分作者也进行了对比，结果证明使用了fine-tuning比不使用要高8%的mAP</p>
 <ul>
 <li><p>Supervised pre-training</p>
 <ol>
@@ -267,7 +335,7 @@
 <li>Object proposal transformations<br>由于CNN输入是227*227的正方形图像，因此需要对proposal进行缩放处理，文中提出了3种不同的处理方式：<ol>
 <li>tightest square with context(等比例缩放proposal在原始图像中的bounding square)</li>
 <li>tightest square without context(等比例缩放proposal在原始图像中的bounding square,但要去掉在bounding square中而不在原始proposal中的部分)</li>
-<li>强制缩放proposal</li>
+<li>强制缩放proposal<br>3种变形的方式如图中所示:<br>![transformation]/img/transformation.png</li>
 </ol>
 </li>
 <li>Positive vs negative examples and softmax<ol>
@@ -593,7 +661,7 @@ print <span class="string">'Result is'</span>, r
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-count">3</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
