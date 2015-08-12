@@ -180,6 +180,146 @@
           
           
             
+              <a class="post-title-link" href="/2015/08/12/RCNN论文笔记/" itemprop="url">
+                RCNN论文笔记
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          发表于
+          <time itemprop="dateCreated" datetime="2015-08-12T16:17:30+08:00" content="2015-08-12">
+            2015-08-12
+          </time>
+        </span>
+
+        
+
+        
+          
+            <span class="post-comments-count">
+              &nbsp; | &nbsp;
+              <a href="/2015/08/12/RCNN论文笔记/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/12/RCNN论文笔记/" itemprop="commentsCount"></span>
+              </a>
+            </span>
+          
+        
+      </div>
+    </header>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody"><p>RCNN本身概念比较简单，但是论文中提到了许多object detection的经典方法非常有用，这些内容绝大部分在附录中，在阅读其他论文时相信会有很大帮助。</p>
+<h2 id="Basic_Notions">Basic Notions</h2><ul>
+<li>Pipeline method<ol>
+<li>提取独立于物体类别的region proposal</li>
+<li>使用CNN做特征提取</li>
+<li>调整CNN参数用于从候选的proposal中获取包含object的proposal(domain-specific fine-tuning)</li>
+<li>SVM进行分类</li>
+</ol>
+</li>
+</ul>
+<h2 id="RCNN_for_Object_Detection">RCNN for Object Detection</h2><h3 id="Testing">Testing</h3><ul>
+<li>Selective search 提取region proposal(非本文重点)</li>
+<li>使用已经训练好的CNN(dataset: ILSVRC2012 classification caffe implementation) 提取proposal的特征，为了将输入标准化，强制将每个proposal resize到227*227 </li>
+<li>CNN提取的特征输入到SVM中进行分类</li>
+</ul>
+<h3 id="Training">Training</h3><p>按照我的个人理解，为了让CNN有detection的能力，我们需要让网络具备分辨哪些proposal可能包含object，因为selective search选取的许多proposal其实没有object或者仅包含了object的一小部分。</p>
+<p>因此文中加了一步对CNN参数的调整(domain-specific fine-tuning),主要目的就是筛选proposal</p>
+<p>在实验部分作者也进行了对比，结果证明使用了fine-tuning比不使用fine－tuning要高8%的mAP</p>
+<ul>
+<li><p>Supervised pre-training</p>
+<ol>
+<li>CNN on ILSVRC2012 with 2.2% error rate</li>
+<li>training set: images with image-level annotations, <strong><em>no bounding boxes</em></strong></li>
+</ol>
+</li>
+<li><p>Domain specific fine-tuning</p>
+<ol>
+<li>N+1 classification: N object classes and 1 background</li>
+<li>Use warped region proposals for tuning</li>
+<li>Positive training examples: region proposals with &gt;0.5IoU overlap(the rest as negative)</li>
+</ol>
+</li>
+<li><p>Object category classification</p>
+<ol>
+<li>Positive examples: ground-truth boxes, Negative: region proposals with &lt;0.3IoU overlap</li>
+<li>Trade-off between SVM and Softmax</li>
+<li>Different definition for training sets between fine-tuning and classification</li>
+</ol>
+</li>
+</ul>
+<p>这里作者提了两个问题 (在附录里均有解答):</p>
+<ol>
+<li>为什么在第二步调整CNN参数使用的训练集和训练SVM分类器的训练集不同(尤其是threshold的选择不一样)?</li>
+<li>为什么不使用softmax分类器而选择SVM?  </li>
+</ol>
+<h2 id="Appendix">Appendix</h2><ul>
+<li>Object proposal transformations<br>由于CNN输入是227*227的正方形图像，因此需要对proposal进行缩放处理，文中提出了3种不同的处理方式：<ol>
+<li>tightest square with context(等比例缩放proposal在原始图像中的bounding square)</li>
+<li>tightest square without context(等比例缩放proposal在原始图像中的bounding square,但要去掉在bounding square中而不在原始proposal中的部分)</li>
+<li>强制缩放proposal</li>
+</ol>
+</li>
+<li>Positive vs negative examples and softmax<ol>
+<li>用于fine－tuning的数据集过少，因此将降低了positive example的要求，只要IoU大于0.5就认为可能有object在这个proposal里面，作者同时指出这样能够防止overfitting</li>
+<li>使用softmax比SVM降低3.3%的mAP，主要原因可能在于fine-tuning的训练集不那么强调box的位置，且SVM使用的nagative sample更具有区分度</li>
+</ol>
+</li>
+<li>Bounding-box 回归<ol>
+<li>使用最后一个pool层的输出训练线性回归模型来预测detection window</li>
+<li>实验结果表明使用BB regression效果更优</li>
+</ol>
+</li>
+</ul>
+<h2 id="Insights">Insights</h2><ul>
+<li>Most feature information is extracted by the convolutional layers</li>
+<li>The structure of CNN really matters(nearly 7~8% mAP)</li>
+</ul>
+<p>下面两点是这篇文章的核心：</p>
+<ul>
+<li>High-capacity CNN to bottom-up region proposals in order to localize and segment objects(CNN用于detection)</li>
+<li>Effective method: supervised pretraining (auxiliary data eg. classification)/fine-tuning(scarce data eg. detection)(fine-tuning的重要性不言而喻)</li>
+</ul>
+</span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      
+      
+        <h1 class="post-title" itemprop="name headline">
+          
+          
+            
               <a class="post-title-link" href="/2015/08/06/theano-and-caffe-installation/" itemprop="url">
                 Ubuntu14.04 安装 theano 和 caffe
               </a>
@@ -401,83 +541,6 @@ print <span class="string">'Result is'</span>, r
     print <span class="string">'Used the gpu'</span>
 如果显示used <span class="operator">the</span> gpu说明theano在使用gpu加速
 </code></pre></span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      
-      
-        <h1 class="post-title" itemprop="name headline">
-          
-          
-            
-              <a class="post-title-link" href="/2015/08/03/hello-world/" itemprop="url">
-                Hello World
-              </a>
-            
-          
-        </h1>
-      
-
-      <div class="post-meta">
-        <span class="post-time">
-          发表于
-          <time itemprop="dateCreated" datetime="2015-08-03T22:24:48+08:00" content="2015-08-03">
-            2015-08-03
-          </time>
-        </span>
-
-        
-
-        
-          
-            <span class="post-comments-count">
-              &nbsp; | &nbsp;
-              <a href="/2015/08/03/hello-world/#comments" itemprop="discussionUrl">
-                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/03/hello-world/" itemprop="commentsCount"></span>
-              </a>
-            </span>
-          
-        
-      </div>
-    </header>
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody"><p>Welcome to <a href="http://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="http://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="http://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick_Start">Quick Start</h2><h3 id="Create_a_new_post">Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run_server">Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate_static_files">Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy_to_remote_sites">Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="http://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-</span>
         
       
     </div>
