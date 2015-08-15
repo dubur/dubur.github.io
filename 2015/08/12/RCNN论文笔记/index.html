@@ -51,7 +51,8 @@ Pipeline method
 提取独立于物体类别的region proposal
 使用CNN做特征提取
 调整CNN参数用于从候选的proposal中获取包含object的proposal(domain-spec">
-<meta property="og:updated_time" content="2015-08-12T13:53:50.000Z">
+<meta property="og:image" content="http://yoursite.com/img/transformation.jpeg">
+<meta property="og:updated_time" content="2015-08-12T14:06:21.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RCNN论文笔记">
 <meta name="twitter:description" content="RCNN本身概念比较简单，但是论文中提到了许多object detection的经典方法非常有用，这些内容绝大部分在附录中，在阅读其他论文时相信会有很大帮助。
@@ -275,13 +276,17 @@ Pipeline method
 <li>为什么不使用softmax分类器而选择SVM?  </li>
 </ol>
 <h2 id="Appendix">Appendix</h2><ul>
-<li>Object proposal transformations<br>由于CNN输入是227*227的正方形图像，因此需要对proposal进行缩放处理，文中提出了3种不同的处理方式：<ol>
+<li><p>Object proposal transformations<br>由于CNN输入是227*227的正方形图像，因此需要对proposal进行缩放处理，文中提出了3种不同的处理方式：</p>
+<ol>
 <li>tightest square with context(等比例缩放proposal在原始图像中的bounding square)</li>
 <li>tightest square without context(等比例缩放proposal在原始图像中的bounding square,但要去掉在bounding square中而不在原始proposal中的部分)</li>
-<li>强制缩放proposal<br>3种变形的方式如图中所示:<br>![transformation]/img/transformation.png</li>
+<li>强制缩放proposal<br>3种变形的方式如图中所示:</li>
 </ol>
+<p><img src="/img/transformation.jpeg" alt="transformation"></p>
+<p>(A) origin proposal (B) tightest square with context (C) tightest square without context (D) warp</p>
 </li>
-<li>Positive vs negative examples and softmax<ol>
+<li><p>Positive vs negative examples and softmax</p>
+<ol>
 <li>用于fine－tuning的数据集过少，因此将降低了positive example的要求，只要IoU大于0.5就认为可能有object在这个proposal里面，作者同时指出这样能够防止overfitting</li>
 <li>使用softmax比SVM降低3.3%的mAP，主要原因可能在于fine-tuning的训练集不那么强调box的位置，且SVM使用的nagative sample更具有区分度</li>
 </ol>

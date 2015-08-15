@@ -218,7 +218,40 @@
 
       
         
-          <span itemprop="articleBody"></span>
+          <span itemprop="articleBody"><p>Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强</p>
+<h2 id="Motivation_(Drawbacks_of_RCNN)">Motivation (Drawbacks of RCNN)</h2><ul>
+<li>RCNN的训练方式按照一个一个阶段分的比较开，</li>
+<li>训练时RCNN会将每个proposal的特征向量存储在硬盘上，不仅占用存储空间，时间上也因为读写磁盘而变得很慢</li>
+<li>在进行detection测试时耗时长</li>
+</ul>
+<h2 id="Fast_RCNN_training">Fast RCNN training</h2><ul>
+<li><p>RoI Pooling Layer<br>按照作者所述，该层的思想类似于SPPnet，我们假设最后一个卷积层得到输入N个feature map(这些feature map包含原始图像的所有信息)，而我们只想提取感兴趣的部分，因此这是就需要引入RoI了</p>
+<p>将这N个feature map和R个region proposal输入到RoI pooling层中，根据RoI中指定的区域对原始的feature map进行pooling得到这R个region proposal的N个feature map</p>
+<p>笔者觉得其实和SPPnet没有多大的关系……各个RoI的大小不一样，而为了让每个RoI的feature长度相同，对每个RoI采用不同大小的pooling窗口而已</p>
+</li>
+<li><p>对原始CNN网络结构的修改<br>主要有3处修改</p>
+<ol>
+<li>将最后一个max pooling层替换为RoI pooling层</li>
+<li>将最后一个全连接层和softmax层替换为两个同级别<br>(1) K+1个class的分类器<br>(2) Bounding box回归 </li>
+<li>修改网络的输入使其接收N个image和R个RoI<br>最后网络结构如图所示：<img src="/img/fast-rcnn.jpeg" alt="fast-rcnn"></li>
+</ol>
+<p>核心在于使用RoI pooling层直接提取原始feature map中属于RoI的那一部分</p>
+<p><img src="http://www.forkosh.com/mathtex.cgi? \Large x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}"></p>
+</li>
+<li><p>Fine-tuning  </p>
+<ol>
+<li><p>Multi-task Loss</p>
+<p>简单来说就是将分类的Loss和bounding box回归的Loss做了加权和<br><img src="/img/Loss.png" alt="Loss"><br><img src="/img/Loss2.png" alt="Loss2"><br>第一部分是softmax分类器的Loss，第二部分是regression的Loss，值得注意的是第二部分有个指示函数，说明不会计算那些background类型的proposal的locaolization误差</p>
+</li>
+<li><p>mini-batch sampling</p>
+<p>每一次SGD的batch使用2个image和128个RoI，其中25%的RoI与ground truth中的bounding box IoU&gt;0.5,剩下的IoU都不满0.5看作background example</p>
+</li>
+<li><p>BP through RoI pooling layer</p>
+</li>
+</ol>
+</li>
+</ul>
+</span>
         
       
     </div>
@@ -332,13 +365,17 @@
 <li>为什么不使用softmax分类器而选择SVM?  </li>
 </ol>
 <h2 id="Appendix">Appendix</h2><ul>
-<li>Object proposal transformations<br>由于CNN输入是227*227的正方形图像，因此需要对proposal进行缩放处理，文中提出了3种不同的处理方式：<ol>
+<li><p>Object proposal transformations<br>由于CNN输入是227*227的正方形图像，因此需要对proposal进行缩放处理，文中提出了3种不同的处理方式：</p>
+<ol>
 <li>tightest square with context(等比例缩放proposal在原始图像中的bounding square)</li>
 <li>tightest square without context(等比例缩放proposal在原始图像中的bounding square,但要去掉在bounding square中而不在原始proposal中的部分)</li>
-<li>强制缩放proposal<br>3种变形的方式如图中所示:<br>![transformation]/img/transformation.png</li>
+<li>强制缩放proposal<br>3种变形的方式如图中所示:</li>
 </ol>
+<p><img src="/img/transformation.jpeg" alt="transformation"></p>
+<p>(A) origin proposal (B) tightest square with context (C) tightest square without context (D) warp</p>
 </li>
-<li>Positive vs negative examples and softmax<ol>
+<li><p>Positive vs negative examples and softmax</p>
+<ol>
 <li>用于fine－tuning的数据集过少，因此将降低了positive example的要求，只要IoU大于0.5就认为可能有object在这个proposal里面，作者同时指出这样能够防止overfitting</li>
 <li>使用softmax比SVM降低3.3%的mAP，主要原因可能在于fine-tuning的训练集不那么强调box的位置，且SVM使用的nagative sample更具有区分度</li>
 </ol>
