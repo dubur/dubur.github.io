@@ -224,32 +224,74 @@
 <li>训练时RCNN会将每个proposal的特征向量存储在硬盘上，不仅占用存储空间，时间上也因为读写磁盘而变得很慢</li>
 <li>在进行detection测试时耗时长</li>
 </ul>
-<h2 id="Fast_RCNN_training">Fast RCNN training</h2><ul>
-<li><p>RoI Pooling Layer<br>按照作者所述，该层的思想类似于SPPnet，我们假设最后一个卷积层得到输入N个feature map(这些feature map包含原始图像的所有信息)，而我们只想提取感兴趣的部分，因此这是就需要引入RoI了</p>
+<h2 id="Fast_RCNN_Training">Fast RCNN Training</h2><p>文章的亮点在于对原来网络结构的改进，这里就不得不膜拜大神了</p>
+<ul>
+<li><p>RoI Pooling Layer<br>按照作者所述，该层的思想类似于SPPnet，我们假设最后一个卷积层得到输入N个feature map(这些feature map包含原始图像的所有信息)，而我们只想提取感兴趣的部分，因此这就需要引入RoI了</p>
 <p>将这N个feature map和R个region proposal输入到RoI pooling层中，根据RoI中指定的区域对原始的feature map进行pooling得到这R个region proposal的N个feature map</p>
-<p>笔者觉得其实和SPPnet没有多大的关系……各个RoI的大小不一样，而为了让每个RoI的feature长度相同，对每个RoI采用不同大小的pooling窗口而已</p>
+<p>笔者觉得其实和SPPnet没有多大的关系……由于各个RoI的大小不一样，而为了使得每个RoI pooling出来的feature长度相同，采用不同大小的pooling窗口而已</p>
 </li>
-<li><p>对原始CNN网络结构的修改<br>主要有3处修改</p>
+<li><p>对原始CNN网络结构的修改<br>修改主要有3处</p>
 <ol>
 <li>将最后一个max pooling层替换为RoI pooling层</li>
-<li>将最后一个全连接层和softmax层替换为两个同级别<br>(1) K+1个class的分类器<br>(2) Bounding box回归 </li>
+<li>将最后一个全连接层和softmax层替换为两个同并列的层<br>(1) K+1个class的分类器<br>(2) Bounding box回归(Localization) </li>
 <li>修改网络的输入使其接收N个image和R个RoI<br>最后网络结构如图所示：<img src="/img/fast-rcnn.jpeg" alt="fast-rcnn"></li>
 </ol>
 <p>核心在于使用RoI pooling层直接提取原始feature map中属于RoI的那一部分</p>
-<p><img src="http://www.forkosh.com/mathtex.cgi? \Large x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}"></p>
 </li>
-<li><p>Fine-tuning  </p>
+</ul>
+<ul>
+<li><p>Fine-tuning微调</p>
+<p>  网络结构变化带来的是训练方式的变化，作者在现有的CNN分类网络上进行了微调，类似于RCNN中的domain-specific fine-tuning,只不过这次是针对网络结构而调整训练方式</p>
 <ol>
 <li><p>Multi-task Loss</p>
-<p>简单来说就是将分类的Loss和bounding box回归的Loss做了加权和<br><img src="/img/Loss.png" alt="Loss"><br><img src="/img/Loss2.png" alt="Loss2"><br>第一部分是softmax分类器的Loss，第二部分是regression的Loss，值得注意的是第二部分有个指示函数，说明不会计算那些background类型的proposal的locaolization误差</p>
+<p>简单来说就是将分类的Loss和bounding box回归的Loss做了加权和</p>
+<p>$$ L(p,k^*,t,t^*) = L_{cls}(p,k^*) + \lambda[k^*\ &gt;\ 1]L_{loc}(t,t^*) $$</p>
+<p>$$ smooth_{L_1}(x) = \begin{cases}0.5x^2 \ &amp;if \ |x| &lt; 1<br>\cr |x|-0.5 \ &amp;otherwise \end{cases} $$</p>
+<p>第一部分是softmax分类器的Loss，第二部分是regression的Loss，值得注意的是第二部分有个指示函数，说明不会计算那些background类型的proposal的locaolization误差</p>
 </li>
 <li><p>mini-batch sampling</p>
-<p>每一次SGD的batch使用2个image和128个RoI，其中25%的RoI与ground truth中的bounding box IoU&gt;0.5,剩下的IoU都不满0.5看作background example</p>
+<p>每一次SGD的batch使用2个image和128个RoI，每个batch中RoI的构成:<br>1.25% ground truth中的bounding box IoU&gt;0.5,<br>2.75% IoU &lt; 0.5, 看作background example</p>
 </li>
 <li><p>BP through RoI pooling layer</p>
+<p>在进行反向传播时RoI pooling layer有些许不同, 参与pooling的不再是整幅图像而是可能有重叠的RoI区域，计算公式如下:</p>
+<p>$$ {\partial L \over \partial x} = \sum_{r\in R} \sum_{y\in r} [y\ pooled\ x] {\partial L \over \partial y} $$</p>
+<p>y代表pooling后的值, 反向传播的思想是要将每个y的偏导传递给所有参与pooling的变量x，这也就是指示函数 [y pooled x] 的含义，在这里x代表的是原来RoI中的元素</p>
 </li>
 </ol>
 </li>
+<li><p>Scale invariance<br>如何处理输入图像尺寸不一的问题？<br>作者给出了两种方案:</p>
+<ul>
+<li>brute force 强制把图像resize到同一尺寸下</li>
+<li>image pyramids 利用图像金字塔，把图片resize成不同的大小，选取其中最接近optimal scale（也就是227*227）的大小用作训练。</li>
+</ul>
+</li>
+</ul>
+<h2 id="Fast_RCNN_Detection">Fast RCNN Detection</h2><ul>
+<li><p>Truncated SVD<br>全连接层的计算时间太长，占用了整个前向传播的一半时间，因此在进行矩阵乘法时，作者采用SVD将权重矩阵$W (u \times v)$分解为三个矩阵的乘积：</p>
+<p>$$ W \approx U \Sigma_tV^T $$</p>
+<p>SVD分解后的U和V都是对称矩阵<br>最后一个全连接层被分解为两个子层:第一层的权重矩阵为$ \Sigma_tV^T $,第二层的权重矩阵为$U$,因此整个参数的个数由$uv$变成了$t(u+v)$,当t比较小(意味着原参数矩阵的特征值少)的时候计算时间就会大大减少</p>
+<p><img src="img/training_time.jpeg" alt="training_time"></p>
+</li>
+</ul>
+<h2 id="Experiment_Insights">Experiment Insights</h2><ul>
+<li>卷积层和全连接层一样需要fine-tuning<blockquote>
+<p>decrease mAP from 66.9% to 61.4%</p>
+</blockquote>
+</li>
+</ul>
+<p>，且浅层的卷积层没有微调的必要。</p>
+<ul>
+<li>首先用classification loss训练，之后加入bbox regression训练效果更好<blockquote>
+<p>improvement ranges from +0.8 to +1.1 mAP points</p>
+</blockquote>
+</li>
+</ul>
+<p>(那为什么前面在写网络结构时还给出sibling layer的训练方式…)</p>
+<ul>
+<li>trade-off: speed &gt; performance improvement brought by multi-scale </li>
+<li>More data brings higher mAP</li>
+<li>Softmax slightly outperforms SVM </li>
+<li>Sparse proposals(selective search) improve detection quality and dense proposals(sliding window) free the heavy running cost.</li>
 </ul>
 </span>
         
@@ -834,6 +876,27 @@ print <span class="string">'Result is'</span>, r
   </script>
 
   
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
 
   
   
