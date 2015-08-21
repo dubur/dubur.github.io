@@ -26,7 +26,7 @@
 
 
 
-  <meta name="keywords" content="Deep Learning," />
+  <meta name="keywords" content="Deep Learning,Paper Notes," />
 
 
 
@@ -51,7 +51,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
 在进行detection">
 <meta property="og:image" content="http://yoursite.com/img/fast-rcnn.jpeg">
 <meta property="og:image" content="http://yoursite.com/img/training_time.jpeg">
-<meta property="og:updated_time" content="2015-08-15T14:50:10.000Z">
+<meta property="og:updated_time" content="2015-08-18T13:39:41.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Fast RCNN论文笔记">
 <meta name="twitter:description" content="Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强
@@ -208,6 +208,21 @@ RCNN的训练方式按照一个一个阶段分的比较开，
         </span>
 
         
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分类于
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
+                  <span itemprop="name">Deep Learning</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
+        
 
         
           
@@ -276,7 +291,8 @@ RCNN的训练方式按照一个一个阶段分的比较开，
 </ul>
 </li>
 </ul>
-<h2 id="Fast_RCNN_Detection">Fast RCNN Detection</h2><ul>
+<h2 id="Fast_RCNN_Detection">Fast RCNN Detection</h2><p><script type="text/x-mathjax-config"><br>  MathJax.Hub.Config({tex2jax: {inlineMath: [[‘$’,’$’], [‘\(‘,’\)’]]}});<br></script></p>
+<ul>
 <li><p>Truncated SVD<br>全连接层的计算时间太长，占用了整个前向传播的一半时间，因此在进行矩阵乘法时，作者采用SVD将权重矩阵$W (u \times v)$分解为三个矩阵的乘积：</p>
 <p>$$ W \approx U \Sigma_tV^T $$</p>
 <p>SVD分解后的U和V都是对称矩阵<br>最后一个全连接层被分解为两个子层:第一层的权重矩阵为$ \Sigma_tV^T $,第二层的权重矩阵为$U$,因此整个参数的个数由$uv$变成了$t(u+v)$,当t比较小(意味着原参数矩阵的特征值少)的时候计算时间就会大大减少</p>
@@ -313,6 +329,8 @@ RCNN的训练方式按照一个一个阶段分的比较开，
           
             <a href="/tags/Deep-Learning/" rel="tag">#Deep Learning</a>
           
+            <a href="/tags/Paper-Notes/" rel="tag">#Paper Notes</a>
+          
         </div>
       
 
@@ -320,11 +338,13 @@ RCNN的训练方式按照一个一个阶段分的比较开，
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2015/08/12/RCNN论文笔记/" rel="prev">RCNN论文笔记</a>
+            
           </div>
 
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2015/08/12/RCNN论文笔记/" rel="next">RCNN论文笔记</a>
+              <a href="/2015/08/06/theano-and-caffe-installation/" rel="next">Ubuntu14.04 安装 theano 和 caffe</a>
             
           </div>
         </div>
@@ -390,21 +410,21 @@ RCNN的训练方式按照一个一个阶段分的比较开，
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">3</span>
+              <span class="site-state-item-count">4</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
             <a href="/categories">
-              <span class="site-state-item-count">0</span>
+              <span class="site-state-item-count">3</span>
               <span class="site-state-item-name">分类</span>
               </a>
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">标签</span>
               </a>
           </div>

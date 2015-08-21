@@ -180,8 +180,8 @@
           
           
             
-              <a class="post-title-link" href="/2015/08/12/Fast RCNN论文笔记/" itemprop="url">
-                Fast RCNN论文笔记
+              <a class="post-title-link" href="/2015/08/16/Faster RCNN论文笔记/" itemprop="url">
+                Pagerank从原理到实现
               </a>
             
           
@@ -191,19 +191,34 @@
       <div class="post-meta">
         <span class="post-time">
           发表于
-          <time itemprop="dateCreated" datetime="2015-08-12T16:17:30+08:00" content="2015-08-12">
-            2015-08-12
+          <time itemprop="dateCreated" datetime="2015-08-16T17:10:30+08:00" content="2015-08-16">
+            2015-08-16
           </time>
         </span>
 
+        
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分类于
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
+                  <span itemprop="name">Deep Learning</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
         
 
         
           
             <span class="post-comments-count">
               &nbsp; | &nbsp;
-              <a href="/2015/08/12/Fast RCNN论文笔记/#comments" itemprop="discussionUrl">
-                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/12/Fast RCNN论文笔记/" itemprop="commentsCount"></span>
+              <a href="/2015/08/16/Faster RCNN论文笔记/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/16/Faster RCNN论文笔记/" itemprop="commentsCount"></span>
               </a>
             </span>
           
@@ -218,81 +233,60 @@
 
       
         
-          <span itemprop="articleBody"><p>Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强</p>
-<h2 id="Motivation_(Drawbacks_of_RCNN)">Motivation (Drawbacks of RCNN)</h2><ul>
-<li>RCNN的训练方式按照一个一个阶段分的比较开，</li>
-<li>训练时RCNN会将每个proposal的特征向量存储在硬盘上，不仅占用存储空间，时间上也因为读写磁盘而变得很慢</li>
-<li>在进行detection测试时耗时长</li>
+          <span itemprop="articleBody"><p>本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考</p>
+<p><a href="http://arxiv.org/pdf/1504.08083v1.pdf" target="_blank" rel="external">Fast RCNN</a></p>
+<p>或者我的Fast RCNN笔记</p>
+<p><a href=""></a></p>
+<p>MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的方法，进一步提升检测速度的同时还提升了检测的准确率，然而代码现在还没有公开。</p>
+<h2 id="Motivation">Motivation</h2><ul>
+<li>Fast RCNN ignores the time spent on region proposals</li>
+<li>Region proposal methods used in research are implemented on the CPU</li>
+<li><strong><em>The feature maps can also be used for generating region proposals</em></strong><br>简单说就是提取proposal的步骤太花时间，而且作者希望尽可能用GPU完成所有的计算。</li>
 </ul>
-<h2 id="Fast_RCNN_Training">Fast RCNN Training</h2><p>文章的亮点在于对原来网络结构的改进，这里就不得不膜拜大神了</p>
-<ul>
-<li><p>RoI Pooling Layer<br>按照作者所述，该层的思想类似于SPPnet，我们假设最后一个卷积层得到输入N个feature map(这些feature map包含原始图像的所有信息)，而我们只想提取感兴趣的部分，因此这就需要引入RoI了</p>
-<p>将这N个feature map和R个region proposal输入到RoI pooling层中，根据RoI中指定的区域对原始的feature map进行pooling得到这R个region proposal的N个feature map</p>
-<p>笔者觉得其实和SPPnet没有多大的关系……由于各个RoI的大小不一样，而为了使得每个RoI pooling出来的feature长度相同，采用不同大小的pooling窗口而已</p>
-</li>
-<li><p>对原始CNN网络结构的修改<br>修改主要有3处</p>
-<ol>
-<li>将最后一个max pooling层替换为RoI pooling层</li>
-<li>将最后一个全连接层和softmax层替换为两个同并列的层<br>(1) K+1个class的分类器<br>(2) Bounding box回归(Localization) </li>
-<li>修改网络的输入使其接收N个image和R个RoI<br>最后网络结构如图所示：<img src="/img/fast-rcnn.jpeg" alt="fast-rcnn"></li>
-</ol>
-<p>核心在于使用RoI pooling层直接提取原始feature map中属于RoI的那一部分</p>
-</li>
+<h2 id="Region_Proposal_Networks_(RPN)">Region Proposal Networks (RPN)</h2><h3 id="Basic_Notions">Basic Notions</h3><ul>
+<li>Fully-convolutional network for generating region proposals</li>
+<li>Share computation of convolutions with start-of-art object detection networks</li>
 </ul>
+<h3 id="Architecture">Architecture</h3><script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+
 <ul>
-<li><p>Fine-tuning微调</p>
-<p>  网络结构变化带来的是训练方式的变化，作者在现有的CNN分类网络上进行了微调，类似于RCNN中的domain-specific fine-tuning,只不过这次是针对网络结构而调整训练方式</p>
+<li>RPN与卷积层共享权重，也就是说RPN的输入就是最后一个卷积层的输出的feature map，得到输入后使用滑动窗口的方式得到更低维的向量</li>
+<li><p>将得到的向量输入到两个并联的全连接层</p>
 <ol>
-<li><p>Multi-task Loss</p>
-<p>简单来说就是将分类的Loss和bounding box回归的Loss做了加权和</p>
-<p>$$ L(p,k^*,t,t^*) = L_{cls}(p,k^*) + \lambda[k^*\ &gt;\ 1]L_{loc}(t,t^*) $$</p>
-<p>$$ smooth_{L_1}(x) = \begin{cases}0.5x^2 \ &amp;if \ |x| &lt; 1<br>\cr |x|-0.5 \ &amp;otherwise \end{cases} $$</p>
-<p>第一部分是softmax分类器的Loss，第二部分是regression的Loss，值得注意的是第二部分有个指示函数，说明不会计算那些background类型的proposal的locaolization误差</p>
-</li>
-<li><p>mini-batch sampling</p>
-<p>每一次SGD的batch使用2个image和128个RoI，每个batch中RoI的构成:<br>1.25% ground truth中的bounding box IoU&gt;0.5,<br>2.75% IoU &lt; 0.5, 看作background example</p>
-</li>
-<li><p>BP through RoI pooling layer</p>
-<p>在进行反向传播时RoI pooling layer有些许不同, 参与pooling的不再是整幅图像而是可能有重叠的RoI区域，计算公式如下:</p>
-<p>$$ {\partial L \over \partial x} = \sum_{r\in R} \sum_{y\in r} [y\ pooled\ x] {\partial L \over \partial y} $$</p>
-<p>y代表pooling后的值, 反向传播的思想是要将每个y的偏导传递给所有参与pooling的变量x，这也就是指示函数 [y pooled x] 的含义，在这里x代表的是原来RoI中的元素</p>
-</li>
+<li>box-regression layer (bounding box regressor)</li>
+<li>box-classification layer (objectness)<br>类似于Fast RCNN的RoI pooling层后面的架构，feature用来训练两个分类器，一个用来判断这个RoI是否包含object，另一个用来做bounding box回归(即给定一个anchor判断bounding box的位置)</li>
 </ol>
 </li>
-<li><p>Scale invariance<br>如何处理输入图像尺寸不一的问题？<br>作者给出了两种方案:</p>
-<ul>
-<li>brute force 强制把图像resize到同一尺寸下</li>
-<li>image pyramids 利用图像金字塔，把图片resize成不同的大小，选取其中最接近optimal scale（也就是227*227）的大小用作训练。</li>
-</ul>
+<li><p>每个滑动窗口中心记作一个anchor，对应9种variant，相当于对于每一个feature map用9种sliding window计算vector，后面的输出也变成9倍，这么做是为了对图像的translation有更好的鲁棒性</p>
+<p><img src="img/RPN.png" alt="RPN"></p>
+</li>
+<li><p>Loss Function的定义与Fast RCNN类似<br>$$ L(p_{i},t<em>{i}) = L\</em>{cls}(p_{i},{p_{i}}^{*}) + \lambda{p_{i}}^{*}L_{reg}(t_{i},{t_{i}}^{*}) $$</p>
+<p>由两部分构成：regression的Loss和classification的Loss，通过$\lambda$控制两类Loss的比重<br>公式中$p_{i}$表示一个region中包含object的概率，${p_{i}}^{*}$表示ground truth， 是一个0-1指示器，当某个anchor被标注为含有一个object时它的值才是1，否则为0<br>$L_{cls}(p_{i},{p_{i}}^{*})$的定义方式与Fast RCNN中相同</p>
 </li>
 </ul>
-<h2 id="Fast_RCNN_Detection">Fast RCNN Detection</h2><ul>
-<li><p>Truncated SVD<br>全连接层的计算时间太长，占用了整个前向传播的一半时间，因此在进行矩阵乘法时，作者采用SVD将权重矩阵$W (u \times v)$分解为三个矩阵的乘积：</p>
-<p>$$ W \approx U \Sigma_tV^T $$</p>
-<p>SVD分解后的U和V都是对称矩阵<br>最后一个全连接层被分解为两个子层:第一层的权重矩阵为$ \Sigma_tV^T $,第二层的权重矩阵为$U$,因此整个参数的个数由$uv$变成了$t(u+v)$,当t比较小(意味着原参数矩阵的特征值少)的时候计算时间就会大大减少</p>
-<p><img src="img/training_time.jpeg" alt="training_time"></p>
+<h2 id="Training_RPN">Training RPN</h2><ul>
+<li>mini batch构成<ol>
+<li>随机选取一张图片的256个anchor，正负样本为1:1</li>
+<li>用高斯分布初始化权重</li>
+</ol>
+</li>
+<li>Trainging的四个步骤<br>这里引用一下原文:<ol>
+<li>First, train the RPN is initialized with an ImageNet-pre-trained model and fine-tuned end-to-end for the region proposal task. </li>
+<li>In the second step, we train a separate detection network by Fast R-CNN using the proposals generated by the step-1 RPN. This detection network is also initialized by the ImageNet-pre-trained model. </li>
+<li>In the third step, we use the detector network to initialize RPN training, but we fix the shared conv layers and only fine-tune the layers unique to RPN. </li>
+<li>Now the two networks share conv layers. Finally, keeping the shared conv layers fixed, we fine-tune the fc layers of the Fast R-CNN.</li>
+</ol>
 </li>
 </ul>
-<h2 id="Experiment_Insights">Experiment Insights</h2><ul>
-<li>卷积层和全连接层一样需要fine-tuning<blockquote>
-<p>decrease mAP from 66.9% to 61.4%</p>
-</blockquote>
-</li>
-</ul>
-<p>，且浅层的卷积层没有微调的必要。</p>
-<ul>
-<li>首先用classification loss训练，之后加入bbox regression训练效果更好<blockquote>
-<p>improvement ranges from +0.8 to +1.1 mAP points</p>
-</blockquote>
-</li>
-</ul>
-<p>(那为什么前面在写网络结构时还给出sibling layer的训练方式…)</p>
-<ul>
-<li>trade-off: speed &gt; performance improvement brought by multi-scale </li>
-<li>More data brings higher mAP</li>
-<li>Softmax slightly outperforms SVM </li>
-<li>Sparse proposals(selective search) improve detection quality and dense proposals(sliding window) free the heavy running cost.</li>
-</ul>
+<pre><code>总体而言训练方式在训练Fast RCNN的基础上做了改进，Fast RCNN输入的region proposal由RPN提供，之后用Fast RCNN的权重重新初始化RPN的参数，做到权重共享，保持这些权重不变，只对RPN中的几层进行微调，最后再对全连接层进行微调。
+
+这样做的好处显而易见，实时检测时，前面卷积层提取feature <span class="preprocessor">map</span>直接送给RPN， Fast RCNN等待RPN计算proposal，用GPU计算proposal速度很快，与Fast RCNN不同的是不需要<span class="keyword">selective </span>search，提取proposal的步骤与detection合并，在原先的卷积层与RoI pooling层之间加入了一个RPN提取proposal，之后Fast RCNN的全连接层利用RPN的输出向量进行detection
+
+笔者认为从RCNN到这里的Faster RCNN，有一点<span class="keyword">bounding </span><span class="keyword">box </span>regression和object classification的joint learning的味道了。
+</code></pre><p>最后RPN结合Fast RCNN可以做到单纯用神经网络进行object detection，不依靠selective search这样的low-level feature的方法，完全依靠deep learning进行图像的理解。</p>
+<p>不过有时间还是要把selective search也看一下，毕竟这篇论文有很高的引用量。</p>
 </span>
         
       
@@ -339,6 +333,21 @@
           </time>
         </span>
 
+        
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分类于
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
+                  <span itemprop="name">Deep Learning</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
         
 
         
@@ -467,6 +476,165 @@
           
           
             
+              <a class="post-title-link" href="/2015/08/12/Fast RCNN论文笔记/" itemprop="url">
+                Fast RCNN论文笔记
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          发表于
+          <time itemprop="dateCreated" datetime="2015-08-12T16:17:30+08:00" content="2015-08-12">
+            2015-08-12
+          </time>
+        </span>
+
+        
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分类于
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
+                  <span itemprop="name">Deep Learning</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+              &nbsp; | &nbsp;
+              <a href="/2015/08/12/Fast RCNN论文笔记/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/12/Fast RCNN论文笔记/" itemprop="commentsCount"></span>
+              </a>
+            </span>
+          
+        
+      </div>
+    </header>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody"><p>Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强</p>
+<h2 id="Motivation_(Drawbacks_of_RCNN)">Motivation (Drawbacks of RCNN)</h2><ul>
+<li>RCNN的训练方式按照一个一个阶段分的比较开，</li>
+<li>训练时RCNN会将每个proposal的特征向量存储在硬盘上，不仅占用存储空间，时间上也因为读写磁盘而变得很慢</li>
+<li>在进行detection测试时耗时长</li>
+</ul>
+<h2 id="Fast_RCNN_Training">Fast RCNN Training</h2><p>文章的亮点在于对原来网络结构的改进，这里就不得不膜拜大神了</p>
+<ul>
+<li><p>RoI Pooling Layer<br>按照作者所述，该层的思想类似于SPPnet，我们假设最后一个卷积层得到输入N个feature map(这些feature map包含原始图像的所有信息)，而我们只想提取感兴趣的部分，因此这就需要引入RoI了</p>
+<p>将这N个feature map和R个region proposal输入到RoI pooling层中，根据RoI中指定的区域对原始的feature map进行pooling得到这R个region proposal的N个feature map</p>
+<p>笔者觉得其实和SPPnet没有多大的关系……由于各个RoI的大小不一样，而为了使得每个RoI pooling出来的feature长度相同，采用不同大小的pooling窗口而已</p>
+</li>
+<li><p>对原始CNN网络结构的修改<br>修改主要有3处</p>
+<ol>
+<li>将最后一个max pooling层替换为RoI pooling层</li>
+<li>将最后一个全连接层和softmax层替换为两个同并列的层<br>(1) K+1个class的分类器<br>(2) Bounding box回归(Localization) </li>
+<li>修改网络的输入使其接收N个image和R个RoI<br>最后网络结构如图所示：<img src="/img/fast-rcnn.jpeg" alt="fast-rcnn"></li>
+</ol>
+<p>核心在于使用RoI pooling层直接提取原始feature map中属于RoI的那一部分</p>
+</li>
+</ul>
+<ul>
+<li><p>Fine-tuning微调</p>
+<p>  网络结构变化带来的是训练方式的变化，作者在现有的CNN分类网络上进行了微调，类似于RCNN中的domain-specific fine-tuning,只不过这次是针对网络结构而调整训练方式</p>
+<ol>
+<li><p>Multi-task Loss</p>
+<p>简单来说就是将分类的Loss和bounding box回归的Loss做了加权和</p>
+<p>$$ L(p,k^*,t,t^*) = L_{cls}(p,k^*) + \lambda[k^*\ &gt;\ 1]L_{loc}(t,t^*) $$</p>
+<p>$$ smooth_{L_1}(x) = \begin{cases}0.5x^2 \ &amp;if \ |x| &lt; 1<br>\cr |x|-0.5 \ &amp;otherwise \end{cases} $$</p>
+<p>第一部分是softmax分类器的Loss，第二部分是regression的Loss，值得注意的是第二部分有个指示函数，说明不会计算那些background类型的proposal的locaolization误差</p>
+</li>
+<li><p>mini-batch sampling</p>
+<p>每一次SGD的batch使用2个image和128个RoI，每个batch中RoI的构成:<br>1.25% ground truth中的bounding box IoU&gt;0.5,<br>2.75% IoU &lt; 0.5, 看作background example</p>
+</li>
+<li><p>BP through RoI pooling layer</p>
+<p>在进行反向传播时RoI pooling layer有些许不同, 参与pooling的不再是整幅图像而是可能有重叠的RoI区域，计算公式如下:</p>
+<p>$$ {\partial L \over \partial x} = \sum_{r\in R} \sum_{y\in r} [y\ pooled\ x] {\partial L \over \partial y} $$</p>
+<p>y代表pooling后的值, 反向传播的思想是要将每个y的偏导传递给所有参与pooling的变量x，这也就是指示函数 [y pooled x] 的含义，在这里x代表的是原来RoI中的元素</p>
+</li>
+</ol>
+</li>
+<li><p>Scale invariance<br>如何处理输入图像尺寸不一的问题？<br>作者给出了两种方案:</p>
+<ul>
+<li>brute force 强制把图像resize到同一尺寸下</li>
+<li>image pyramids 利用图像金字塔，把图片resize成不同的大小，选取其中最接近optimal scale（也就是227*227）的大小用作训练。</li>
+</ul>
+</li>
+</ul>
+<h2 id="Fast_RCNN_Detection">Fast RCNN Detection</h2><p><script type="text/x-mathjax-config"><br>  MathJax.Hub.Config({tex2jax: {inlineMath: [[‘$’,’$’], [‘\(‘,’\)’]]}});<br></script></p>
+<ul>
+<li><p>Truncated SVD<br>全连接层的计算时间太长，占用了整个前向传播的一半时间，因此在进行矩阵乘法时，作者采用SVD将权重矩阵$W (u \times v)$分解为三个矩阵的乘积：</p>
+<p>$$ W \approx U \Sigma_tV^T $$</p>
+<p>SVD分解后的U和V都是对称矩阵<br>最后一个全连接层被分解为两个子层:第一层的权重矩阵为$ \Sigma_tV^T $,第二层的权重矩阵为$U$,因此整个参数的个数由$uv$变成了$t(u+v)$,当t比较小(意味着原参数矩阵的特征值少)的时候计算时间就会大大减少</p>
+<p><img src="img/training_time.jpeg" alt="training_time"></p>
+</li>
+</ul>
+<h2 id="Experiment_Insights">Experiment Insights</h2><ul>
+<li>卷积层和全连接层一样需要fine-tuning<blockquote>
+<p>decrease mAP from 66.9% to 61.4%</p>
+</blockquote>
+</li>
+</ul>
+<p>，且浅层的卷积层没有微调的必要。</p>
+<ul>
+<li>首先用classification loss训练，之后加入bbox regression训练效果更好<blockquote>
+<p>improvement ranges from +0.8 to +1.1 mAP points</p>
+</blockquote>
+</li>
+</ul>
+<p>(那为什么前面在写网络结构时还给出sibling layer的训练方式…)</p>
+<ul>
+<li>trade-off: speed &gt; performance improvement brought by multi-scale </li>
+<li>More data brings higher mAP</li>
+<li>Softmax slightly outperforms SVM </li>
+<li>Sparse proposals(selective search) improve detection quality and dense proposals(sliding window) free the heavy running cost.</li>
+</ul>
+</span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      
+      
+        <h1 class="post-title" itemprop="name headline">
+          
+          
+            
               <a class="post-title-link" href="/2015/08/06/theano-and-caffe-installation/" itemprop="url">
                 Ubuntu14.04 安装 theano 和 caffe
               </a>
@@ -483,6 +651,21 @@
           </time>
         </span>
 
+        
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分类于
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/Instructions/" itemprop="url" rel="index">
+                  <span itemprop="name">Instructions</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
         
 
         
@@ -740,21 +923,21 @@ print <span class="string">'Result is'</span>, r
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">3</span>
+              <span class="site-state-item-count">4</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
             <a href="/categories">
-              <span class="site-state-item-count">0</span>
+              <span class="site-state-item-count">3</span>
               <span class="site-state-item-name">分类</span>
               </a>
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">标签</span>
               </a>
           </div>
