@@ -38,26 +38,26 @@
 <meta name="description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
 Fast RCNN
 或者我的Fast RCNN笔记
-
-MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的">
+Notes on Fast RCNN
+MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Pagerank从原理到实现">
+<meta property="og:title" content="Faster RCNN论文笔记">
 <meta property="og:url" content="http://yoursite.com/2015/08/16/Faster RCNN论文笔记/index.html">
 <meta property="og:site_name" content="Dubur">
 <meta property="og:description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
 Fast RCNN
 或者我的Fast RCNN笔记
-
-MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的">
+Notes on Fast RCNN
+MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来">
 <meta property="og:image" content="http://yoursite.com/img/RPN.png">
-<meta property="og:updated_time" content="2015-08-21T16:13:47.000Z">
+<meta property="og:updated_time" content="2015-08-21T16:34:20.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Pagerank从原理到实现">
+<meta name="twitter:title" content="Faster RCNN论文笔记">
 <meta name="twitter:description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
 Fast RCNN
 或者我的Fast RCNN笔记
-
-MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的">
+Notes on Fast RCNN
+MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来">
 
 
 <script type="text/javascript" id="hexo.configuration">
@@ -67,7 +67,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
   };
 </script>
 
-  <title> Pagerank从原理到实现 | Dubur </title>
+  <title> Faster RCNN论文笔记 | Dubur </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -192,7 +192,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
           
           
             
-              Pagerank从原理到实现
+              Faster RCNN论文笔记
             
           
         </h1>
@@ -245,7 +245,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
         <span itemprop="articleBody"><p>本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考</p>
 <p><a href="http://arxiv.org/pdf/1504.08083v1.pdf" target="_blank" rel="external">Fast RCNN</a></p>
 <p>或者我的Fast RCNN笔记</p>
-<p><a href=""></a></p>
+<p><a href="http://dubur.github.io/2015/08/12/Fast%20RCNN%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/" target="_blank" rel="external">Notes on Fast RCNN</a></p>
 <p>MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的方法，进一步提升检测速度的同时还提升了检测的准确率，然而代码现在还没有公开。</p>
 <h2 id="Motivation">Motivation</h2><ul>
 <li>Fast RCNN ignores the time spent on region proposals</li>
@@ -345,7 +345,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
           <div class="comments" id="comments">
             
               <div class="ds-thread" data-thread-key="2015/08/16/Faster RCNN论文笔记/"
-                   data-title="Pagerank从原理到实现" data-url="http://yoursite.com/2015/08/16/Faster RCNN论文笔记/">
+                   data-title="Faster RCNN论文笔记" data-url="http://yoursite.com/2015/08/16/Faster RCNN论文笔记/">
               </div>
             
           </div>
