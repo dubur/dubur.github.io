@@ -50,7 +50,7 @@ Fast RCNN
 Notes on Fast RCNN
 MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来">
 <meta property="og:image" content="http://yoursite.com/img/RPN.png">
-<meta property="og:updated_time" content="2015-08-21T16:42:56.000Z">
+<meta property="og:updated_time" content="2015-08-21T16:57:24.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Faster RCNN论文笔记">
 <meta name="twitter:description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
@@ -270,7 +270,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
 <li><p>Loss Function的定义与Fast RCNN类似</p>
 </li>
 </ul>
-<p>$$ L(p_{i},t_{i}) = L_{cls}(p_{i},{p_{i}}^{*}) + \lambda{p_{i}}^{*}L_{reg}(t_{i},{t_{i}}^{*}) $$</p>
+<p>$$ L(p_{i}\,t_{i}) = L_{cls}(p_{i},{p_{i}}\^{*}) + \lambda{p_{i}}\^{*}L_{reg}(t_{i},{t_{i}}\^{*}) $$</p>
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 </script>
@@ -461,6 +461,15 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
     NexT.Mist
   </a>
 </div>
+
+<script type="text/x-mathjax-config"> 
+MathJax.Hub.Config({ 
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]} 
+}); 
+</script>
+<script type="text/javascript"
+   src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
 
 
  </div>

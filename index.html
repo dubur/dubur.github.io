@@ -261,7 +261,7 @@
 <li><p>Loss Function的定义与Fast RCNN类似</p>
 </li>
 </ul>
-<p>$$ L(p_{i},t_{i}) = L_{cls}(p_{i},{p_{i}}^{*}) + \lambda{p_{i}}^{*}L_{reg}(t_{i},{t_{i}}^{*}) $$</p>
+<p>$$ L(p_{i}\,t_{i}) = L_{cls}(p_{i},{p_{i}}\^{*}) + \lambda{p_{i}}\^{*}L_{reg}(t_{i},{t_{i}}\^{*}) $$</p>
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 </script>
@@ -556,7 +556,7 @@
 <ol>
 <li><p>Multi-task Loss</p>
 <p>简单来说就是将分类的Loss和bounding box回归的Loss做了加权和</p>
-<p>$$ L(p,k^*,t,t^*) = L_{cls}(p,k^*) + \lambda[k^*\ &gt;\ 1]L_{loc}(t,t^*) $$</p>
+<p>$$ L(p,k^*,t,t^*) = L_{cls}(p,k^<em>) + \lambda[k^\</em>\ &gt;\ 1]L_{loc}(t,t^*) $$</p>
 <p>$$ smooth_{L_1}(x) = \begin{cases}0.5x^2 \ &amp;if \ |x| &lt; 1<br>\cr |x|-0.5 \ &amp;otherwise \end{cases} $$</p>
 <p>第一部分是softmax分类器的Loss，第二部分是regression的Loss，值得注意的是第二部分有个指示函数，说明不会计算那些background类型的proposal的locaolization误差</p>
 </li>
@@ -988,6 +988,15 @@ print <span class="string">'Result is'</span>, r
     NexT.Mist
   </a>
 </div>
+
+<script type="text/x-mathjax-config"> 
+MathJax.Hub.Config({ 
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]} 
+}); 
+</script>
+<script type="text/javascript"
+   src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
 
 
  </div>
