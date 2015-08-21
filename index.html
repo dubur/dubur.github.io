@@ -247,11 +247,7 @@
 <li>Fully-convolutional network for generating region proposals</li>
 <li>Share computation of convolutions with start-of-art object detection networks</li>
 </ul>
-<h3 id="Architecture">Architecture</h3><script type="text/x-mathjax-config">
-  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
-</script>
-
-<ul>
+<h3 id="Architecture">Architecture</h3><ul>
 <li>RPN与卷积层共享权重，也就是说RPN的输入就是最后一个卷积层的输出的feature map，得到输入后使用滑动窗口的方式得到更低维的向量</li>
 <li><p>将得到的向量输入到两个并联的全连接层</p>
 <ol>
@@ -262,10 +258,15 @@
 <li><p>每个滑动窗口中心记作一个anchor，对应9种variant，相当于对于每一个feature map用9种sliding window计算vector，后面的输出也变成9倍，这么做是为了对图像的translation有更好的鲁棒性</p>
 <p><img src="img/RPN.png" alt="RPN"></p>
 </li>
-<li><p>Loss Function的定义与Fast RCNN类似<br>$$p_{i}$$<br>$$ L(p_{i},t_{i}) = L_{cls}(p_{i},{p_{i}}^{*}) + \lambda{p_{i}}^{*}L_{reg}(t_{i},{t_{i}}^{*}) $$</p>
-<p>由两部分构成：regression的Loss和classification的Loss，通过$\lambda$控制两类Loss的比重<br>公式中$p_{i}$表示一个region中包含object的概率，${p_{i}}\^{*}$表示ground truth， 是一个0-1指示器，当某个anchor被标注为含有一个object时它的值才是1，否则为0<br>$L_{cls}(p_{i},{p_{i}}\^{*})$的定义方式与Fast RCNN中相同</p>
+<li><p>Loss Function的定义与Fast RCNN类似</p>
 </li>
 </ul>
+<p>$$ L(p_{i},t_{i}) = L_{cls}(p_{i},{p_{i}}^{*}) + \lambda{p_{i}}^{*}L_{reg}(t_{i},{t_{i}}^{*}) $$</p>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+
+<p>  由两部分构成：regression的Loss和classification的Loss，通过$\lambda$控制两类Loss的比重<br>  公式中$p_{i}$表示一个region中包含object的概率，${p_{i}}^{*}$表示ground truth， 是一个0-1指示器，当某个anchor被标注为含有一个object时它的值才是1，否则为0, $L_{cls}(p_{i},{p_{i}}^{*})$的定义方式与Fast RCNN中相同</p>
 <h2 id="Training_RPN">Training RPN</h2><ul>
 <li>mini batch构成<ol>
 <li>随机选取一张图片的256个anchor，正负样本为1:1</li>
