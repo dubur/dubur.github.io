@@ -20,6 +20,8 @@
 
 
 
+  <link href='//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+
 
 <link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.5.1"/>
 
@@ -43,14 +45,15 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
 <meta property="og:type" content="article">
 <meta property="og:title" content="Faster RCNN论文笔记">
 <meta property="og:url" content="http://yoursite.com/2015/08/16/Faster RCNN论文笔记/index.html">
-<meta property="og:site_name" content="Dubur">
+<meta property="og:site_name" content="Duburs Blog">
 <meta property="og:description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
 Fast RCNN
 或者我的Fast RCNN笔记
 Notes on Fast RCNN
 MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来">
-<meta property="og:image" content="http://yoursite.com/img/RPN.png">
-<meta property="og:updated_time" content="2015-08-21T16:57:24.000Z">
+<meta property="og:image" content="http://yoursite.com/img/Faster_RCNN/RPN.png">
+<meta property="og:image" content="http://yoursite.com/img/Faster_RCNN/Loss.jpeg">
+<meta property="og:updated_time" content="2015-08-22T04:28:58.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Faster RCNN论文笔记">
 <meta name="twitter:description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
@@ -67,10 +70,10 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
   };
 </script>
 
-  <title> Faster RCNN论文笔记 | Dubur </title>
+  <title> Faster RCNN论文笔记 | Duburs Blog </title>
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
 
   <!--[if lte IE 8]>
   <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
@@ -105,7 +108,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
       <span class="logo">
         <i class="icon-next-logo"></i>
       </span>
-      <span class="site-title">Dubur</span>
+      <span class="site-title">Duburs Blog</span>
   </a>
   <span class="logo-line-after"><i></i></span>
 </h1>
@@ -128,7 +131,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
         <li class="menu-item menu-item-home">
           <a href="/" rel="section">
             <i class="menu-item-icon icon-next-home"></i> <br />
-            首页
+            首頁
           </a>
         </li>
       
@@ -136,7 +139,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
         <li class="menu-item menu-item-categories">
           <a href="/categories" rel="section">
             <i class="menu-item-icon icon-next-categories"></i> <br />
-            分类
+            分類
           </a>
         </li>
       
@@ -144,7 +147,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
         <li class="menu-item menu-item-about">
           <a href="/about" rel="section">
             <i class="menu-item-icon icon-next-about"></i> <br />
-            关于
+            關於
           </a>
         </li>
       
@@ -152,7 +155,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
         <li class="menu-item menu-item-archives">
           <a href="/archives" rel="section">
             <i class="menu-item-icon icon-next-archives"></i> <br />
-            归档
+            歸檔
           </a>
         </li>
       
@@ -160,7 +163,15 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
         <li class="menu-item menu-item-tags">
           <a href="/tags" rel="section">
             <i class="menu-item-icon icon-next-tags"></i> <br />
-            标签
+            標籤
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            <i class="menu-item-icon icon-next-commonweal"></i> <br />
+            公益404
           </a>
         </li>
       
@@ -200,7 +211,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
 
       <div class="post-meta">
         <span class="post-time">
-          发表于
+          發表於
           <time itemprop="dateCreated" datetime="2015-08-16T17:10:30+08:00" content="2015-08-16">
             2015-08-16
           </time>
@@ -208,7 +219,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
 
         
           <span class="post-category" >
-            &nbsp; | &nbsp; 分类于
+            &nbsp; | &nbsp; 分類於
             
               <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
                 <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
@@ -265,16 +276,17 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
 </ol>
 </li>
 <li><p>每个滑动窗口中心记作一个anchor，对应9种variant，相当于对于每一个feature map用9种sliding window计算vector，后面的输出也变成9倍，这么做是为了对图像的translation有更好的鲁棒性</p>
-<p><img src="img/RPN.png" alt="RPN"></p>
+<div style="text-align:center" markdown="1"><br><img src="img/Faster_RCNN/RPN.png" alt="RPN"><br></div>
 </li>
 <li><p>Loss Function的定义与Fast RCNN类似</p>
 </li>
 </ul>
-<p>$$ L(p_{i}\,t_{i}) = L_{cls}(p_{i},{p_{i}}\^{*}) + \lambda{p_{i}}\^{*}L_{reg}(t_{i},{t_{i}}\^{*}) $$</p>
-<script type="text/x-mathjax-config">
+<!--<script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
-</script>
-
+</script>-->
+  <!--![RPN](img/Faster_RCNN/Loss.jpeg)-->
+<p>  <img src="img/Faster_RCNN/Loss.jpeg" style="text-align:center"></p>
+<p>  $$ L(p_{i},t_{i}) = L_{cls}(p_{i},{p_{i}}^{*}) + \lambda{p_{i}}^{*}L_{reg}(t_{i},{t_{i}}^{*}) $$</p>
 <p>  由两部分构成：regression的Loss和classification的Loss，通过$\lambda$控制两类Loss的比重<br>  公式中$p_{i}$表示一个region中包含object的概率，${p_{i}}^{*}$表示ground truth， 是一个0-1指示器，当某个anchor被标注为含有一个object时它的值才是1，否则为0, $L_{cls}(p_{i},{p_{i}}^{*})$的定义方式与Fast RCNN中相同</p>
 <h2 id="Training_RPN">Training RPN</h2><ul>
 <li>mini batch构成<ol>
@@ -368,10 +380,10 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
-            文章目录
+            文章目錄
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview">
-            站点概览
+            本站概覽
           </li>
         </ul>
       
@@ -386,21 +398,21 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
           <div class="site-state-item site-state-posts">
             <a href="/archives">
               <span class="site-state-item-count">4</span>
-              <span class="site-state-item-name">日志</span>
+              <span class="site-state-item-name">文章</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
             <a href="/categories">
               <span class="site-state-item-count">3</span>
-              <span class="site-state-item-name">分类</span>
+              <span class="site-state-item-name">分類</span>
               </a>
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
               <span class="site-state-item-count">5</span>
-              <span class="site-state-item-name">标签</span>
+              <span class="site-state-item-name">標籤</span>
               </a>
           </div>
 
@@ -452,24 +464,15 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
 </div>
 
 <div class="powered-by">
-  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 強力驅動
 </div>
 
 <div class="theme-info">
-  主题 -
+  主題 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
     NexT.Mist
   </a>
 </div>
-
-<script type="text/x-mathjax-config"> 
-MathJax.Hub.Config({ 
-  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]} 
-}); 
-</script>
-<script type="text/javascript"
-   src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-</script>
 
 
  </div>
@@ -700,27 +703,6 @@ MathJax.Hub.Config({
   </script>
 
   
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    tex2jax: {
-      inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
-      processEscapes: true,
-      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-    }
-  });
-</script>
-
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Queue(function() {
-    var all = MathJax.Hub.getAllJax(), i;
-    for (i=0; i < all.length; i += 1) {
-      all[i].SourceElement().parentNode.className += ' has-jax';
-    }
-  });
-</script>
-
-<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
 
   
   

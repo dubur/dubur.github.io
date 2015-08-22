@@ -20,6 +20,8 @@
 
 
 
+  <link href='//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+
 
 <link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.5.1"/>
 
@@ -43,7 +45,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
 <meta property="og:type" content="article">
 <meta property="og:title" content="Fast RCNN论文笔记">
 <meta property="og:url" content="http://yoursite.com/2015/08/12/Fast RCNN论文笔记/index.html">
-<meta property="og:site_name" content="Dubur">
+<meta property="og:site_name" content="Duburs Blog">
 <meta property="og:description" content="Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强
 Motivation (Drawbacks of RCNN)
 RCNN的训练方式按照一个一个阶段分的比较开，
@@ -51,7 +53,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
 在进行detection">
 <meta property="og:image" content="http://yoursite.com/img/fast-rcnn.jpeg">
 <meta property="og:image" content="http://yoursite.com/img/training_time.jpeg">
-<meta property="og:updated_time" content="2015-08-21T17:03:57.000Z">
+<meta property="og:updated_time" content="2015-08-21T17:04:00.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Fast RCNN论文笔记">
 <meta name="twitter:description" content="Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强
@@ -68,10 +70,10 @@ RCNN的训练方式按照一个一个阶段分的比较开，
   };
 </script>
 
-  <title> Fast RCNN论文笔记 | Dubur </title>
+  <title> Fast RCNN论文笔记 | Duburs Blog </title>
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
 
   <!--[if lte IE 8]>
   <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
@@ -106,7 +108,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
       <span class="logo">
         <i class="icon-next-logo"></i>
       </span>
-      <span class="site-title">Dubur</span>
+      <span class="site-title">Duburs Blog</span>
   </a>
   <span class="logo-line-after"><i></i></span>
 </h1>
@@ -129,7 +131,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
         <li class="menu-item menu-item-home">
           <a href="/" rel="section">
             <i class="menu-item-icon icon-next-home"></i> <br />
-            首页
+            首頁
           </a>
         </li>
       
@@ -137,7 +139,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
         <li class="menu-item menu-item-categories">
           <a href="/categories" rel="section">
             <i class="menu-item-icon icon-next-categories"></i> <br />
-            分类
+            分類
           </a>
         </li>
       
@@ -145,7 +147,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
         <li class="menu-item menu-item-about">
           <a href="/about" rel="section">
             <i class="menu-item-icon icon-next-about"></i> <br />
-            关于
+            關於
           </a>
         </li>
       
@@ -153,7 +155,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
         <li class="menu-item menu-item-archives">
           <a href="/archives" rel="section">
             <i class="menu-item-icon icon-next-archives"></i> <br />
-            归档
+            歸檔
           </a>
         </li>
       
@@ -161,7 +163,15 @@ RCNN的训练方式按照一个一个阶段分的比较开，
         <li class="menu-item menu-item-tags">
           <a href="/tags" rel="section">
             <i class="menu-item-icon icon-next-tags"></i> <br />
-            标签
+            標籤
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404.html" rel="section">
+            <i class="menu-item-icon icon-next-commonweal"></i> <br />
+            公益404
           </a>
         </li>
       
@@ -201,7 +211,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
 
       <div class="post-meta">
         <span class="post-time">
-          发表于
+          發表於
           <time itemprop="dateCreated" datetime="2015-08-12T16:17:30+08:00" content="2015-08-12">
             2015-08-12
           </time>
@@ -209,7 +219,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
 
         
           <span class="post-category" >
-            &nbsp; | &nbsp; 分类于
+            &nbsp; | &nbsp; 分類於
             
               <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
                 <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
@@ -393,10 +403,10 @@ RCNN的训练方式按照一个一个阶段分的比较开，
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
-            文章目录
+            文章目錄
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview">
-            站点概览
+            本站概覽
           </li>
         </ul>
       
@@ -411,21 +421,21 @@ RCNN的训练方式按照一个一个阶段分的比较开，
           <div class="site-state-item site-state-posts">
             <a href="/archives">
               <span class="site-state-item-count">4</span>
-              <span class="site-state-item-name">日志</span>
+              <span class="site-state-item-name">文章</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
             <a href="/categories">
               <span class="site-state-item-count">3</span>
-              <span class="site-state-item-name">分类</span>
+              <span class="site-state-item-name">分類</span>
               </a>
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
               <span class="site-state-item-count">5</span>
-              <span class="site-state-item-name">标签</span>
+              <span class="site-state-item-name">標籤</span>
               </a>
           </div>
 
@@ -477,24 +487,15 @@ RCNN的训练方式按照一个一个阶段分的比较开，
 </div>
 
 <div class="powered-by">
-  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 強力驅動
 </div>
 
 <div class="theme-info">
-  主题 -
+  主題 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
     NexT.Mist
   </a>
 </div>
-
-<script type="text/x-mathjax-config"> 
-MathJax.Hub.Config({ 
-  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]} 
-}); 
-</script>
-<script type="text/javascript"
-   src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-</script>
 
 
  </div>
@@ -725,27 +726,6 @@ MathJax.Hub.Config({
   </script>
 
   
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    tex2jax: {
-      inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
-      processEscapes: true,
-      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-    }
-  });
-</script>
-
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Queue(function() {
-    var all = MathJax.Hub.getAllJax(), i;
-    for (i=0; i < all.length; i += 1) {
-      all[i].SourceElement().parentNode.className += ' has-jax';
-    }
-  });
-</script>
-
-<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
 
   
   
