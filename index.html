@@ -26,6 +26,8 @@
 <link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.5.1"/>
 
 
+    <meta name="description" content="Dubers Blog" />
+
 
 
   <meta name="keywords" content="Hexo,next" />
@@ -37,15 +39,15 @@
   <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.1" />
 
 
-<meta name="description">
+<meta name="description" content="Dubers Blog">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Duburs Blog">
 <meta property="og:url" content="http://yoursite.com/index.html">
 <meta property="og:site_name" content="Duburs Blog">
-<meta property="og:description">
+<meta property="og:description" content="Dubers Blog">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Duburs Blog">
-<meta name="twitter:description">
+<meta name="twitter:description" content="Dubers Blog">
 
 
 <script type="text/javascript" id="hexo.configuration">
@@ -118,7 +120,7 @@
         <li class="menu-item menu-item-home">
           <a href="/" rel="section">
             <i class="menu-item-icon icon-next-home"></i> <br />
-            首頁
+            首页
           </a>
         </li>
       
@@ -126,7 +128,7 @@
         <li class="menu-item menu-item-categories">
           <a href="/categories" rel="section">
             <i class="menu-item-icon icon-next-categories"></i> <br />
-            分類
+            分类
           </a>
         </li>
       
@@ -134,7 +136,7 @@
         <li class="menu-item menu-item-about">
           <a href="/about" rel="section">
             <i class="menu-item-icon icon-next-about"></i> <br />
-            關於
+            关于
           </a>
         </li>
       
@@ -142,7 +144,7 @@
         <li class="menu-item menu-item-archives">
           <a href="/archives" rel="section">
             <i class="menu-item-icon icon-next-archives"></i> <br />
-            歸檔
+            归档
           </a>
         </li>
       
@@ -150,15 +152,7 @@
         <li class="menu-item menu-item-tags">
           <a href="/tags" rel="section">
             <i class="menu-item-icon icon-next-tags"></i> <br />
-            標籤
-          </a>
-        </li>
-      
-        
-        <li class="menu-item menu-item-commonweal">
-          <a href="/404.html" rel="section">
-            <i class="menu-item-icon icon-next-commonweal"></i> <br />
-            公益404
+            标签
           </a>
         </li>
       
@@ -266,7 +260,7 @@
 </ol>
 </li>
 <li><p>每个滑动窗口中心记作一个anchor，对应9种variant，相当于对于每一个feature map用9种sliding window计算vector，后面的输出也变成9倍，这么做是为了对图像的translation有更好的鲁棒性</p>
-<div style="text-align:center" markdown="1"><br><img src="img/Faster_RCNN/RPN.png" alt="RPN"><br></div>
+<p style="text-align:center"><img src="img/Faster_RCNN/RPN.png" alt="RPN"></p>
 </li>
 <li><p>Loss Function的定义与Fast RCNN类似</p>
 </li>
@@ -274,8 +268,8 @@
 <!--<script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 </script>-->
-  <!--![RPN](img/Faster_RCNN/Loss.jpeg)-->
-<p>  <img src="img/Faster_RCNN/Loss.jpeg" style="text-align:center"></p>
+<p style="text-align:center">  <img src="img/Faster_RCNN/Loss.jpeg" alt="RPN"></p>
+  <!--<img src="img/Faster_RCNN/Loss.jpeg" style="text-align:center"></img>-->
 <p>  $$ L(p_{i},t_{i}) = L_{cls}(p_{i},{p_{i}}^{*}) + \lambda{p_{i}}^{*}L_{reg}(t_{i},{t_{i}}^{*}) $$</p>
 <p>  由两部分构成：regression的Loss和classification的Loss，通过$\lambda$控制两类Loss的比重<br>  公式中$p_{i}$表示一个region中包含object的概率，${p_{i}}^{*}$表示ground truth， 是一个0-1指示器，当某个anchor被标注为含有一个object时它的值才是1，否则为0, $L_{cls}(p_{i},{p_{i}}^{*})$的定义方式与Fast RCNN中相同</p>
 <h2 id="Training_RPN">Training RPN</h2><ul>
@@ -433,7 +427,7 @@
 <li>tightest square without context(等比例缩放proposal在原始图像中的bounding square,但要去掉在bounding square中而不在原始proposal中的部分)</li>
 <li>强制缩放proposal<br>3种变形的方式如图中所示:</li>
 </ol>
-<p><img src="/img/transformation.jpeg" alt="transformation"></p>
+<p style="text-align:center"><img src="/img/transformation.jpeg" alt="transformation"></p>
 <p>(A) origin proposal (B) tightest square with context (C) tightest square without context (D) warp</p>
 </li>
 <li><p>Positive vs negative examples and softmax</p>
@@ -556,7 +550,7 @@
 <ol>
 <li>将最后一个max pooling层替换为RoI pooling层</li>
 <li>将最后一个全连接层和softmax层替换为两个同并列的层<br>(1) K+1个class的分类器<br>(2) Bounding box回归(Localization) </li>
-<li>修改网络的输入使其接收N个image和R个RoI<br>最后网络结构如图所示：<img src="/img/fast-rcnn.jpeg" alt="fast-rcnn"></li>
+<li>修改网络的输入使其接收N个image和R个RoI<br>最后网络结构如图所示：<img src="/img/fast-rcnn.jpeg" alt="fast-rcnn" style="text-align:center"></li>
 </ol>
 <p>核心在于使用RoI pooling层直接提取原始feature map中属于RoI的那一部分</p>
 </li>
@@ -593,7 +587,7 @@
 <li><p>Truncated SVD<br>全连接层的计算时间太长，占用了整个前向传播的一半时间，因此在进行矩阵乘法时，作者采用SVD将权重矩阵$W (u \times v)$分解为三个矩阵的乘积：</p>
 <p>$$ W \approx U \Sigma_tV^T $$</p>
 <p>SVD分解后的U和V都是对称矩阵<br>最后一个全连接层被分解为两个子层:第一层的权重矩阵为$ \Sigma_tV^T $,第二层的权重矩阵为$U$,因此整个参数的个数由$uv$变成了$t(u+v)$,当t比较小(意味着原参数矩阵的特征值少)的时候计算时间就会大大减少</p>
-<p><img src="img/training_time.jpeg" alt="training_time"></p>
+<p style="text-align:center"><img src="img/training_time.jpeg" alt="training_time"></p>
 </li>
 </ul>
 <h2 id="Experiment_Insights">Experiment Insights</h2><ul>
@@ -930,7 +924,7 @@ print <span class="string">'Result is'</span>, r
           <img class="site-author-image" src="/images/default_avatar.jpg" alt="John Yao" itemprop="image"/>
           <p class="site-author-name" itemprop="name">John Yao</p>
         </div>
-        <p class="site-description motion-element" itemprop="description"></p>
+        <p class="site-description motion-element" itemprop="description">Dubers Blog</p>
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
