@@ -43,8 +43,7 @@
 如果想安装opencv、添加caffe matlab等等最好先看教程中相关部分最后再编译caffe比较保险
 安装caffe
 1.安装build-essentials
-安装开发所需要的基本包（一般装完系统就有）
-sudo apt-ge">
+安装开发所需要的基本包（一般装完系统就有） sudo apt-ge">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Ubuntu14.04 安装 theano 和 caffe">
 <meta property="og:url" content="http://yoursite.com/2015/08/06/theano-and-caffe-installation/index.html">
@@ -53,8 +52,7 @@ sudo apt-ge">
 如果想安装opencv、添加caffe matlab等等最好先看教程中相关部分最后再编译caffe比较保险
 安装caffe
 1.安装build-essentials
-安装开发所需要的基本包（一般装完系统就有）
-sudo apt-ge">
+安装开发所需要的基本包（一般装完系统就有） sudo apt-ge">
 <meta property="og:updated_time" content="2015-08-16T13:00:01.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Ubuntu14.04 安装 theano 和 caffe">
@@ -62,8 +60,7 @@ sudo apt-ge">
 如果想安装opencv、添加caffe matlab等等最好先看教程中相关部分最后再编译caffe比较保险
 安装caffe
 1.安装build-essentials
-安装开发所需要的基本包（一般装完系统就有）
-sudo apt-ge">
+安装开发所需要的基本包（一般装完系统就有） sudo apt-ge">
 
 
 <script type="text/javascript" id="hexo.configuration">
@@ -250,103 +247,82 @@ sudo apt-ge">
       
         <span itemprop="articleBody"><p>说明:安装时为了支持python版本，且为了安装方便，最好首先安装anaconda，anaconda安装起来方便并且集成了许多科学计算库，主要为了配合theano使用</p>
 <p>如果想安装opencv、添加caffe matlab等等最好先看教程中相关部分最后再编译caffe比较保险</p>
-<h3>安装caffe</h3>
-<h4>1.安装build-essentials</h4>
-<p>安装开发所需要的基本包（一般装完系统就有）
-sudo apt-get install build-essential</p>
-<h4>2.安装NVIDIA驱动</h4>
-<h5>2.1 退出图形界面</h5>
+<h3 id="安装caffe">安装caffe</h3>
+<h4 id="安装build-essentials">1.安装build-essentials</h4>
+<p>安装开发所需要的基本包（一般装完系统就有） sudo apt-get install build-essential</p>
+<h4 id="安装nvidia驱动">2.安装NVIDIA驱动</h4>
+<h5 id="退出图形界面">2.1 退出图形界面</h5>
 <pre><code>1）由于有的带有gpu的电脑在启动时默认使用独显作为主要显示设备，因此我们需要将bios设置改为使用集显作为显示设备
 2）进入ubuntu，按ctrl＋alt＋F1进入tty，登陆tty后输入：
     sudo service lightdm stop
-其他desktop manager也需要关闭
-</code></pre>
-<h5>2.2安装驱动</h5>
+其他desktop manager也需要关闭</code></pre>
+<h5 id="安装驱动">2.2安装驱动</h5>
 <p>准备工作：</p>
 <p>1）Verify the system has a CUDA-capable GPU.</p>
 <p>控制台输入以下命令：</p>
-<pre><code>lspci | grep -i nvidia
-</code></pre>
+<pre><code>lspci | grep -i nvidia</code></pre>
 <p>如果列出了当前NIVDIA显卡的信息则说明电脑的GPU事CUDA-capable的</p>
 <p>2）Verify the system is running a supported version of Linux.</p>
 <p>控制台输入以下命令:</p>
-<pre><code>uname -m &amp;&amp; cat /etc/*release
-</code></pre>
+<pre><code>uname -m &amp;&amp; cat /etc/*release</code></pre>
 <p>输出的结果中如果显示x86_64则说明电脑是x86架构的，在下载驱动安装包时选择对应的包即可</p>
 <p>3）Verify the system has gcc installed.</p>
 <p>控制台输入:</p>
-<pre><code>gcc --version
-</code></pre>
+<pre><code>gcc --version</code></pre>
 <p>确认gcc版本正确</p>
 <p>4）Download the NVIDIA CUDA Toolkit.</p>
-<p>从NVIDIA官网上下载对应的驱动安装包
-下载地址:</p>
-<pre><code> https://developer.nvidia.com/cuda-downloads
-</code></pre>
+<p>从NVIDIA官网上下载对应的驱动安装包 下载地址:</p>
+<pre><code> https://developer.nvidia.com/cuda-downloads</code></pre>
 <p>控制台输入以下命令：</p>
 <pre><code> sudo dpkg -i cuda-repo-&lt;distro&gt;_&lt;version&gt;_&lt;architecture&gt;.deb
         sudo apt-get update
-        sudo apt-get install cuda
-</code></pre>
-<p>5)配置环境变量和lib库路径
-安装完成后需要在/etc/profile中添加环境变量, 在文件最后添加:</p>
+        sudo apt-get install cuda</code></pre>
+<p>5)配置环境变量和lib库路径 安装完成后需要在/etc/profile中添加环境变量, 在文件最后添加:</p>
 <pre><code>PATH=/usr/local/cuda-7.0/bin:$PATH
 export PATH
-</code></pre>
+    </code></pre>
 <p>保存后使得环境变量立刻生效(或者重新打开控制台)</p>
 <pre><code>source /etc/profile
-</code></pre>
+    </code></pre>
 <p>在 /etc/ld.so.conf.d/加入文件 cuda.conf, 内容如下</p>
-<pre><code>/usr/local/cuda-7.0/lib64
-</code></pre>
+<pre><code>/usr/local/cuda-7.0/lib64</code></pre>
 <p>6）验证是否安装正确:</p>
 <pre><code>cd /usr/local/cuda-7.0/bin/
 cuda-install-samples-7.0.sh &lt;dir&gt; 
-</code></pre>
+    </code></pre>
 <p>dir为目标路径，脚本会把sample文件复制到指定路径下,之后进入该路径make就好了</p>
 <p>编译完成后进入bin/x86_64/linux/release</p>
 <p>执行./deviceQuery 如显示GPU信息说明cuda安装正确</p>
-<h4>3 安装atlas</h4>
+<h4 id="安装atlas">3 安装atlas</h4>
 <p>使用gpu加速需要安装blas库，这里选择atlas</p>
-<pre><code>sudo apt-get install libatlas-base-dev
-</code></pre>
-<h4>4 下载caffe安装包与安装环境</h4>
+<pre><code>sudo apt-get install libatlas-base-dev</code></pre>
+<h4 id="下载caffe安装包与安装环境">4 下载caffe安装包与安装环境</h4>
 <p>控制台输入:</p>
-<pre><code>git clone https://github.com/BVLC/caffe
-</code></pre>
+<pre><code>git clone https://github.com/BVLC/caffe</code></pre>
 <p>也可以到github上下载zip文件解压</p>
 <p>安装caffe的依赖库:</p>
 <pre><code>sudo apt-get install libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev
 sudo apt-get install --no-install-recommends libboost-all-dev
-sudo apt-get install libgflags-dev libgoogle-glog-dev liblmdb-dev protobuf-compiler
-</code></pre>
-<h4>5 安装anaconda</h4>
-<p>不使用ubuntu自带的python是因为anaconda集成了许多科学计算库如numpy、scipy等，而且安装theano也很方便
-在anaconda官网上下载安装包直接安装即可，默认安装路径为</p>
-<pre><code>~/anaconda
-</code></pre>
-<p>添加bin到PATH环境变量即可
-打开控制台输入python确认使用的是anaconda里面的python
-安装pip</p>
-<pre><code>conda install pip
-</code></pre>
-<h4>6 安装Caffe所需要的Python环境</h4>
+sudo apt-get install libgflags-dev libgoogle-glog-dev liblmdb-dev protobuf-compiler</code></pre>
+<h4 id="安装anaconda">5 安装anaconda</h4>
+<p>不使用ubuntu自带的python是因为anaconda集成了许多科学计算库如numpy、scipy等，而且安装theano也很方便 在anaconda官网上下载安装包直接安装即可，默认安装路径为</p>
+<pre><code>~/anaconda</code></pre>
+<p>添加bin到PATH环境变量即可 打开控制台输入python确认使用的是anaconda里面的python 安装pip</p>
+<pre><code>conda install pip</code></pre>
+<h4 id="安装caffe所需要的python环境">6 安装Caffe所需要的Python环境</h4>
 <p>然后执行如下命令安装编译caffe python wrapper 所需要的额外包</p>
 <pre><code>cd python
-for req in $(cat requirements.txt); do sudo pip install $req; done
-</code></pre>
+for req in $(cat requirements.txt); do sudo pip install $req; done</code></pre>
 <p>在运行Caffe时，可能会报一些找不到libxxx.so的错误，而用 locate libxxx.so命令发现已经安装在anaconda中，这时首先想到的是在/etc/ld.so.conf.d/ 下面将 $your_anaconda_path/lib 加入 LD_LIBRARY_PATH中。 但是这样做可能导致登出后无法再进入桌面！！！原因（猜测）可能是anaconda的lib中有些内容于系统自带的lib产生冲突。</p>
 <p>正确的做法是：为了不让系统在启动时就将anaconda/lib加入系统库目录，可以在用户自己的~/.bashrc 中添加library path，比如我就在最后添加了两行</p>
 <pre><code># add library path
 LD_LIBRARY_PATH=your_anaconda_path/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH
-</code></pre>
+export LD_LIBRARY_PATH</code></pre>
 <p>开启另一个终端后即生效，并且重启后能够顺利加载lightdm, 进入桌面环境。</p>
 <p>但在实际安装时注意先要等make和make test完之后再加这个路径否则会报错</p>
-<h4>7 编译caffe</h4>
+<h4 id="编译caffe">7 编译caffe</h4>
 <p>完成了所有环境的配置，可以愉快的编译Caffe了！ 进入caffe根目录， 首先复制一份Makefile.config</p>
-<pre><code>cp Makefile.config.example Makefile.config
-</code></pre>
+<pre><code>cp Makefile.config.example Makefile.config</code></pre>
 <p>然后修改里面的内容，主要需要修改的参数包括</p>
 <p>BLAS (默认使用的是atlas)</p>
 <p>DEBUG 是否使用debug模式，打开此选项则可以在eclipse或者NSight中debug程序</p>
@@ -354,93 +330,69 @@ export LD_LIBRARY_PATH
 <p>完成设置后， 开始编译</p>
 <pre><code>make all
 make test
-make runtest
-</code></pre>
+make runtest</code></pre>
 <p>前两步成功说明caffe编译成功，make runtest是在运行caffe的各个测试脚本</p>
-<h4>8 编译pycaffe</h4>
-<p>控制台输入:
-make pycaffe</p>
-<p>之后设置环境变量
-在～/.bashrc中添加</p>
+<h4 id="编译pycaffe">8 编译pycaffe</h4>
+<p>控制台输入: make pycaffe</p>
+<p>之后设置环境变量 在～/.bashrc中添加</p>
 <pre><code>PYTHONPATH=/path/tp/caffe/python:$PYTHONPATH
-export PYTHONPATH
-</code></pre>
+export PYTHONPATH</code></pre>
 <p>打开控制台输入python，之后import caffe，import成功就说明caffe安装成功了</p>
-<h4>9 安装cudnn（可选）</h4>
-<h5>9.1编译caffe之后安装cudnn</h5>
-<p>使用cudnn来加速GPU计算，cudnn支持caffe，theano和Torch7
-在官网免费获得cudnn压缩包
-下载之后控制台输入:</p>
+<h4 id="安装cudnn可选">9 安装cudnn（可选）</h4>
+<h5 id="编译caffe之后安装cudnn">9.1编译caffe之后安装cudnn</h5>
+<p>使用cudnn来加速GPU计算，cudnn支持caffe，theano和Torch7 在官网免费获得cudnn压缩包 下载之后控制台输入:</p>
 <pre><code>tar -xzvf cudnn-6.5-linux-R1.tgz
 cd cudnn-6.5-linux-R1
 sudo cp lib* /usr/local/cuda/lib64/
-sudo cp cudnn.h /usr/local/cuda/include/
-</code></pre>
+sudo cp cudnn.h /usr/local/cuda/include/</code></pre>
 <p>之后建立软链接（首先删除原先文件夹下的软链接）:</p>
 <pre><code>cd /usr/local/cuda/lib64/
-sudo rm -rf libcudnn.so libcudnn.so.6.5
-</code></pre>
+sudo rm -rf libcudnn.so libcudnn.so.6.5</code></pre>
 <p>然后修改文件权限，并创建新的软连接:</p>
 <pre><code>sudo chmod u=rwx,g=rx,o=rx libcudnn.so.6.5.18（未必是18，我的机子上是48，相应改就可以了） 
 sudo ln -s libcudnn.so.6.5.18 libcudnn.so.6.5
-sudo ln -s libcudnn.so.6.5 libcudnn.so
-</code></pre>
-<h5>9.2编译caffe之前安装cudnn</h5>
+sudo ln -s libcudnn.so.6.5 libcudnn.so</code></pre>
+<h5 id="编译caffe之前安装cudnn">9.2编译caffe之前安装cudnn</h5>
 <p>解压cudnn之后只需将对应的文件复制到对应目录中即可，同时在编译caffe时Makefile.config中</p>
-<pre><code>use_cudnn:=1
-</code></pre>
+<pre><code>use_cudnn:=1</code></pre>
 <p>去掉注释</p>
 <pre><code>unpack the library  
 gzip -d cudnn-6.5-linux-x64-v2.tar.gz  
 tar xf cudnn-6.5-linux-x64-v2.tar  
 
-copy the library files into CUDA's include and lib folders  
+copy the library files into CUDA&#39;s include and lib folders  
 sudo cp cudnn-6.5-linux-x64-v2/cudnn.h /usr/local/  cuda-7.0/include  
-sudo cp cudnn-6.5-linux-x64-v2/libcudnn* /usr/local/    cuda-7.0/lib64      
-</code></pre>
-<h4>10 安装opencv(可选)</h4>
+sudo cp cudnn-6.5-linux-x64-v2/libcudnn* /usr/local/    cuda-7.0/lib64      </code></pre>
+<h4 id="安装opencv可选">10 安装opencv(可选)</h4>
 <p>opencv库在运行其他开源项目时可能需要用到因此也建议安装，这里安装的是支持GPU的，因此安装是需要添加支持GPU的选项</p>
 <p>opencv安装起来神烦，Github上有人已经写好了完整的安装脚本： https://github.com/jayrambhia/Install-OpenCV</p>
-<p>下载该脚本，进入Ubuntu/2.4 目录, 给所有shell脚本加上可执行权限：
-chmod +x *.sh</p>
-<p>安装2.4.9版本:
-sudo ./opencv2_4_9.sh</p>
+<p>下载该脚本，进入Ubuntu/2.4 目录, 给所有shell脚本加上可执行权限： chmod +x *.sh</p>
+<p>安装2.4.9版本: sudo ./opencv2_4_9.sh</p>
 <p>该脚本会去尝试下载2.4.9的压缩包，如果下载速度太慢建议还是自己先下载好，再把脚本中下载的语句注释掉，sh文件需要修改的是在cmake的那一行中添加一个编译参数 -D BUILD_TIFF=ON，否则在make caffe的时候会报类似</p>
-<pre><code>/usr/lib/libopencv_highgui.so.2.4: undefined reference to TIFFRGBAImageOK@LIBTIFF_4.0' 1&gt; 
-</code></pre>
+<pre><code>/usr/lib/libopencv_highgui.so.2.4: undefined reference to TIFFRGBAImageOK@LIBTIFF_4.0&#39; 1&gt; </code></pre>
 <p>的错误</p>
 <p>安装过程中可能会遇到两个问题:</p>
 <ul>
-<li>
-<p>1编译过程中报错：</p>
-<pre><code>  opencv-2.4.9/modules/gpu/src/nvidia/core/NCVPixelOperations.hpp(51): error: a storage class is not allowed in an explicit specialization
-</code></pre>
-<p>http://www.samontab.com/web/2014/06/installing-opencv-2-4-9-in-ubuntu-14-04-lts/</p>
-</li>
+<li><p>1编译过程中报错：</p>
+<pre><code>opencv-2.4.9/modules/gpu/src/nvidia/core/NCVPixelOperations.hpp(51): error: a storage class is not allowed in an explicit specialization</code></pre>
+<p>http://www.samontab.com/web/2014/06/installing-opencv-2-4-9-in-ubuntu-14-04-lts/</p></li>
 </ul>
-<p>解决方法在此：http://code.opencv.org/issues/3814  下载 NCVPixelOperations.hpp 替换掉opencv2.4.9内的文件， 重新build</p>
+<p>解决方法在此：http://code.opencv.org/issues/3814 下载 NCVPixelOperations.hpp 替换掉opencv2.4.9内的文件， 重新build</p>
 <ul>
-<li>
-<p>2编译过程中报错：</p>
-<pre><code>  nvcc fatal: Unsupported gpu architecture: 'compute xx'
-</code></pre>
-</li>
-</ul>
+<li><p>2编译过程中报错：</p>
+<pre><code>nvcc fatal: Unsupported gpu architecture: &#39;compute xx&#39;</code></pre>
 <p>需要在cmake时添加参数指定你的GPU架构，参考这两篇blog:</p>
-<pre><code>http://blog.csdn.net/sysuwuhongpeng/article/details/45485719
-http://blog.csdn.net/altenli/article/details/44199539
-</code></pre>
-<h4>11 caffe matlab(可选)</h4>
-<h5>1 安装matlab：</h5>
+<p>http://blog.csdn.net/sysuwuhongpeng/article/details/45485719 http://blog.csdn.net/altenli/article/details/44199539</p></li>
+</ul>
+<h4 id="caffe-matlab可选">11 caffe matlab(可选)</h4>
+<h5 id="安装matlab">1 安装matlab：</h5>
 <p>参考教程：</p>
 <p>Caffe提供了MATLAB接口， 有需要用MATLAB的同学可以额外安装MATLAB。安装教程请自行搜索。</p>
 <p>安装完成后添加图标 matlab图标在该网站可以下载</p>
-<pre><code>http://www.linuxidc.com/Linux/2011-01/31632.htm
-</code></pre>
+<pre><code>http://www.linuxidc.com/Linux/2011-01/31632.htm</code></pre>
 <p>图标放到/usr/local/MATLAB/下</p>
 <p>控制台输入以下内容</p>
-<pre><code>sudo vi /usr/share/applications/Matlab.desktop
-</code></pre>
+<pre><code>sudo vi /usr/share/applications/Matlab.desktop</code></pre>
 <p>复制代码</p>
 <pre><code>[Desktop Entry]
 Type=Application
@@ -450,24 +402,18 @@ Comment=Matlab:The Language of Technical Computing
 Exec=sh /usr/local/MATLAB/R2014a/bin/matlab -desktop
 Icon=/usr/local/MATLAB/Matlab.png
 Terminal=false
-Categories=Development;Matlab;
-</code></pre>
-<h5>2 matlab wrapper</h5>
+Categories=Development;Matlab;</code></pre>
+<h5 id="matlab-wrapper">2 matlab wrapper</h5>
 <p>控制台输入：</p>
-<pre><code>make matcaffe
-</code></pre>
+<pre><code>make matcaffe</code></pre>
 <p>安装完后在运行matlab demo时遇到报错</p>
-<pre><code>“libhdf5.so.6 no such file or directory”
-</code></pre>
+<pre><code>“libhdf5.so.6 no such file or directory”</code></pre>
 <p>但是到anaconda的lib目录下发现是有对应文件的，可能是动态链接库的问题，解决方法是到anaconda/lib目录下执行ldconfig就可以了</p>
-<h3>安装theano</h3>
-<h4>1 安装theano</h4>
+<h3 id="安装theano">安装theano</h3>
+<h4 id="安装theano-1">1 安装theano</h4>
 <p>控制台输入 pip install theano即可</p>
-<h4>2 配置theano使其支持gpu加速</h4>
-<p>参考文档：
-http://deeplearning.net/software/theano/tutorial/using_gpu.html
-http://deeplearning.net/software/theano/install.html#gpu-linux
-http://deeplearning.net/software/theano/library/config.html#config.init_gpu_device</p>
+<h4 id="配置theano使其支持gpu加速">2 配置theano使其支持gpu加速</h4>
+<p>参考文档： http://deeplearning.net/software/theano/tutorial/using_gpu.html http://deeplearning.net/software/theano/install.html#gpu-linux http://deeplearning.net/software/theano/library/config.html#config.init_gpu_device</p>
 <p>在用户根目录下新建.theanorc配置文档，配置如下：</p>
 <pre><code>[global]
 floatX = float32
@@ -477,8 +423,7 @@ device = gpu
 fastmath = True
 
 [blas]
-ldflags = -lf77blas -latlas -lgfortran #put your flags here
-</code></pre>
+ldflags = -lf77blas -latlas -lgfortran #put your flags here</code></pre>
 <p>检验是否theano可以使用gpu加速，测试脚本如下：</p>
 <pre><code>from theano import function, config, shared, tensor, sandbox
 import numpy
@@ -495,16 +440,15 @@ t0 = time.time()
 for i in xrange(iters):
     r = f()
 t1 = time.time()
-print 'Looping %d times took' % iters, t1 - t0, 'seconds'
-print 'Result is', r
+print &#39;Looping %d times took&#39; % iters, t1 - t0, &#39;seconds&#39;
+print &#39;Result is&#39;, r
 if numpy.any([isinstance(x.op, tensor.Elemwise) and
-              ('Gpu' not in type(x.op).__name__)
+              (&#39;Gpu&#39; not in type(x.op).__name__)
               for x in f.maker.fgraph.toposort()]):
-    print 'Used the cpu'
+    print &#39;Used the cpu&#39;
 else:
-    print 'Used the gpu'
-如果显示used the gpu说明theano在使用gpu加速
-</code></pre>
+    print &#39;Used the gpu&#39;
+如果显示used the gpu说明theano在使用gpu加速</code></pre>
 </span>
       
     </div>
@@ -601,7 +545,7 @@ else:
 
           <div class="site-state-item site-state-categories">
             <a href="/categories">
-              <span class="site-state-item-count">3</span>
+              <span class="site-state-item-count">4</span>
               <span class="site-state-item-name">分類</span>
               </a>
           </div>
@@ -636,7 +580,7 @@ else:
           <div class="post-toc">
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text">安装caffe</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.1.</span> <span class="nav-text">1.安装build-essentials</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.2.</span> <span class="nav-text">2.安装NVIDIA驱动</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#undefined"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 退出图形界面</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#undefined"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2安装驱动</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.3.</span> <span class="nav-text">3 安装atlas</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.4.</span> <span class="nav-text">4 下载caffe安装包与安装环境</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.5.</span> <span class="nav-text">5 安装anaconda</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.6.</span> <span class="nav-text">6 安装Caffe所需要的Python环境</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.7.</span> <span class="nav-text">7 编译caffe</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.8.</span> <span class="nav-text">8 编译pycaffe</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.9.</span> <span class="nav-text">9 安装cudnn（可选）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#undefined"><span class="nav-number">1.9.1.</span> <span class="nav-text">9.1编译caffe之后安装cudnn</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#undefined"><span class="nav-number">1.9.2.</span> <span class="nav-text">9.2编译caffe之前安装cudnn</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.10.</span> <span class="nav-text">10 安装opencv(可选)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">1.11.</span> <span class="nav-text">11 caffe matlab(可选)</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#undefined"><span class="nav-number">1.11.1.</span> <span class="nav-text">1 安装matlab：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#undefined"><span class="nav-number">1.11.2.</span> <span class="nav-text">2 matlab wrapper</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text">安装theano</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">2.1.</span> <span class="nav-text">1 安装theano</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undefined"><span class="nav-number">2.2.</span> <span class="nav-text">2 配置theano使其支持gpu加速</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装caffe"><span class="nav-number">1.</span> <span class="nav-text">安装caffe</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#安装build-essentials"><span class="nav-number">1.1.</span> <span class="nav-text">1.安装build-essentials</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装nvidia驱动"><span class="nav-number">1.2.</span> <span class="nav-text">2.安装NVIDIA驱动</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#退出图形界面"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 退出图形界面</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#安装驱动"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2安装驱动</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装atlas"><span class="nav-number">1.3.</span> <span class="nav-text">3 安装atlas</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#下载caffe安装包与安装环境"><span class="nav-number">1.4.</span> <span class="nav-text">4 下载caffe安装包与安装环境</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装anaconda"><span class="nav-number">1.5.</span> <span class="nav-text">5 安装anaconda</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装caffe所需要的python环境"><span class="nav-number">1.6.</span> <span class="nav-text">6 安装Caffe所需要的Python环境</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#编译caffe"><span class="nav-number">1.7.</span> <span class="nav-text">7 编译caffe</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#编译pycaffe"><span class="nav-number">1.8.</span> <span class="nav-text">8 编译pycaffe</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装cudnn可选"><span class="nav-number">1.9.</span> <span class="nav-text">9 安装cudnn（可选）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#编译caffe之后安装cudnn"><span class="nav-number">1.9.1.</span> <span class="nav-text">9.1编译caffe之后安装cudnn</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#编译caffe之前安装cudnn"><span class="nav-number">1.9.2.</span> <span class="nav-text">9.2编译caffe之前安装cudnn</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装opencv可选"><span class="nav-number">1.10.</span> <span class="nav-text">10 安装opencv(可选)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#caffe-matlab可选"><span class="nav-number">1.11.</span> <span class="nav-text">11 caffe matlab(可选)</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#安装matlab"><span class="nav-number">1.11.1.</span> <span class="nav-text">1 安装matlab：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#matlab-wrapper"><span class="nav-number">1.11.2.</span> <span class="nav-text">2 matlab wrapper</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安装theano"><span class="nav-number">2.</span> <span class="nav-text">安装theano</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#安装theano-1"><span class="nav-number">2.1.</span> <span class="nav-text">1 安装theano</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置theano使其支持gpu加速"><span class="nav-number">2.2.</span> <span class="nav-text">2 配置theano使其支持gpu加速</span></a></li></ol></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>
@@ -900,6 +844,27 @@ else:
   </script>
 
   
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
 
   
   

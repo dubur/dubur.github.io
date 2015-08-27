@@ -54,8 +54,7 @@ Fast RCNN
 Notes on Fast RCNN
 MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来">
 <meta property="og:image" content="http://yoursite.com/img/Faster_RCNN/RPN.png">
-<meta property="og:image" content="http://yoursite.com/img/Faster_RCNN/Loss.jpeg">
-<meta property="og:updated_time" content="2015-08-22T12:46:58.000Z">
+<meta property="og:updated_time" content="2015-08-22T12:56:58.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Faster RCNN论文笔记">
 <meta name="twitter:description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
@@ -252,61 +251,54 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
 <p>或者我的Fast RCNN笔记</p>
 <p><a href="http://dubur.github.io/2015/08/12/Fast%20RCNN%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/" target="_blank" rel="external">Notes on Fast RCNN</a></p>
 <p>MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的方法，进一步提升检测速度的同时还提升了检测的准确率，然而代码现在还没有公开。</p>
-<h2>Motivation</h2>
+<h2 id="motivation">Motivation</h2>
 <ul>
 <li>Fast RCNN ignores the time spent on region proposals</li>
 <li>Region proposal methods used in research are implemented on the CPU</li>
-<li><strong><em>The feature maps can also be used for generating region proposals</em></strong>
-简单说就是提取proposal的步骤太花时间，而且作者希望尽可能用GPU完成所有的计算。</li>
+<li><strong><em>The feature maps can also be used for generating region proposals</em></strong> 简单说就是提取proposal的步骤太花时间，而且作者希望尽可能用GPU完成所有的计算。</li>
 </ul>
-<h2>Region Proposal Networks (RPN)</h2>
-<h3>Basic Notions</h3>
+<h2 id="region-proposal-networks-rpn">Region Proposal Networks (RPN)</h2>
+<h3 id="basic-notions">Basic Notions</h3>
 <ul>
 <li>Fully-convolutional network for generating region proposals</li>
 <li>Share computation of convolutions with start-of-art object detection networks</li>
 </ul>
-<h3>Architecture</h3>
+<h3 id="architecture">Architecture</h3>
 <ul>
-<li>
-<p>RPN与卷积层共享权重，也就是说RPN的输入就是最后一个卷积层的输出的feature map，得到输入后使用滑动窗口的方式得到更低维的向量</p>
-</li>
-<li>
-<p>将得到的向量输入到两个并联的全连接层</p>
-<ol>
-<li>box-regression layer (bounding box regressor)</li>
-<li>box-classification layer (objectness)
-类似于Fast RCNN的RoI pooling层后面的架构，feature用来训练两个分类器，一个用来判断这个RoI是否包含object，另一个用来做bounding box回归(即给定一个anchor判断bounding box的位置)</li>
-</ol>
-</li>
-<li>
-<p>每个滑动窗口中心记作一个anchor，对应9种variant，相当于对于每一个feature map用9种sliding window计算vector，后面的输出也变成9倍，这么做是为了对图像的translation有更好的鲁棒性</p>
-<p><img src="img/Faster_RCNN/RPN.png" alt="RPN"></p>
-</li>
-<li>
-<p>Loss Function的定义与Fast RCNN类似</p>
-</li>
+<li>RPN与卷积层共享权重，也就是说RPN的输入就是最后一个卷积层的输出的feature map，得到输入后使用滑动窗口的方式得到更低维的向量</li>
+<li>将得到的向量输入到两个并联的全连接层</li>
 </ul>
-<p>&lt;!--&lt;script type=&quot;text/x-mathjax-config&quot;&gt;
-MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\(','\)']]}});
-&lt;/script&gt;--&gt;</p>
-<p><img src="img/Faster_RCNN/Loss.jpeg" alt="RPN"></p>
-<p>&lt;img src=&quot;img/Faster_RCNN/Loss.jpeg&quot; style=&quot;text-align:center&quot;&gt;&lt;/img&gt;</p>
-<p>$$ L(p_{i},t_{i}) = L_{cls}(p_{i},{p_{i}}^{*}) + \lambda{p_{i}}^{*}L_{reg}(t_{i},{t_{i}}^{*}) $$</p>
-<p>由两部分构成：regression的Loss和classification的Loss，通过$\lambda$控制两类Loss的比重
-公式中$p_{i}$表示一个region中包含object的概率，${p_{i}}^{*}$表示ground truth， 是一个0-1指示器，当某个anchor被标注为含有一个object时它的值才是1，否则为0, $L_{cls}(p_{i},{p_{i}}^{*})$的定义方式与Fast RCNN中相同</p>
-<h2>Training RPN</h2>
+<ol style="list-style-type: decimal">
+<li>box-regression layer (bounding box regressor)</li>
+<li>box-classification layer (objectness) 类似于Fast RCNN的RoI pooling层后面的架构，feature用来训练两个分类器，一个用来判断这个RoI是否包含object，另一个用来做bounding box回归(即给定一个anchor判断bounding box的位置)</li>
+</ol>
 <ul>
-<li>
-<p>mini batch构成</p>
-<ol>
+<li>每个滑动窗口中心记作一个anchor，对应9种variant，相当于对于每一个feature map用9种sliding window计算vector，后面的输出也变成9倍，这么做是为了对图像的translation有更好的鲁棒性</li>
+</ul>
+<div class="figure">
+<img src="img/Faster_RCNN/RPN.png" alt="RPN">
+<p class="caption">RPN</p>
+</div>
+<ul>
+<li>Loss Function的定义与Fast RCNN类似</li>
+</ul>
+<!--<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>-->
+<p><span class="math">\[ L(p\_{i},t\_{i}) = L\_{cls}(p\_{i},{p\_{i}}^{*}) + \lambda{p\_{i}}^{*}L\_{reg}(t\_{i},{t\_{i}}^{*}) \]</span></p>
+<p>由两部分构成：regression的Loss和classification的Loss，通过<span class="math">\(\lambda\)</span>控制两类Loss的比重 公式中<span class="math">\(p_{i}\)</span>表示一个region中包含object的概率，<span class="math">\({p_{i}}^{*}\)</span>表示ground truth， 是一个0-1指示器，当某个anchor被标注为含有一个object时它的值才是1，否则为0, <span class="math">\(L_{cls}(p_{i},{p_{i}}^{*})\)</span>的定义方式与Fast RCNN中相同</p>
+<h2 id="training-rpn">Training RPN</h2>
+<ul>
+<li>mini batch构成</li>
+</ul>
+<ol style="list-style-type: decimal">
 <li>随机选取一张图片的256个anchor，正负样本为1:1</li>
 <li>用高斯分布初始化权重</li>
 </ol>
-</li>
-<li>
-<p>Trainging的四个步骤
-这里引用一下原文:</p>
-<ol>
+<ul>
+<li>Trainging的四个步骤 这里引用一下原文:</li>
+</ul>
+<ol style="list-style-type: decimal">
 <li>First, train the RPN is initialized with an ImageNet-pre-trained model and fine-tuned end-to-end for the region proposal task.</li>
 <li>In the second step, we train a separate detection network by Fast R-CNN using the proposals generated by the step-1 RPN. This detection network is also initialized by the ImageNet-pre-trained model.</li>
 <li>In the third step, we use the detector network to initialize RPN training, but we fix the shared conv layers and only fine-tune the layers unique to RPN.</li>
@@ -315,8 +307,6 @@ MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\(','\)']]}});
 <p>总体而言训练方式在训练Fast RCNN的基础上做了改进，Fast RCNN输入的region proposal由RPN提供，之后用Fast RCNN的权重重新初始化RPN的参数，做到权重共享，保持这些权重不变，只对RPN中的几层进行微调，最后再对全连接层进行微调。</p>
 <p>这样做的好处显而易见，实时检测时，前面卷积层提取feature map直接送给RPN， Fast RCNN等待RPN计算proposal，用GPU计算proposal速度很快，与Fast RCNN不同的是不需要selective search，提取proposal的步骤与detection合并，在原先的卷积层与RoI pooling层之间加入了一个RPN提取proposal，之后Fast RCNN的全连接层利用RPN的输出向量进行detection</p>
 <p>笔者认为从RCNN到这里的Faster RCNN，有一点bounding box regression和object classification的joint learning的味道了。</p>
-</li>
-</ul>
 <p>最后RPN结合Fast RCNN可以做到单纯用神经网络进行object detection，不依靠selective search这样的low-level feature的方法，完全依靠deep learning进行图像的理解。</p>
 <p>不过有时间还是要把selective search也看一下，毕竟这篇论文有很高的引用量。</p>
 </span>
@@ -415,7 +405,7 @@ MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\(','\)']]}});
 
           <div class="site-state-item site-state-categories">
             <a href="/categories">
-              <span class="site-state-item-count">3</span>
+              <span class="site-state-item-count">4</span>
               <span class="site-state-item-name">分類</span>
               </a>
           </div>
@@ -450,7 +440,7 @@ MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\(','\)']]}});
           <div class="post-toc">
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text">Region Proposal Networks (RPN)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.1.</span> <span class="nav-text">Basic Notions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#undefined"><span class="nav-number">2.2.</span> <span class="nav-text">Architecture</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text">Training RPN</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#motivation"><span class="nav-number">1.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#region-proposal-networks-rpn"><span class="nav-number">2.</span> <span class="nav-text">Region Proposal Networks (RPN)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#basic-notions"><span class="nav-number">2.1.</span> <span class="nav-text">Basic Notions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#architecture"><span class="nav-number">2.2.</span> <span class="nav-text">Architecture</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#training-rpn"><span class="nav-number">3.</span> <span class="nav-text">Training RPN</span></a></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>
@@ -714,6 +704,27 @@ MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\(','\)']]}});
   </script>
 
   
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
 
   
   
