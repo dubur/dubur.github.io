@@ -54,7 +54,7 @@ Fast RCNN
 Notes on Fast RCNN
 MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来">
 <meta property="og:image" content="http://yoursite.com/img/Faster_RCNN/RPN.png">
-<meta property="og:updated_time" content="2015-08-22T12:56:58.000Z">
+<meta property="og:updated_time" content="2015-08-27T14:03:06.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Faster RCNN论文笔记">
 <meta name="twitter:description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
@@ -273,14 +273,8 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
 <li>box-classification layer (objectness) 类似于Fast RCNN的RoI pooling层后面的架构，feature用来训练两个分类器，一个用来判断这个RoI是否包含object，另一个用来做bounding box回归(即给定一个anchor判断bounding box的位置)</li>
 </ol>
 <ul>
-<li>每个滑动窗口中心记作一个anchor，对应9种variant，相当于对于每一个feature map用9种sliding window计算vector，后面的输出也变成9倍，这么做是为了对图像的translation有更好的鲁棒性</li>
-</ul>
-<div class="figure">
-<img src="img/Faster_RCNN/RPN.png" alt="RPN">
-<p class="caption">RPN</p>
-</div>
-<ul>
-<li>Loss Function的定义与Fast RCNN类似</li>
+<li><p>每个滑动窗口中心记作一个anchor，对应9种variant，相当于对于每一个feature map用9种sliding window计算vector，后面的输出也变成9倍，这么做是为了对图像的transformation有更好的鲁棒性 <img src="/img/Faster_RCNN/RPN.png" alt="RPN"></p></li>
+<li><p>Loss Function的定义与Fast RCNN类似</p></li>
 </ul>
 <!--<script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
@@ -327,6 +321,8 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
       
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/08/23/CNN经典论文集/" rel="prev">CNN经典论文集</a>
             
           </div>
 
@@ -398,7 +394,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">文章</span>
             </a>
           </div>

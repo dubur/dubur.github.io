@@ -56,8 +56,8 @@ RCNN的训练方式按照一个一个阶段分的比较开，
 训练时RCNN会将每个proposal的特征向量存储在硬盘上，不仅占用存储空间，时间上也因为读写磁盘而变得很慢
 在进行detectio">
 <meta property="og:image" content="http://yoursite.com/img/Fast_RCNN/fast-rcnn.jpeg">
-<meta property="og:image" content="http://yoursite.com/img/Fast_RCNN/training_time.jpeg">
-<meta property="og:updated_time" content="2015-08-22T13:07:16.000Z">
+<meta property="og:image" content="http://yoursite.com/img/Fast_RCNN/training_time.png">
+<meta property="og:updated_time" content="2015-08-27T14:05:59.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Fast RCNN论文笔记">
 <meta name="twitter:description" content="Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强
@@ -308,7 +308,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
 <li>Truncated SVD 全连接层的计算时间太长，占用了整个前向传播的一半时间，因此在进行矩阵乘法时，作者采用SVD将权重矩阵<span class="math">\(W (u \times v)\)</span>分解为三个矩阵的乘积：</li>
 </ul>
 <p><span class="math">\[ W \approx U \Sigma_tV^T \]</span></p>
-<p>SVD分解后的U和V都是对称矩阵 最后一个全连接层被分解为两个子层:第一层的权重矩阵为$ _tV^T <span class="math">\(,第二层的权重矩阵为\)</span>U<span class="math">\(,因此整个参数的个数由\)</span>uv<span class="math">\(变成了\)</span>t(u+v)$,当t比较小(意味着原参数矩阵的特征值少)的时候计算时间就会大大减少 <img src="img/Fast_RCNN/training_time.jpeg" alt="training_time"></p>
+<p>SVD分解后的U和V都是对称矩阵 最后一个全连接层被分解为两个子层:第一层的权重矩阵为$ _tV^T <span class="math">\(,第二层的权重矩阵为\)</span>U<span class="math">\(,因此整个参数的个数由\)</span>uv<span class="math">\(变成了\)</span>t(u+v)$,当t比较小(意味着原参数矩阵的特征值少)的时候计算时间就会大大减少 <img src="/img/Fast_RCNN/training_time.png" alt="training_time"></p>
 <h2 id="experiment-insights">Experiment Insights</h2>
 <ul>
 <li>卷积层和全连接层一样需要fine-tuning &gt; decrease mAP from 66.9% to 61.4%</li>
@@ -415,7 +415,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">文章</span>
             </a>
           </div>

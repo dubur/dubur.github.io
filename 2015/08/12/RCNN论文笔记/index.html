@@ -61,8 +61,8 @@ Pipeline method
 提取独立于物体类别的region proposal
 使用CNN做特征提取
 调整CNN参数用于从候选的proposal中获取包含object的proposal(domain-s">
-<meta property="og:image" content="http://yoursite.com/img/RCNN/transformation.jpeg">
-<meta property="og:updated_time" content="2015-08-22T13:07:49.000Z">
+<meta property="og:image" content="http://yoursite.com/img/RCNN/transformation.png">
+<meta property="og:updated_time" content="2015-08-27T14:14:18.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RCNN论文笔记">
 <meta name="twitter:description" content="RCNN本身概念比较简单，但是论文中提到了许多object detection的经典方法非常有用，这些内容绝大部分在附录中，在阅读其他论文时相信会有很大帮助。
@@ -315,12 +315,8 @@ Pipeline method
 <ol style="list-style-type: decimal">
 <li>tightest square with context(等比例缩放proposal在原始图像中的bounding square)</li>
 <li>tightest square without context(等比例缩放proposal在原始图像中的bounding square,但要去掉在bounding square中而不在原始proposal中的部分)</li>
-<li>强制缩放proposal 3种变形的方式如图中所示:</li>
+<li>强制缩放proposal 3种变形的方式如图中所示:<img src="/img/RCNN/transformation.png" alt="transformation"></li>
 </ol>
-<div class="figure">
-<img src="/img/RCNN/transformation.jpeg" alt="transformation">
-<p class="caption">transformation</p>
-</div>
 <ol style="list-style-type: upper-alpha">
 <li>origin proposal (B) tightest square with context (C) tightest square without context (D) warp</li>
 </ol>
@@ -439,7 +435,7 @@ Pipeline method
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">文章</span>
             </a>
           </div>
