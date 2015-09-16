@@ -52,7 +52,7 @@ caffe的example中给出了Alexnet和Goo">
 <meta property="og:image" content="http://yoursite.com/img/CNN/OverFeat.png">
 <meta property="og:image" content="http://yoursite.com/img/CNN/Pooling.png">
 <meta property="og:image" content="http://yoursite.com/img/CNN/SlidingWindow.png">
-<meta property="og:updated_time" content="2015-09-16T15:07:48.000Z">
+<meta property="og:updated_time" content="2015-09-16T15:13:38.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CNN经典论文集">
 <meta name="twitter:description" content="这篇日志主要用来整合近几年在ImageNet竞赛中获得较高成绩的CNN网络相关论文的笔记，因为思想都是基于CNN，在实际训练网络或者网络结构上有创新的地方，因此就统一写成一篇文档了，实验结果部分就省略了，主要集中在文章亮点的地方，一共有4篇相关的论文(Alexnet, GoogleNet, VGGnet和OverFeat)，会保持长期更新。
@@ -306,7 +306,7 @@ caffe的example中给出了Alexnet和Goo">
 <p>在testing阶段，网络接收图像数据之前首先需要把图像rescale到固定大小，作者称之为test scale，之后首先通过fc层计算，我们把fc层看作一个卷积窗口为1*1的卷积层，得到的feature map维度与object类别相同。</p>
 <p>这样做的好处是对比首先crop再通过卷积计算feature map的做法，直接通过fc层计算可以减少许多重复的卷积计算量，crop出来的图像之间必然会有重叠的部分，这些重叠部分增加了测试时卷积的计算量，但是笔者认为既然在训练时使用crop来做数据增量，测试时用crop可以增加网络输出的置信度（每个crop输出分类结果，这个结果甚至可以用来做类似bagging的训练），如果面对实时性要求比较高的情况，对整张图片应用fc层是比较可行的方法。</p>
 <h2 id="overfeat">OverFeat</h2>
-<p>OverFeat最出彩的地方在于使用一个CNN解决Classfication、Localization和Detection的任务，每个任务使用的神经网络不同之处只在最后的分类器，大牛Yann LeCun的文章</p>
+<p>OverFeat最出彩的地方在于使用一个CNN解决Classfication、Localization和Detection的任务，以及Sliding Window和CNN的结合，每个任务使用的神经网络不同之处只在最后的分类器，大牛Yann LeCun的文章</p>
 <p>网络结构的前五层与Alexnet相同，Alexnet的网络结构已经成为feature extraction的经典结构了,如下图所示： <img src="/img/CNN/OverFeat.png" alt="OverFeat"></p>
 <h3 id="multiscale-training">Multiscale training</h3>
 <p>训练时大多数人都会碰到Multiscale的问题，本文中作者提出在pooling时引入偏移量的方法，具体过程如下图 <img src="/img/CNN/Pooling.png" alt="Pooling"> 按照笔者理解，原始的3*3pooling的起始位置为(0,1,2),其实就是使用stride步长为1的pooling层，之后按照原始stride进行分组，得到多个分组的pooling向量之后使用滑动窗口的方式得到feature map，重新将原先分组的结果合并成一个向量作为整张图片的feature map,无论图像的尺寸多大，使用stride为1的pooling层能最大程度上保持原始信息，并且分组之后每一个feature map向量长度保持一致。</p>
@@ -336,6 +336,8 @@ caffe的example中给出了Alexnet和Goo">
       
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/" rel="prev">Caffe 源码阅读笔记一（基本代码框架）</a>
             
           </div>
 
@@ -407,7 +409,7 @@ caffe的example中给出了Alexnet和Goo">
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">5</span>
+              <span class="site-state-item-count">6</span>
               <span class="site-state-item-name">文章</span>
             </a>
           </div>

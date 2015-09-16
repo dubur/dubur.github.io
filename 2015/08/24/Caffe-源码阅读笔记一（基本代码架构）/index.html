@@ -30,7 +30,7 @@
 
 
 
-  <meta name="keywords" content="Deep Learning,Paper Notes," />
+  <meta name="keywords" content="caffe," />
 
 
 
@@ -39,29 +39,34 @@
   <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.1" />
 
 
-<meta name="description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
-Fast RCNN
-或者我的Fast RCNN笔记
-Notes on Fast RCNN
-MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来">
+<meta name="description" content="在开始阅读Blob之前，需要预先了解Caffe的架构与protobuf，否则看代码的时候容易一头雾水
+Caffe基本架构
+对于任何一个网络而言，Caffe主要用4个类来构造网络：
+
+BLob:存储数据，blob既可以存储网络的权重，在进行训练时修改的其实就是每个blob实例
+Layer:构成网络的基础单元，无论是卷积层，pooling层还是全连接层等等都是从这个类派生出来的
+Net:定义一个网络的">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Faster RCNN论文笔记">
-<meta property="og:url" content="http://yoursite.com/2015/08/16/Faster RCNN论文笔记/index.html">
+<meta property="og:title" content="Caffe 源码阅读笔记一（基本代码框架）">
+<meta property="og:url" content="http://yoursite.com/2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/index.html">
 <meta property="og:site_name" content="Duburs Blog">
-<meta property="og:description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
-Fast RCNN
-或者我的Fast RCNN笔记
-Notes on Fast RCNN
-MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来">
-<meta property="og:image" content="http://yoursite.com/img/Faster_RCNN/RPN.png">
-<meta property="og:updated_time" content="2015-08-27T14:03:06.000Z">
+<meta property="og:description" content="在开始阅读Blob之前，需要预先了解Caffe的架构与protobuf，否则看代码的时候容易一头雾水
+Caffe基本架构
+对于任何一个网络而言，Caffe主要用4个类来构造网络：
+
+BLob:存储数据，blob既可以存储网络的权重，在进行训练时修改的其实就是每个blob实例
+Layer:构成网络的基础单元，无论是卷积层，pooling层还是全连接层等等都是从这个类派生出来的
+Net:定义一个网络的">
+<meta property="og:updated_time" content="2015-08-25T15:29:18.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Faster RCNN论文笔记">
-<meta name="twitter:description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
-Fast RCNN
-或者我的Fast RCNN笔记
-Notes on Fast RCNN
-MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来">
+<meta name="twitter:title" content="Caffe 源码阅读笔记一（基本代码框架）">
+<meta name="twitter:description" content="在开始阅读Blob之前，需要预先了解Caffe的架构与protobuf，否则看代码的时候容易一头雾水
+Caffe基本架构
+对于任何一个网络而言，Caffe主要用4个类来构造网络：
+
+BLob:存储数据，blob既可以存储网络的权重，在进行训练时修改的其实就是每个blob实例
+Layer:构成网络的基础单元，无论是卷积层，pooling层还是全连接层等等都是从这个类派生出来的
+Net:定义一个网络的">
 
 
 <script type="text/javascript" id="hexo.configuration">
@@ -71,7 +76,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
   };
 </script>
 
-  <title> Faster RCNN论文笔记 | Duburs Blog </title>
+  <title> Caffe 源码阅读笔记一（基本代码框架） | Duburs Blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
@@ -196,7 +201,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
           
           
             
-              Faster RCNN论文笔记
+              Caffe 源码阅读笔记一（基本代码框架）
             
           
         </h1>
@@ -205,8 +210,8 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
       <div class="post-meta">
         <span class="post-time">
           發表於
-          <time itemprop="dateCreated" datetime="2015-08-16T17:10:30+08:00" content="2015-08-16">
-            2015-08-16
+          <time itemprop="dateCreated" datetime="2015-08-24T22:11:07+08:00" content="2015-08-24">
+            2015-08-24
           </time>
         </span>
 
@@ -215,8 +220,8 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
             &nbsp; | &nbsp; 分類於
             
               <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
-                  <span itemprop="name">Deep Learning</span>
+                <a href="/categories/caffe/" itemprop="url" rel="index">
+                  <span itemprop="name">caffe</span>
                 </a>
               </span>
 
@@ -231,8 +236,8 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
           
             <span class="post-comments-count">
               &nbsp; | &nbsp;
-              <a href="/2015/08/16/Faster RCNN论文笔记/#comments" itemprop="discussionUrl">
-                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/16/Faster RCNN论文笔记/" itemprop="commentsCount"></span>
+              <a href="/2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/" itemprop="commentsCount"></span>
               </a>
             </span>
           
@@ -246,63 +251,63 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
       
 
       
-        <span itemprop="articleBody"><p>本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考</p>
-<p><a href="http://arxiv.org/pdf/1504.08083v1.pdf" target="_blank" rel="external">Fast RCNN</a></p>
-<p>或者我的Fast RCNN笔记</p>
-<p><a href="http://dubur.github.io/2015/08/12/Fast%20RCNN%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/" target="_blank" rel="external">Notes on Fast RCNN</a></p>
-<p>MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的方法，进一步提升检测速度的同时还提升了检测的准确率，然而代码现在还没有公开。</p>
-<h2 id="motivation">Motivation</h2>
+        <span itemprop="articleBody"><p>在开始阅读Blob之前，需要预先了解Caffe的架构与protobuf，否则看代码的时候容易一头雾水</p>
+<h3 id="caffe基本架构">Caffe基本架构</h3>
+<p>对于任何一个网络而言，Caffe主要用4个类来构造网络：</p>
 <ul>
-<li>Fast RCNN ignores the time spent on region proposals</li>
-<li>Region proposal methods used in research are implemented on the CPU</li>
-<li><strong><em>The feature maps can also be used for generating region proposals</em></strong> 简单说就是提取proposal的步骤太花时间，而且作者希望尽可能用GPU完成所有的计算。</li>
+<li>BLob:存储数据，blob既可以存储网络的权重，在进行训练时修改的其实就是每个blob实例</li>
+<li>Layer:构成网络的基础单元，无论是卷积层，pooling层还是全连接层等等都是从这个类派生出来的</li>
+<li>Net:定义一个网络的架构，当我们把网络中每一层都建立完之后，通过Net类来搭建整个网络</li>
+<li>Solver:用来训练网络的类，例如SGD就在这部分实现</li>
 </ul>
-<h2 id="region-proposal-networks-rpn">Region Proposal Networks (RPN)</h2>
-<h3 id="basic-notions">Basic Notions</h3>
-<ul>
-<li>Fully-convolutional network for generating region proposals</li>
-<li>Share computation of convolutions with start-of-art object detection networks</li>
-</ul>
-<h3 id="architecture">Architecture</h3>
-<ul>
-<li>RPN与卷积层共享权重，也就是说RPN的输入就是最后一个卷积层的输出的feature map，得到输入后使用滑动窗口的方式得到更低维的向量</li>
-<li>将得到的向量输入到两个并联的全连接层</li>
-</ul>
-<ol style="list-style-type: decimal">
-<li>box-regression layer (bounding box regressor)</li>
-<li>box-classification layer (objectness) 类似于Fast RCNN的RoI pooling层后面的架构，feature用来训练两个分类器，一个用来判断这个RoI是否包含object，另一个用来做bounding box回归(即给定一个anchor判断bounding box的位置)</li>
-</ol>
-<ul>
-<li><p>每个滑动窗口中心记作一个anchor，对应9种variant，相当于对于每一个feature map用9种sliding window计算vector，后面的输出也变成9倍，这么做是为了对图像的transformation有更好的鲁棒性 <img src="/img/Faster_RCNN/RPN.png" alt="RPN"></p></li>
-<li><p>Loss Function的定义与Fast RCNN类似</p></li>
-</ul>
-<!--<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
-</script>-->
-<p><span class="math">\[ L(p\_{i},t\_{i}) = L\_{cls}(p\_{i},{p\_{i}}^{*}) + \lambda{p\_{i}}^{*}L\_{reg}(t\_{i},{t\_{i}}^{*}) \]</span></p>
-<p>由两部分构成：regression的Loss和classification的Loss，通过<span class="math">\(\lambda\)</span>控制两类Loss的比重 公式中<span class="math">\(p_{i}\)</span>表示一个region中包含object的概率，<span class="math">\({p_{i}}^{*}\)</span>表示ground truth， 是一个0-1指示器，当某个anchor被标注为含有一个object时它的值才是1，否则为0, <span class="math">\(L_{cls}(p_{i},{p_{i}}^{*})\)</span>的定义方式与Fast RCNN中相同</p>
-<h2 id="training-rpn">Training RPN</h2>
-<ul>
-<li>mini batch构成</li>
-</ul>
-<ol style="list-style-type: decimal">
-<li>随机选取一张图片的256个anchor，正负样本为1:1</li>
-<li>用高斯分布初始化权重</li>
-</ol>
-<ul>
-<li>Trainging的四个步骤 这里引用一下原文:</li>
-</ul>
-<ol style="list-style-type: decimal">
-<li>First, train the RPN is initialized with an ImageNet-pre-trained model and fine-tuned end-to-end for the region proposal task.</li>
-<li>In the second step, we train a separate detection network by Fast R-CNN using the proposals generated by the step-1 RPN. This detection network is also initialized by the ImageNet-pre-trained model.</li>
-<li>In the third step, we use the detector network to initialize RPN training, but we fix the shared conv layers and only fine-tune the layers unique to RPN.</li>
-<li>Now the two networks share conv layers. Finally, keeping the shared conv layers fixed, we fine-tune the fc layers of the Fast R-CNN.</li>
-</ol>
-<p>总体而言训练方式在训练Fast RCNN的基础上做了改进，Fast RCNN输入的region proposal由RPN提供，之后用Fast RCNN的权重重新初始化RPN的参数，做到权重共享，保持这些权重不变，只对RPN中的几层进行微调，最后再对全连接层进行微调。</p>
-<p>这样做的好处显而易见，实时检测时，前面卷积层提取feature map直接送给RPN， Fast RCNN等待RPN计算proposal，用GPU计算proposal速度很快，与Fast RCNN不同的是不需要selective search，提取proposal的步骤与detection合并，在原先的卷积层与RoI pooling层之间加入了一个RPN提取proposal，之后Fast RCNN的全连接层利用RPN的输出向量进行detection</p>
-<p>笔者认为从RCNN到这里的Faster RCNN，有一点bounding box regression和object classification的joint learning的味道了。</p>
-<p>最后RPN结合Fast RCNN可以做到单纯用神经网络进行object detection，不依靠selective search这样的low-level feature的方法，完全依靠deep learning进行图像的理解。</p>
-<p>不过有时间还是要把selective search也看一下，毕竟这篇论文有很高的引用量。</p>
+<h3 id="protobuf">Protobuf</h3>
+<p>在理清基本架构之后可能有人会问：一个网络需要那么多参数，且每个参数的数据类型不尽相同，如何解决这个问题呢？</p>
+<p>Protobuf就是用来解决此类问题的，我们只需要像写配置文件一样把网络中每一层的参数设置好(当然配置文件必须按照一定的格式)，protobuf会自动生成代码，用来解析“配置文件”中的参数结构体，代码中包括了对参数的设置、读取和序列化等等操作 另外当网络训练完成之后，存储时也使用了protobuf进行处理，把Net转化为多个Message对象进行存储</p>
+<p>Caffe代码中参数初始化和参数操作都是基于protobuf完成，只需要定义网络参数，不再需要考虑如何把参数传递给应用程序的问题了，protobuf会帮你完成～</p>
+<h3 id="blob">Blob</h3>
+<p>Blob本身其实没有特别多的内容，作为Caffe中数据的基础单元，我们可以简单地吧Blob理解成一个容器，里面存储的是多维向量及其相关的信息</p>
+<p>首先看Blob.hpp:</p>
+<pre><code>Blob()
+ : data_(), diff_(), count_(0), capacity_(0) {}
+   </code></pre>
+<p>构造函数中初始化了4个对象，data_表示Blob中的数据，diff_表示反向传播时的误差，count_表示数据当前的维度(因为可以reshape)，而capacity_表示数据最大的维度</p>
+<p>接下来在Blob.cpp里主要包含了实例的初始化和reshape函数，值得注意的是如果blob中存储的是网络的参数(如全连接层和卷积层的kernel)，那么Blob提供update函数用来更新自己的参数。</p>
+<pre><code>void Blob&lt;Dtype&gt;::Update() {                                                                                                                                  
+  // We will perform update based on where the data is located.                                                                                               
+  switch (data_-&gt;head()) {                                                                                                                                    
+  case SyncedMemory::HEAD_AT_CPU:                                                                                                                             
+    // perform computation on CPU                                                                                                                             
+    caffe_axpy&lt;Dtype&gt;(count_, Dtype(-1),                                                                                                                      
+      static_cast&lt;const Dtype*&gt;(diff_-&gt;cpu_data()),                                                                                                         
+      static_cast&lt;Dtype*&gt;(data_-&gt;mutable_cpu_data()));                                                                                                      
+    break;                                                                                                                                                    
+  case SyncedMemory::HEAD_AT_GPU:                                                                                                                             
+  case SyncedMemory::SYNCED:                                                                                                                                  
+  #ifndef CPU_ONLY                                                                                                                                              
+  // perform computation on GPU                                                                                                                             
+  caffe_gpu_axpy&lt;Dtype&gt;(count_, Dtype(-1),                                                                                                                  
+      static_cast&lt;const Dtype*&gt;(diff_-&gt;gpu_data()),                                                                                                         
+      static_cast&lt;Dtype*&gt;(data_-&gt;mutable_gpu_data()));                                                                                                      
+  #else                                                                                                                                                         
+  NO_GPU;                                                                                                                                                   
+  #endif                                                                                                                                                        
+  break;                                                                                                                                                    
+  default:                                                                                                                                                    
+    LOG(FATAL) &lt;&lt; &quot;Syncedmem not initialized.&quot;;                                                                                                               
+  }                                                                                                                                                           
+}                            </code></pre>
+<p>代码中包含了GPU和CPU两种实现，其实核心就是caffe_gpu_axpy那一句更新参数</p>
+<h3 id="layer">Layer</h3>
+<p>对Blob有了一定了解之后可以看Layer了，事实上Layer是caffe架构中内容最多的部分，我们在写配置文件的时候其实都是在组合layer构成一个网络，很多运算操作在caffe中都是以layer的形式存在的，如argmax和elementwise运算等等.许多对caffe的扩展其实也是继承Layer层重新定义了具有新功能的层</p>
+<p>layer的工作模式类似数学中的函数概念，给定一个输入(bottom blobs),layer内部完成自己的功能，返回一个输出(top blobs)</p>
+<p>caffe中的layer分两种，common layer和vision layer: - data_layers.hpp中声明了神经网络与输入数据之间的交互层，如导入/导出hdf5数据，从图像中导入数据等等 - common_layers.hpp中声明了许多常用的包含基础功能(flatten, softmax等)的层 - vision_layers.hpp中主要包含对针对图像处理的层(convolutional, pooling等) - neuron_layers.hpp中主要包含与神经元的定义与操作相关的层(dropout,ReLu等) - loss_layers.hpp中主要包含了计算网络Loss的层，除了我们常见的softmax loss之外还包括了比较常用多euclidean loss, hinge loss等等 看了下vision layer中居然还包含了SPPnet这种处理image scale的层，除此之外还有deconvolution layer,确实是很给力啊</p>
+<p>caffe还提供了layer_factory供其他人快速实现自己的layer</p>
+<p>所有的Layer层都包含Forward和Backward的函数，这两个函数包含了整个layer的计算功能，对于开发者而言如果想实现自己的layer，其实主要就是完成这两个函数逻辑</p>
+<p>具体的某一种Layer的代码解析不在本文的范畴里，以后会另开blog详细描述常用的layer代码实现</p>
+<h3 id="net">Net</h3>
+<p>Net中包含了对整个网络的操作实现，在看源代码之前笔者只想到了设置learning_rate、 weight_decay和迭代次数等等功能，以及控制Forward和Backward等，然而事实上caffe提供了许多非常有用的函数，如在RCNN training中提到的share weights功能，使得你可以直接使用预先训练好的网络参数进行初始化，这也是为什么在caffe的example中我们可以直接通过命令行对imagenet训练出来的网络进行fine－tuning的原因</p>
+<h3 id="solver">Solver</h3>
+<p>相对而言solver的实现比较简单，创建solver对象时我们只需要关注优化算法就可以了，caffe目前提供三种梯度下降的方法： - SGD(momentum) - NesterRov - Adagrad</p>
 </span>
       
     </div>
@@ -311,9 +316,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
       
         <div class="post-tags">
           
-            <a href="/tags/Deep-Learning/" rel="tag">#Deep Learning</a>
-          
-            <a href="/tags/Paper-Notes/" rel="tag">#Paper Notes</a>
+            <a href="/tags/caffe/" rel="tag">#caffe</a>
           
         </div>
       
@@ -322,13 +325,11 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2015/08/23/CNN经典论文集/" rel="prev">CNN经典论文集</a>
-            
           </div>
 
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2015/08/12/RCNN论文笔记/" rel="next">RCNN论文笔记</a>
+              <a href="/2015/08/23/CNN经典论文集/" rel="next">CNN经典论文集</a>
             
           </div>
         </div>
@@ -353,8 +354,8 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
         
           <div class="comments" id="comments">
             
-              <div class="ds-thread" data-thread-key="2015/08/16/Faster RCNN论文笔记/"
-                   data-title="Faster RCNN论文笔记" data-url="http://yoursite.com/2015/08/16/Faster RCNN论文笔记/">
+              <div class="ds-thread" data-thread-key="2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/"
+                   data-title="Caffe 源码阅读笔记一（基本代码框架）" data-url="http://yoursite.com/2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/">
               </div>
             
           </div>
@@ -436,7 +437,7 @@ MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN�
           <div class="post-toc">
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#motivation"><span class="nav-number">1.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#region-proposal-networks-rpn"><span class="nav-number">2.</span> <span class="nav-text">Region Proposal Networks (RPN)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#basic-notions"><span class="nav-number">2.1.</span> <span class="nav-text">Basic Notions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#architecture"><span class="nav-number">2.2.</span> <span class="nav-text">Architecture</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#training-rpn"><span class="nav-number">3.</span> <span class="nav-text">Training RPN</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#caffe基本架构"><span class="nav-number">1.</span> <span class="nav-text">Caffe基本架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#protobuf"><span class="nav-number">2.</span> <span class="nav-text">Protobuf</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#blob"><span class="nav-number">3.</span> <span class="nav-text">Blob</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#layer"><span class="nav-number">4.</span> <span class="nav-text">Layer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#net"><span class="nav-number">5.</span> <span class="nav-text">Net</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#solver"><span class="nav-number">6.</span> <span class="nav-text">Solver</span></a></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>
