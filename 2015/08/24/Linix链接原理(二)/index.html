@@ -30,7 +30,7 @@
 
 
 
-  <meta name="keywords" content="Deep Learning,Paper Notes," />
+  <meta name="keywords" content="Linux, OS," />
 
 
 
@@ -39,41 +39,20 @@
   <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.1" />
 
 
-<meta name="description" content="RCNN本身概念比较简单，但是论文中提到了许多object detection的经典方法非常有用，这些内容绝大部分在附录中，在阅读其他论文时相信会有很大帮助。
-Basic Notions
-
-Pipeline method
-
-
-提取独立于物体类别的region proposal
-使用CNN做特征提取
-调整CNN参数用于从候选的proposal中获取包含object的proposal(domain-s">
+<meta name="description" content="Computer Systems: Linking
+《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理">
 <meta property="og:type" content="article">
-<meta property="og:title" content="RCNN论文笔记">
-<meta property="og:url" content="http://yoursite.com/2015/08/12/RCNN论文笔记/index.html">
+<meta property="og:title" content="Linix系统链接原理(二)">
+<meta property="og:url" content="http://yoursite.com/2015/08/24/Linix链接原理(二)/index.html">
 <meta property="og:site_name" content="Duburs Blog">
-<meta property="og:description" content="RCNN本身概念比较简单，但是论文中提到了许多object detection的经典方法非常有用，这些内容绝大部分在附录中，在阅读其他论文时相信会有很大帮助。
-Basic Notions
-
-Pipeline method
-
-
-提取独立于物体类别的region proposal
-使用CNN做特征提取
-调整CNN参数用于从候选的proposal中获取包含object的proposal(domain-s">
-<meta property="og:image" content="http://yoursite.com/img/RCNN/transformation.png">
-<meta property="og:updated_time" content="2015-08-27T14:14:18.000Z">
+<meta property="og:description" content="Computer Systems: Linking
+《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理">
+<meta property="og:image" content="http://yoursite.com/img/Linux/entire_process.jpg">
+<meta property="og:updated_time" content="2015-09-27T14:57:10.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="RCNN论文笔记">
-<meta name="twitter:description" content="RCNN本身概念比较简单，但是论文中提到了许多object detection的经典方法非常有用，这些内容绝大部分在附录中，在阅读其他论文时相信会有很大帮助。
-Basic Notions
-
-Pipeline method
-
-
-提取独立于物体类别的region proposal
-使用CNN做特征提取
-调整CNN参数用于从候选的proposal中获取包含object的proposal(domain-s">
+<meta name="twitter:title" content="Linix系统链接原理(二)">
+<meta name="twitter:description" content="Computer Systems: Linking
+《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理">
 
 
 <script type="text/javascript" id="hexo.configuration">
@@ -83,7 +62,7 @@ Pipeline method
   };
 </script>
 
-  <title> RCNN论文笔记 | Duburs Blog </title>
+  <title> Linix系统链接原理(二) | Duburs Blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
@@ -208,7 +187,7 @@ Pipeline method
           
           
             
-              RCNN论文笔记
+              Linix系统链接原理(二)
             
           
         </h1>
@@ -217,8 +196,8 @@ Pipeline method
       <div class="post-meta">
         <span class="post-time">
           發表於
-          <time itemprop="dateCreated" datetime="2015-08-12T16:17:30+08:00" content="2015-08-12">
-            2015-08-12
+          <time itemprop="dateCreated" datetime="2015-08-24T22:11:07+08:00" content="2015-08-24">
+            2015-08-24
           </time>
         </span>
 
@@ -227,8 +206,8 @@ Pipeline method
             &nbsp; | &nbsp; 分類於
             
               <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
-                  <span itemprop="name">Deep Learning</span>
+                <a href="/categories/OS/" itemprop="url" rel="index">
+                  <span itemprop="name">OS</span>
                 </a>
               </span>
 
@@ -243,8 +222,8 @@ Pipeline method
           
             <span class="post-comments-count">
               &nbsp; | &nbsp;
-              <a href="/2015/08/12/RCNN论文笔记/#comments" itemprop="discussionUrl">
-                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/12/RCNN论文笔记/" itemprop="commentsCount"></span>
+              <a href="/2015/08/24/Linix链接原理(二)/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/24/Linix链接原理(二)/" itemprop="commentsCount"></span>
               </a>
             </span>
           
@@ -258,92 +237,56 @@ Pipeline method
       
 
       
-        <span itemprop="articleBody"><p>RCNN本身概念比较简单，但是论文中提到了许多object detection的经典方法非常有用，这些内容绝大部分在附录中，在阅读其他论文时相信会有很大帮助。</p>
-<h2 id="basic-notions">Basic Notions</h2>
+        <span itemprop="articleBody"><h2 id="computer-systems-linking">Computer Systems: Linking</h2>
+<p>《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理解，在阅读本章节的时候也费了不少功夫。</p>
+<p>因为笔记比较长所以分成两部分</p>
+<h3 id="可执行目标文件">可执行目标文件</h3>
+<p>可执行目标文件与前面提到的可重定向目标文件最大的区别在于，可执行目标文件必须将文件中的节映射到存储器中的段中，同时它还定义了一个.init函数用来初始化代码，由于可执行目标文件可以直接运行，因此该文件中不包含重定向信息</p>
+<h4 id="可执行目标文件的加载">可执行目标文件的加载</h4>
+<p>将可执行目标文件中的代码和数据复制到存储器的过程称为<strong>加载</strong>,存储器映像为程序分配了的数据空间(包括堆栈)以及用来存储数据和代码的段，基本结构如下：</p>
+<pre><code>最上方是用户栈，主要用来存储局部变量等
+下面的存储器区域用来存储共享库
+再下面是堆空间(malloc时就会分配这部分空间)
+最后是可执行文件中的数据和代码段</code></pre>
+<p>比较令我印象深刻的是这一章节介绍了C程序的启动细节，当加载器完成代码和数据段的加载后：</p>
+<pre><code>加载器跳转到程序入口点，即符号_start的地址，在该地址启动代码
+调用.text和.init的初始化例程，启动代码调用atexit例程，该程序包含原程序正常终止时应该调用的程序
+之后运行原程序中的main函数执行我们的C代码
+最后exit函数调用_exit返回</code></pre>
+<p>从启动例程的伪代码中就可以看出main函数在C程序中必须出现，这也就是为什么我们把main函数称为程序入口的原因</p>
+<p>对于习题7.5中第二个问题，无论直接调用exit还是使用return，抑或是什么都不写，最后都会调用_exit程序把控制返回给操作系统</p>
+<h3 id="动态链接共享库">动态链接共享库</h3>
+<p>静态库虽然能很好地管理大量公共函数的链接问题，但是如果有多个程序同时引用了一个函数，函数会被复制多份，显然这会占用多余的内存空间，因此<strong>共享库</strong>被设计来解决函数代码重复复制的问题</p>
+<p>按照书上的说法，在运行时共享库可以加载到任意的存储器地址并和存储器中的程序链接起来，这个过程也被称为<strong>动态链接</strong>，有专门的动态链接器完成此任务，共享库独立于应用程序，因此在链接时链接器不会拷贝动态链接库中的代码和数据</p>
+<p>在加载时，如果需要链接动态链接库，那么加载器会把控制权转交给动态链接器，动态链接器会执行如下重定位流程：</p>
+<pre><code>1.重定位每个动态链接库的文本和数据到存储器段
+2.重定位可执行目标文件中的符号和引用</code></pre>
+<p>那么如何做到让多个进程共享一块存储器中的库代码呢？</p>
+<p>书中介绍了编译库代码，使得链接器不需要修改代码就可以在任何地址加载和执行，相当于预先把库代码编译完成后，这里我们可以看出动态链接库与静态链接库的一个重要的不同点：动态链接库不需要链接器进行重定位，但是按照之前几节的说法，如果我们需要调用外部定义的数据或者函数，那么如何找到对应的地址呢？</p>
+<p>书中提到了关键的一个事实：<strong>无论我们在存储器的何处加载目标模块，数据段总是被分配成紧随在代码段的后面</strong>这意味着如果代码段和数据段的长度固定，那么我们始终可以通过相对寻址找到我们需要的数据或指令。</p>
+<h4 id="全局偏移量表got">全局偏移量表GOT</h4>
+<p>由于动态链接库中的代码不会编译到可执行目标文件中，因此我们需要给可执行目标文件一定的信息让加载起能够找到动态链接库的代码，因此引入GOT和PLT两张表，分别用来记录在这个目标模块中引用的全局变量和外部定义函数。</p>
 <ul>
-<li>Pipeline method</li>
+<li><p>通过GOT引用全局变量： 当程序需要引用某个全局变量时：</p>
+<pre><code>首先将PC的值移到寄存器中
+接着通过变量在GOT中的偏移找到存有该变量地址的条目
+最后通过条目中提供的全局地址找到该变量</code></pre></li>
 </ul>
-<ol style="list-style-type: decimal">
-<li>提取独立于物体类别的region proposal</li>
-<li>使用CNN做特征提取</li>
-<li>调整CNN参数用于从候选的proposal中获取包含object的proposal(domain-specific fine-tuning)</li>
-<li>SVM进行分类</li>
-</ol>
-<h2 id="rcnn-for-object-detection">RCNN for Object Detection</h2>
-<h3 id="testing">Testing</h3>
-<ul>
-<li>Selective search 提取region proposal(非本文重点)</li>
-<li>使用已经训练好的CNN(dataset: ILSVRC2012 classification caffe implementation) 提取proposal的特征，为了将输入标准化，强制将每个proposal resize到227*227</li>
-<li>CNN提取的特征输入到SVM中进行分类</li>
-</ul>
-<h3 id="training">Training</h3>
-<p>按照个人理解，为了让CNN有detection的能力，我们需要让网络具备分辨哪些proposal可能包含object，因为selective search选取的许多proposal其实没有object或者仅包含了object的一小部分。</p>
-<p>因此文中加了一步对CNN参数的调整(domain-specific fine-tuning),主要目的就是筛选proposal</p>
-<p>在实验部分作者也进行了对比，结果证明使用了fine-tuning比不使用要高8%的mAP</p>
-<ul>
-<li>Supervised pre-training</li>
-</ul>
-<ol style="list-style-type: decimal">
-<li>CNN on ILSVRC2012 with 2.2% error rate</li>
-<li>training set: images with image-level annotations, <strong><em>no bounding boxes</em></strong></li>
-</ol>
-<ul>
-<li>Domain specific fine-tuning</li>
-</ul>
-<ol style="list-style-type: decimal">
-<li>N+1 classification: N object classes and 1 background</li>
-<li>Use warped region proposals for tuning</li>
-<li>Positive training examples: region proposals with &gt;0.5IoU overlap(the rest as negative)</li>
-</ol>
-<ul>
-<li>Object category classification</li>
-</ul>
-<ol style="list-style-type: decimal">
-<li>Positive examples: ground-truth boxes, Negative: region proposals with &lt;0.3IoU overlap</li>
-<li>Trade-off between SVM and Softmax</li>
-<li>Different definition for training sets between fine-tuning and classification</li>
-</ol>
-<p>这里作者提了两个问题 (在附录里均有解答):</p>
-<ol style="list-style-type: decimal">
-<li>为什么在第二步调整CNN参数使用的训练集和训练SVM分类器的训练集不同(尤其是threshold的选择不一样)?</li>
-<li>为什么不使用softmax分类器而选择SVM?</li>
-</ol>
-<h2 id="appendix">Appendix</h2>
-<ul>
-<li>Object proposal transformations 由于CNN输入是227*227的正方形图像，因此需要对proposal进行缩放处理，文中提出了3种不同的处理方式：</li>
-</ul>
-<ol style="list-style-type: decimal">
-<li>tightest square with context(等比例缩放proposal在原始图像中的bounding square)</li>
-<li>tightest square without context(等比例缩放proposal在原始图像中的bounding square,但要去掉在bounding square中而不在原始proposal中的部分)</li>
-<li>强制缩放proposal 3种变形的方式如图中所示:<img src="/img/RCNN/transformation.png" alt="transformation"></li>
-</ol>
-<ol style="list-style-type: upper-alpha">
-<li>origin proposal (B) tightest square with context (C) tightest square without context (D) warp</li>
-</ol>
-<ul>
-<li>Positive vs negative examples and softmax</li>
-</ul>
-<ol style="list-style-type: decimal">
-<li>用于fine－tuning的数据集过少，因此将降低了positive example的要求，只要IoU大于0.5就认为可能有object在这个proposal里面，作者同时指出这样能够防止overfitting</li>
-<li>使用softmax比SVM降低3.3%的mAP，主要原因可能在于fine-tuning的训练集不那么强调box的位置，且SVM使用的nagative sample更具有区分度</li>
-</ol>
-<ul>
-<li>Bounding-box 回归</li>
-</ul>
-<ol style="list-style-type: decimal">
-<li>使用最后一个pool层的输出训练线性回归模型来预测detection window</li>
-<li>实验结果表明使用BB regression效果更优</li>
-</ol>
-<h2 id="insights">Insights</h2>
-<ul>
-<li>Most feature information is extracted by the convolutional layers</li>
-<li>The structure of CNN really matters(nearly 7~8% mAP)</li>
-</ul>
-<p>下面两点是这篇文章的核心：</p>
-<ul>
-<li>High-capacity CNN to bottom-up region proposals in order to localize and segment objects(CNN用于detection)</li>
-<li>Effective method: supervised pretraining (auxiliary data eg. classification)/fine-tuning(scarce data eg. detection)(fine-tuning的重要性不言而喻)</li>
-</ul>
+<p>从C/C++程序员的角度而言，这相当于进行两次寻址，第一次找到全局变量的地址，第二次找到该变量，GOT就是一张提供了各变量地址的表 类似地，当程序需要调用某个外部函数时，同样执行上述的步骤</p>
+<p>值得注意的是为了防止每次调用动态链接库的数据或函数时都要重复上述的步骤，编译器使用了一种称为“延迟绑定”的技术</p>
+<h4 id="过程链接表plt">过程链接表PLT</h4>
+<p>介绍延迟绑定之前，首先需要介绍过程链接表的概念，书中没有详细说明PLT存储的内容，因此我查阅了一些资料：</p>
+<pre><code>过程链接表用于把位置独立的函数调用重定向到绝对位置。PLT中的每个条目为本程序要调用的函数提供一个入口，PLT 的第1个入口PLT[0] 是一段访问动态链接器的特殊代码。程序对PLT入口的第1次访问都转到了PLT[0]</code></pre>
+<p>当第一次过程调用发生时，最后总会跳转到PLT[0]中，<strong>PLT[0]包含跳转到动态链接器的信息</strong>，待完成符号解析后，将符号的实际地址存入相应的GOT项，这样以后调用函数时可直接跳到实际的函数地址，不必再执行符号解析函数。延迟绑定指的就是在第一次引用动态链接库的指令时，通过PLT和GOT两张表寻找运行时的指令地址，之后修改GOT项的内容使得后面的调用不再需要重复相同的步骤。</p>
+<p>Linux用一个全局的库映射信息结构struct link_map链表来管理和控制所有动态库的加载，动态库的加载过程实际上是映射库文件到内存中，并填充库映射信息结构添加到链表中的过程。觉得这部分书中讲得也不够清楚，还是有点似懂非懂。</p>
+<p>但是读完动态链接的部分之后，觉得动态链接与链接的定义其实有点出入，按照本章开头的定义，链接强调组合成为单一文件，然而动态链接的本质却是通过间接的方式寻找调用的数据和代码，链接器在链接动态库时紧紧拷贝重定位和符号表信息，并不参与真正的链接过程，因此我认为链接与动态链接是两个并列的概念</p>
+<h3 id="总结">总结</h3>
+<p>总的来说，综合<strong>符号解析</strong>、<strong>静态库链接</strong>和<strong>动态链接</strong>，一个完整的链接过程如下图：</p>
+<div class="figure">
+<img src="/img/Linux/entire_process.jpg" alt="whole_process">
+<p class="caption">whole_process</p>
+</div>
+<p>总体而言链接的重点在于重定位与两类链接库的链接原理，理清这些概念之后整个链接的过程就比较清晰了。</p>
 </span>
       
     </div>
@@ -352,9 +295,7 @@ Pipeline method
       
         <div class="post-tags">
           
-            <a href="/tags/Deep-Learning/" rel="tag">#Deep Learning</a>
-          
-            <a href="/tags/Paper-Notes/" rel="tag">#Paper Notes</a>
+            <a href="/tags/Linux-OS/" rel="tag">#Linux, OS</a>
           
         </div>
       
@@ -363,13 +304,13 @@ Pipeline method
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2015/08/16/Faster RCNN论文笔记/" rel="prev">Faster RCNN论文笔记</a>
+              <a href="/2015/08/24/Linix链接原理(一)/" rel="prev">Linix系统链接原理(一)</a>
             
           </div>
 
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2015/08/12/Fast RCNN论文笔记/" rel="next">Fast RCNN论文笔记</a>
+              <a href="/2015/08/23/CNN经典论文集/" rel="next">CNN经典论文集</a>
             
           </div>
         </div>
@@ -394,8 +335,8 @@ Pipeline method
         
           <div class="comments" id="comments">
             
-              <div class="ds-thread" data-thread-key="2015/08/12/RCNN论文笔记/"
-                   data-title="RCNN论文笔记" data-url="http://yoursite.com/2015/08/12/RCNN论文笔记/">
+              <div class="ds-thread" data-thread-key="2015/08/24/Linix链接原理(二)/"
+                   data-title="Linix系统链接原理(二)" data-url="http://yoursite.com/2015/08/24/Linix链接原理(二)/">
               </div>
             
           </div>
@@ -477,7 +418,7 @@ Pipeline method
           <div class="post-toc">
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#basic-notions"><span class="nav-number">1.</span> <span class="nav-text">Basic Notions</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rcnn-for-object-detection"><span class="nav-number">2.</span> <span class="nav-text">RCNN for Object Detection</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#testing"><span class="nav-number">2.1.</span> <span class="nav-text">Testing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#training"><span class="nav-number">2.2.</span> <span class="nav-text">Training</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#appendix"><span class="nav-number">3.</span> <span class="nav-text">Appendix</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#insights"><span class="nav-number">4.</span> <span class="nav-text">Insights</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#computer-systems-linking"><span class="nav-number">1.</span> <span class="nav-text">Computer Systems: Linking</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#可执行目标文件"><span class="nav-number">1.1.</span> <span class="nav-text">可执行目标文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#可执行目标文件的加载"><span class="nav-number">1.1.1.</span> <span class="nav-text">可执行目标文件的加载</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态链接共享库"><span class="nav-number">1.2.</span> <span class="nav-text">动态链接共享库</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#全局偏移量表got"><span class="nav-number">1.2.1.</span> <span class="nav-text">全局偏移量表GOT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#过程链接表plt"><span class="nav-number">1.2.2.</span> <span class="nav-text">过程链接表PLT</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">1.3.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>

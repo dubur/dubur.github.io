@@ -1,0 +1,772 @@
+<!doctype html>
+<html class="theme-next use-motion theme-next-mist">
+<head>
+  
+
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5"/>
+
+
+
+  <link href='//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+
+
+<link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.5.1"/>
+
+
+    <meta name="description" content="Dubers Blog" />
+
+
+
+  <meta name="keywords" content="Linux, OS," />
+
+
+
+
+
+  <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.1" />
+
+
+<meta name="description" content="Computer Systems: Linking
+《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linix系统链接原理(一)">
+<meta property="og:url" content="http://yoursite.com/2015/08/24/Linix链接原理(一)/index.html">
+<meta property="og:site_name" content="Duburs Blog">
+<meta property="og:description" content="Computer Systems: Linking
+《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理">
+<meta property="og:image" content="http://yoursite.com/img/Linux/compile_process.jpg">
+<meta property="og:image" content="http://yoursite.com/img/Linux/compile.jpg">
+<meta property="og:updated_time" content="2015-09-27T14:57:18.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linix系统链接原理(一)">
+<meta name="twitter:description" content="Computer Systems: Linking
+《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理">
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: 'post'
+  };
+</script>
+
+  <title> Linix系统链接原理(一) | Duburs Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <!--[if lte IE 8]>
+  <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
+    <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode">
+      <img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820"
+           alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari."
+           style='margin-left:auto;margin-right:auto;display: block;'/>
+    </a>
+  </div>
+<![endif]-->
+  
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?de04554947ef5ddb1d9dd95ef6598c19";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><h1 class="site-meta">
+  <span class="logo-line-before"><i></i></span>
+  <a href="/" class="brand" rel="start">
+      <span class="logo">
+        <i class="icon-next-logo"></i>
+      </span>
+      <span class="site-title">Duburs Blog</span>
+  </a>
+  <span class="logo-line-after"><i></i></span>
+</h1>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon icon-next-home"></i> <br />
+            首頁
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            <i class="menu-item-icon icon-next-categories"></i> <br />
+            分類
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            <i class="menu-item-icon icon-next-about"></i> <br />
+            關於
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            <i class="menu-item-icon icon-next-archives"></i> <br />
+            歸檔
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            <i class="menu-item-icon icon-next-tags"></i> <br />
+            標籤
+          </a>
+        </li>
+      
+
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content"> 
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      
+      
+        <h1 class="post-title" itemprop="name headline">
+          
+          
+            
+              Linix系统链接原理(一)
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          發表於
+          <time itemprop="dateCreated" datetime="2015-08-24T22:11:07+08:00" content="2015-08-24">
+            2015-08-24
+          </time>
+        </span>
+
+        
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分類於
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/OS/" itemprop="url" rel="index">
+                  <span itemprop="name">OS</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+              &nbsp; | &nbsp;
+              <a href="/2015/08/24/Linix链接原理(一)/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/24/Linix链接原理(一)/" itemprop="commentsCount"></span>
+              </a>
+            </span>
+          
+        
+      </div>
+    </header>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <span itemprop="articleBody"><h2 id="computer-systems-linking">Computer Systems: Linking</h2>
+<p>《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理解，在阅读本章节的时候也费了不少功夫。</p>
+<p>因为笔记比较长所以分成两部分</p>
+<h3 id="基本概念">基本概念</h3>
+<p>Linking的定义：<strong>将各种代码和数据部分收集起来并组合成一个单一文件的过程</strong>，要理解这句话的含义首先需要明白GNU系统的一般编译流程：</p>
+<div class="figure">
+<img src="/img/Linux/compile_process.jpg" alt="compile">
+<p class="caption">compile</p>
+</div>
+<p>当然链接这一步并不一定要在程序编译时进行，Linking操作的对象是已经编译完成的目标文件，输出的结果就是可执行文件，链接器在整个编译过程中起到以下两个作用:</p>
+<pre><code>1.解析.o文件将符号引用与定义联系起来
+2.为指令与变量分配运行时地址</code></pre>
+<h3 id="可重定位目标文件">可重定位目标文件</h3>
+<p>要了解链接器的工作原理首先需要清楚它的输入文件，.o文件</p>
+<p>在弄清可重定位目标文件的内容之前，一些平时不好的习惯可能会引发概念上的混淆 比如在Linux上编译程序时，我们可能会执行这样的指令：</p>
+<pre><code>gcc -o *main.o* -I(dirs for header files) -l(paths for libraries)</code></pre>
+<p>之后可以直接在控制台执行./main.o，这样看来我们似乎直接执行了可重定位目标文件，然而这条指令中的.o文件是编译程序输出的最后结果，也就是说我们把可执行文件的名字命名成了main.o，而实际上汇编器生成的.o文件位于tmp目录下，因此在实际写程序时最好把文件的名字区分开，以免混淆。</p>
+<h4 id="文件格式">文件格式</h4>
+<p>书中可重定位目标文件的文件内容非常繁杂，简单而言该文件分为许多的section，每个section都包含了，总结下来分为以下三类</p>
+<pre><code>1.存储机器指令与全局变量(如.text, .data, .bss)
+2.存储指令与变量的位置相关信息（即重定位信息, 如.rel.text, rel.data）
+3.存储函数与变量的各种属性(.symtab)</code></pre>
+<p>需要注意的是链接器仅仅考虑全局变量，函数中的局部变量由栈管理</p>
+<h4 id="符号表.symtab">符号表.symtab</h4>
+<h5 id="符号">符号</h5>
+<p>从程序员的角度看符号是一个个的变量名和函数名，而对于链接器而言只是一些字符串而已，因此在这里被称作符号，符号表包含了原文件中各个符号(函数和变量)的信息，有一种符号不在链接器的管理范围之内，符号表不包含对应于<strong><em>本地非静态程序变量的符号</em></strong>，因为这些符号也由栈管理</p>
+<p>需要注意的是当变量名前面指定了static关键字之后，无论该变量定义在函数内部还是外部，都会存储在.o文件的符号表中，对于函数也同样如此。</p>
+<h5 id="符号表的格式">符号表的格式</h5>
+<p>如果从数据库的角度看，符号表可以看作是一张普通的关系表，每个符号及其相关属性都可以被看作是一个元祖，整张表中包含的属性包括：</p>
+<pre><code>符号的偏移量(存储格式为int型，可以理解为下标)
+符号的地址
+符号的类型（数据或者是函数）
+符号的大小
+ </code></pre>
+<p>书中给出的例子非常清楚，以main.o为例，基本的格式如下图：</p>
+<div class="figure">
+<embed src="/img/Linux/symtab.ps">
+<p class="caption">symtab</p>
+</div>
+<p>附上源码：</p>
+<pre><code>/* main.c */ 
+void swap();
+
+int buf[2] = {1,2}
+
+int main(){
+    swap();
+    return 0;
+}</code></pre>
+<h3 id="符号解析">符号解析</h3>
+<h4 id="全局变量解析">全局变量解析</h4>
+<p>之前提到链接器的作用之一就是解析.o文件，其实主要解析的就是符号表中的符号，实际上链接器在这一步所做的工作是将原文件出现的变量的引用和符号表中的符号定义联系起来</p>
+<p>如果符号的定义就在原文件中，那么链接器可以直接联系引用和定义，但是如果符号不是定义在原文件中，链接器假设该符号定义在其他某个模块中，同时如果出现多个文件同时定义相同变量的情况，比如一个文件中声明全局变量，另一个文件定义全局变量</p>
+<ul>
+<li>强符号：已初始化的函数及变量</li>
+<li>弱符号：未初始化的函数及变量</li>
+</ul>
+<p>当出现多个同名的全局变量时，链接器遵循以下三个标准进行解析： * 不允许有多个强符号 * 如果有一个强符号和多个弱符号，那么选择强符号 * 如果有多个弱符号，那么从这些弱符号中任意选择一个</p>
+<p>简单而言链接器不允许多重定义，并且会优先连接变量定义的位置</p>
+<p>通过对符号解析部分的介绍我们也明白了为什么写程序时不鼓励定义太多的全局变量的原因，当程序架构比较大，每个人分别编写自己的模块时，很容易发生全局变量的定义冲突，而且编译器不会报这样的错误，因为已经涉及到代码整合时的程序逻辑层面的错误而不是编程语言规范的错误。</p>
+<h4 id="与静态库连接">与静态库连接</h4>
+<p>在阅读此章节之前我认为静态库在编译时进行链接，而动态链接库在运行时进行链接，这种理解其实并不正确，这两种库的不同之处不在链接的时机而在于它们构成和设计思想</p>
+<h5 id="静态库">静态库</h5>
+<p>由于标准函数会被广泛使用，如果在编译时直接生成这些函数的代码不仅增加编译器的工作量，同时当这些函数更新时也难以维护编译器，如果为每个函数都生成一个.o文件，那么我们需要写很冗长的链接命令，同时也会消耗多余的存储空间，费时也费力。</p>
+<p>静态库可以很好地解决链接这些“常用函数”的问题，一个静态库以一种称为存档的特殊文件格式存放在磁盘中，可以理解为是一组.o文件的集合。</p>
+<p>直观上讲，当我们需要链接某个函数时，我们只需要链接该静态库中的对应模块，即该函数对应的.o文件就可以了，因此静态库只需要向链接器提供每个模块的大小和位置就可以了。</p>
+<p>对于自己原先的对于静态库的理解，当编译时添加-static参数后，链接器会生成一个完全链接的可执行目标文件，也就是在编译时进行链接，这样生成的可执行文件可以直接在内存中执行，因此链接的时机和链接的库的类型其实并无多大关系</p>
+<h5 id="使用静态库解析引用">使用静态库解析引用</h5>
+<p>回到符号解析，之前介绍了解析符号时，符号定义在原文件中的情况，那么如果符号定义在静态库中怎么进行链接呢？</p>
+<p>首先链接器会按顺序扫描.o文件和静态链接库，在扫描过程中链接器会维护一个.o文件的集合E, 一个未解析的符号集合U,以及一个在输入文件中已定义的符号集合D，链接时按照以下流程进行链接：</p>
+<div class="figure">
+<img src="/img/Linux/compile.jpg" alt="compile">
+<p class="caption">compile</p>
+</div>
+<p>按照笔者理解U和D可以认为是两个数组，U用来存储未匹配到定义的符号，而D存储已定义的符号，而E用来存储所有输入文件中链接器对符号的解析结果</p>
+<p>需要注意的链接器只会链接在U中的符号，由于链接器是按顺序扫描的，因此如果符号的定义出现在引用之前并且引用后再也没有出现该符号的定义，那么就会出现扫描结束后U不为空的情况，导致链接出错</p>
+<h3 id="重定位">重定位</h3>
+<p>完成符号解析之后，代码节与数据节的大小就已经确定，之前提到链接器的第二个作用就是分配运行时地址，重定位的目的是为了让CPU知道符号在存储器中的位置，因此重定位分为两步：</p>
+<pre><code>1.将所有输入模块的同类型节(如data节)合并，并将运行时的地址赋给这些合并后的“聚合节”，同时赋给输入模块的每个节
+2.修改代码节和数据节中对每个符号的引用，使得他们指向正确的地址</code></pre>
+<p>这样写可能还是不够清晰，简单而言第一步为每个节分配运行时地址，而第二步为节中每个指令或数据分配运行时地址，而为了给指令与数据分配地址，我们需要明白<em>重定位条目</em>的概念</p>
+<pre><code>`重定位条目`
+
+在介绍可重定向目标文件的内容时提到过有section负责存储重定位信息，如代码的重定位信息在.rel.text中，数据的重定位信息在.rel.data中，这两个张表告诉链接器需要修改的引用在节中的什么位置以及重定位的类型(如何修改引用的地址)，表中每一项就是一个重定位条目，当链接器找到节中的符号后根据重定位类型计算该符号运行时地址。</code></pre>
+<p>书中介绍了两种重定位的类型：PC相对引用与绝对引用</p>
+<h4 id="pc相对引用">PC相对引用</h4>
+<p>相对引用使用基地址加偏移量的方式寻址，基地址存储在程序计数器PC中，所以我们只需要计算出偏移量，CPU就可以找到该指令或者数据的运行时地址了，假设我们已经知道了节的存储器地址和符号的运行时地址，计算方式如下：</p>
+<pre><code>计算swap在节中的地址 refptr ＝ s＋r.offset
+计算引用swap的指令地址： refaddr = ADDR(s) + r.offset
+计算偏移量  *refptr = ADDR(r.symbol) + *refptr - refaddr</code></pre>
+<p>书中给的例子比较难懂，首先抛开那个 *refptr不看， 参考书3.6节的内容，在进行PC相对寻址时，目标跳转地址就是例子中swap函数的地址，而链接器需要修改的就是引用swap的指令的目标编码，这两者之间的关系为：</p>
+<pre><code>目标编码 ＝ 目标跳转地址 － PC</code></pre>
+<p>因此在求目标编码时，实际的目标跳转地址等于swap的地址：0x80483c8,从3.6节的例子中我们可以看出PC的值是在当前指令的地址基础上＋4，即当前指令的后面一条指令，因此实际上原式等于</p>
+<pre><code>目标编码 ＝ 目标跳转地址 － （当前指令地址＋4）</code></pre>
+<p>当前指令自然是引用swap的指令地址，该地址可以用节基地址加偏移的方式求得:</p>
+<pre><code>引用swap的指令地址 ＝ 节基地址 ＋ 引用偏移 </code></pre>
+<p>在阅读这一部分时花了许多时间，主要是一些基本概念不清和对PC相对寻址的机制不太了解</p>
+<h4 id="绝对引用">绝对引用</h4>
+<p>绝对引用理解起来就容易许多，修改引用时直接把值修改为目标跳转地址和初始值的和，CPU会直接通过该引用内的值查找对应的数据</p>
+<p>按照书中的例子，bufp0需要重定位指向数组buf的首地址，又由于原本.data节中的重定位条目中的初始值为0，所以直接把buf数组的首地址赋给bufp0即可。由于重定位的对象是指针，因此该过程类似于为指针赋值的过程。</p>
+</span>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux-OS/" rel="tag">#Linux, OS</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/" rel="prev">Caffe 源码阅读笔记一（基本代码框架）</a>
+            
+          </div>
+
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/08/24/Linix链接原理(二)/" rel="next">Linix系统链接原理(二)</a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+ </div>
+
+        
+
+        
+          <div class="comments" id="comments">
+            
+              <div class="ds-thread" data-thread-key="2015/08/24/Linix链接原理(一)/"
+                   data-title="Linix系统链接原理(一)" data-url="http://yoursite.com/2015/08/24/Linix链接原理(一)/">
+              </div>
+            
+          </div>
+        
+      </div>
+
+      
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目錄
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            本站概覽
+          </li>
+        </ul>
+      
+
+      <section class="site-overview">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" src="/images/default_avatar.jpg" alt="John Yao" itemprop="image"/>
+          <p class="site-author-name" itemprop="name">John Yao</p>
+        </div>
+        <p class="site-description motion-element" itemprop="description">Dubers Blog</p>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">8</span>
+              <span class="site-state-item-name">文章</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            <a href="/categories">
+              <span class="site-state-item-count">5</span>
+              <span class="site-state-item-name">分類</span>
+              </a>
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">6</span>
+              <span class="site-state-item-name">標籤</span>
+              </a>
+          </div>
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator"></div>
+          <div class="post-toc">
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#computer-systems-linking"><span class="nav-number">1.</span> <span class="nav-text">Computer Systems: Linking</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本概念"><span class="nav-number">1.1.</span> <span class="nav-text">基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#可重定位目标文件"><span class="nav-number">1.2.</span> <span class="nav-text">可重定位目标文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#文件格式"><span class="nav-number">1.2.1.</span> <span class="nav-text">文件格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#符号表.symtab"><span class="nav-number">1.2.2.</span> <span class="nav-text">符号表.symtab</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#符号"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">符号</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#符号表的格式"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">符号表的格式</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#符号解析"><span class="nav-number">1.3.</span> <span class="nav-text">符号解析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#全局变量解析"><span class="nav-number">1.3.1.</span> <span class="nav-text">全局变量解析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#与静态库连接"><span class="nav-number">1.3.2.</span> <span class="nav-text">与静态库连接</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#静态库"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">静态库</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用静态库解析引用"><span class="nav-number">1.3.2.2.</span> <span class="nav-text">使用静态库解析引用</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重定位"><span class="nav-number">1.4.</span> <span class="nav-text">重定位</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#pc相对引用"><span class="nav-number">1.4.1.</span> <span class="nav-text">PC相对引用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#绝对引用"><span class="nav-number">1.4.2.</span> <span class="nav-text">绝对引用</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator"></div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner"> <div class="copyright" >
+  
+  &copy; &nbsp; 
+  <span itemprop="copyrightYear">2015</span>
+  <span class="with-love">
+    <i class="icon-next-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Yao</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 強力驅動
+</div>
+
+<div class="theme-info">
+  主題 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+ </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+  
+    
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"dubur"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+    
+     
+  	<script src="/js/ua-parser.min.js"></script>
+  	<script src="/js/hook-duoshuo.js"></script>
+  
+
+    
+  
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/fancy-box.js?v=0.4.5.1"></script>
+
+
+  <script type="text/javascript" src="/js/helpers.js?v=0.4.5.1"></script>
+  
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/js/motion_global.js?v=0.4.5.1" id="motion.global"></script>
+
+
+
+
+  <script type="text/javascript" src="/js/nav-toggle.js?v=0.4.5.1"></script>
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  
+<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.5.1" id="bootstrap.scrollspy.custom"></script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 0.4 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    var $tocContent = $('.post-toc-content');
+    if (isDesktop() && CONFIG.sidebar === 'post') {
+      if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+        displaySidebar();
+      }
+    }
+  });
+</script>
+
+
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      if (CONFIG.sidebar === 'always') {
+        displaySidebar();
+      }
+      if (isMobile()) {
+        FastClick.attach(document.body);
+      }
+    });
+  </script>
+
+  
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/lazyload.js"></script>
+  <script type="text/javascript">
+    $(function () {
+      $("#posts").find('img').lazyload({
+        placeholder: "/images/loading.gif",
+        effect: "fadeIn"
+      });
+    });
+  </script>
+</body>
+</html>
