@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="theme-next use-motion theme-next-mist">
+<html class="theme-next use-motion ">
 <head>
   
 
@@ -42,9 +42,9 @@
 <meta name="description" content="Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强
 Motivation (Drawbacks of RCNN)
 
-RCNN的训练方式按照一个一个阶段分的比较开，
+RCNN的训练方式按照一个一个阶段分的比较开
 训练时RCNN会将每个proposal的特征向量存储在硬盘上，不仅占用存储空间，时间上也因为读写磁盘而变得很慢
-在进行detectio">
+在进行detection">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Fast RCNN论文笔记">
 <meta property="og:url" content="http://yoursite.com/2015/08/12/Fast RCNN论文笔记/index.html">
@@ -52,25 +52,25 @@ RCNN的训练方式按照一个一个阶段分的比较开，
 <meta property="og:description" content="Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强
 Motivation (Drawbacks of RCNN)
 
-RCNN的训练方式按照一个一个阶段分的比较开，
+RCNN的训练方式按照一个一个阶段分的比较开
 训练时RCNN会将每个proposal的特征向量存储在硬盘上，不仅占用存储空间，时间上也因为读写磁盘而变得很慢
-在进行detectio">
+在进行detection">
 <meta property="og:image" content="http://yoursite.com/img/Fast_RCNN/fast-rcnn.jpeg">
 <meta property="og:image" content="http://yoursite.com/img/Fast_RCNN/training_time.png">
-<meta property="og:updated_time" content="2015-08-27T14:05:59.000Z">
+<meta property="og:updated_time" content="2015-09-28T13:44:02.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Fast RCNN论文笔记">
 <meta name="twitter:description" content="Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强
 Motivation (Drawbacks of RCNN)
 
-RCNN的训练方式按照一个一个阶段分的比较开，
+RCNN的训练方式按照一个一个阶段分的比较开
 训练时RCNN会将每个proposal的特征向量存储在硬盘上，不仅占用存储空间，时间上也因为读写磁盘而变得很慢
-在进行detectio">
+在进行detection">
 
 
 <script type="text/javascript" id="hexo.configuration">
   var CONFIG = {
-    scheme: 'Mist',
+    scheme: '',
     sidebar: 'post'
   };
 </script>
@@ -78,7 +78,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
   <title> Fast RCNN论文笔记 | Duburs Blog </title>
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+<body itemscope itemtype="http://schema.org/WebPage" lang="zsaf">
 
   <!--[if lte IE 8]>
   <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
@@ -253,7 +253,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
         <span itemprop="articleBody"><p>Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强</p>
 <h2 id="motivation-drawbacks-of-rcnn">Motivation (Drawbacks of RCNN)</h2>
 <ul>
-<li>RCNN的训练方式按照一个一个阶段分的比较开，</li>
+<li>RCNN的训练方式按照一个一个阶段分的比较开</li>
 <li>训练时RCNN会将每个proposal的特征向量存储在硬盘上，不仅占用存储空间，时间上也因为读写磁盘而变得很慢</li>
 <li>在进行detection测试时耗时长</li>
 </ul>
@@ -315,14 +315,11 @@ RCNN的训练方式按照一个一个阶段分的比较开，
 </ul>
 <p>，且浅层的卷积层没有微调的必要。</p>
 <ul>
-<li>首先用classification loss训练，之后加入bbox regression训练效果更好 &gt; improvement ranges from +0.8 to +1.1 mAP points</li>
-</ul>
-<p>(那为什么前面在写网络结构时还给出sibling layer的训练方式…)</p>
-<ul>
+<li><p>首先用classification loss训练，之后加入bbox regression训练效果更好 &gt; improvement ranges from +0.8 to +1.1 mAP points</p></li>
 <li>trade-off: speed &gt; performance improvement brought by multi-scale</li>
 <li>More data brings higher mAP</li>
 <li>Softmax slightly outperforms SVM</li>
-<li>Sparse proposals(selective search) improve detection quality and dense proposals(sliding window) free the heavy running cost.</li>
+<li><p>Sparse proposals(selective search) improve detection quality and dense proposals(sliding window) free the heavy running cost.</p></li>
 </ul>
 </span>
       
@@ -429,7 +426,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">6</span>
+              <span class="site-state-item-count">7</span>
               <span class="site-state-item-name">標籤</span>
               </a>
           </div>
@@ -488,7 +485,7 @@ RCNN的训练方式按照一个一个阶段分的比较开，
 <div class="theme-info">
   主題 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-    NexT.Mist
+    NexT
   </a>
 </div>
 

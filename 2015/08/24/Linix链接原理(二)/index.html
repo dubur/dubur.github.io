@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="theme-next use-motion theme-next-mist">
+<html class="theme-next use-motion ">
 <head>
   
 
@@ -30,7 +30,7 @@
 
 
 
-  <meta name="keywords" content="Linux, OS," />
+  <meta name="keywords" content="Linux,OS," />
 
 
 
@@ -40,24 +40,30 @@
 
 
 <meta name="description" content="Computer Systems: Linking
-《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理">
+《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，然而如果需要了解Linux下程序完整的编译执行过程，阅读本书的相关章节是十分必要的，笔记比较长所以分成两部分
+可执行目标文件
+可执行目">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linix系统链接原理(二)">
 <meta property="og:url" content="http://yoursite.com/2015/08/24/Linix链接原理(二)/index.html">
 <meta property="og:site_name" content="Duburs Blog">
 <meta property="og:description" content="Computer Systems: Linking
-《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理">
-<meta property="og:image" content="http://yoursite.com/img/Linux/entire_process.jpg">
-<meta property="og:updated_time" content="2015-09-27T14:57:10.000Z">
+《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，然而如果需要了解Linux下程序完整的编译执行过程，阅读本书的相关章节是十分必要的，笔记比较长所以分成两部分
+可执行目标文件
+可执行目">
+<meta property="og:image" content="http://yoursite.com/img/Linux/entire_process.png">
+<meta property="og:updated_time" content="2015-09-27T16:05:10.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linix系统链接原理(二)">
 <meta name="twitter:description" content="Computer Systems: Linking
-《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理">
+《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，然而如果需要了解Linux下程序完整的编译执行过程，阅读本书的相关章节是十分必要的，笔记比较长所以分成两部分
+可执行目标文件
+可执行目">
 
 
 <script type="text/javascript" id="hexo.configuration">
   var CONFIG = {
-    scheme: 'Mist',
+    scheme: '',
     sidebar: 'post'
   };
 </script>
@@ -65,7 +71,7 @@
   <title> Linix系统链接原理(二) | Duburs Blog </title>
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+<body itemscope itemtype="http://schema.org/WebPage" lang="zsaf">
 
   <!--[if lte IE 8]>
   <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
@@ -238,8 +244,7 @@
 
       
         <span itemprop="articleBody"><h2 id="computer-systems-linking">Computer Systems: Linking</h2>
-<p>《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理解，在阅读本章节的时候也费了不少功夫。</p>
-<p>因为笔记比较长所以分成两部分</p>
+<p>《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，然而如果需要了解Linux下程序完整的编译执行过程，阅读本书的相关章节是十分必要的，笔记比较长所以分成两部分</p>
 <h3 id="可执行目标文件">可执行目标文件</h3>
 <p>可执行目标文件与前面提到的可重定向目标文件最大的区别在于，可执行目标文件必须将文件中的节映射到存储器中的段中，同时它还定义了一个.init函数用来初始化代码，由于可执行目标文件可以直接运行，因此该文件中不包含重定向信息</p>
 <h4 id="可执行目标文件的加载">可执行目标文件的加载</h4>
@@ -281,11 +286,7 @@
 <p>Linux用一个全局的库映射信息结构struct link_map链表来管理和控制所有动态库的加载，动态库的加载过程实际上是映射库文件到内存中，并填充库映射信息结构添加到链表中的过程。觉得这部分书中讲得也不够清楚，还是有点似懂非懂。</p>
 <p>但是读完动态链接的部分之后，觉得动态链接与链接的定义其实有点出入，按照本章开头的定义，链接强调组合成为单一文件，然而动态链接的本质却是通过间接的方式寻找调用的数据和代码，链接器在链接动态库时紧紧拷贝重定位和符号表信息，并不参与真正的链接过程，因此我认为链接与动态链接是两个并列的概念</p>
 <h3 id="总结">总结</h3>
-<p>总的来说，综合<strong>符号解析</strong>、<strong>静态库链接</strong>和<strong>动态链接</strong>，一个完整的链接过程如下图：</p>
-<div class="figure">
-<img src="/img/Linux/entire_process.jpg" alt="whole_process">
-<p class="caption">whole_process</p>
-</div>
+<p>总的来说，综合<strong>符号解析</strong>、<strong>静态库链接</strong>和<strong>动态链接</strong>，一个完整的链接过程如下图：<img src="/img/Linux/entire_process.png" alt="whole_process"></p>
 <p>总体而言链接的重点在于重定位与两类链接库的链接原理，理清这些概念之后整个链接的过程就比较清晰了。</p>
 </span>
       
@@ -295,7 +296,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Linux-OS/" rel="tag">#Linux, OS</a>
+            <a href="/tags/Linux/" rel="tag">#Linux</a>
+          
+            <a href="/tags/OS/" rel="tag">#OS</a>
           
         </div>
       
@@ -304,13 +307,11 @@
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2015/08/24/Linix链接原理(一)/" rel="prev">Linix系统链接原理(一)</a>
-            
           </div>
 
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2015/08/23/CNN经典论文集/" rel="next">CNN经典论文集</a>
+              <a href="/2015/08/24/Linix链接原理(一)/" rel="next">Linix系统链接原理(一)</a>
             
           </div>
         </div>
@@ -390,7 +391,7 @@
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">6</span>
+              <span class="site-state-item-count">7</span>
               <span class="site-state-item-name">標籤</span>
               </a>
           </div>
@@ -449,7 +450,7 @@
 <div class="theme-info">
   主題 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-    NexT.Mist
+    NexT
   </a>
 </div>
 

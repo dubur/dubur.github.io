@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="theme-next use-motion theme-next-mist">
+<html class="theme-next use-motion ">
 <head>
   
 
@@ -30,7 +30,7 @@
 
 
 
-  <meta name="keywords" content="Linux, OS," />
+  <meta name="keywords" content="Linux,OS," />
 
 
 
@@ -40,25 +40,32 @@
 
 
 <meta name="description" content="Computer Systems: Linking
-《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理">
+《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，然而如果需要了解Linux下程序完整的编译执行过程，阅读本书的相关章节是十分必要的，笔记比较长所以分成两部分
+基本概念
+Linking">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linix系统链接原理(一)">
 <meta property="og:url" content="http://yoursite.com/2015/08/24/Linix链接原理(一)/index.html">
 <meta property="og:site_name" content="Duburs Blog">
 <meta property="og:description" content="Computer Systems: Linking
-《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理">
-<meta property="og:image" content="http://yoursite.com/img/Linux/compile_process.jpg">
-<meta property="og:image" content="http://yoursite.com/img/Linux/compile.jpg">
-<meta property="og:updated_time" content="2015-09-27T14:57:18.000Z">
+《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，然而如果需要了解Linux下程序完整的编译执行过程，阅读本书的相关章节是十分必要的，笔记比较长所以分成两部分
+基本概念
+Linking">
+<meta property="og:image" content="http://yoursite.com/img/Linux/compile_process.png">
+<meta property="og:image" content="http://yoursite.com/img/Linux/symtab.png">
+<meta property="og:image" content="http://yoursite.com/img/Linux/compile.png">
+<meta property="og:updated_time" content="2015-09-27T16:05:04.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linix系统链接原理(一)">
 <meta name="twitter:description" content="Computer Systems: Linking
-《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理">
+《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，然而如果需要了解Linux下程序完整的编译执行过程，阅读本书的相关章节是十分必要的，笔记比较长所以分成两部分
+基本概念
+Linking">
 
 
 <script type="text/javascript" id="hexo.configuration">
   var CONFIG = {
-    scheme: 'Mist',
+    scheme: '',
     sidebar: 'post'
   };
 </script>
@@ -66,7 +73,7 @@
   <title> Linix系统链接原理(一) | Duburs Blog </title>
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+<body itemscope itemtype="http://schema.org/WebPage" lang="zsaf">
 
   <!--[if lte IE 8]>
   <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
@@ -239,14 +246,9 @@
 
       
         <span itemprop="articleBody"><h2 id="computer-systems-linking">Computer Systems: Linking</h2>
-<p>《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，对我来说即使是平时常常使用Linux，接触过Makefile的编写，但是对于实际编译语句中的参数和各种链接库的真正含义还是缺乏基本的理解，在阅读本章节的时候也费了不少功夫。</p>
-<p>因为笔记比较长所以分成两部分</p>
+<p>《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，然而如果需要了解Linux下程序完整的编译执行过程，阅读本书的相关章节是十分必要的，笔记比较长所以分成两部分</p>
 <h3 id="基本概念">基本概念</h3>
-<p>Linking的定义：<strong>将各种代码和数据部分收集起来并组合成一个单一文件的过程</strong>，要理解这句话的含义首先需要明白GNU系统的一般编译流程：</p>
-<div class="figure">
-<img src="/img/Linux/compile_process.jpg" alt="compile">
-<p class="caption">compile</p>
-</div>
+<p>Linking的定义：<strong>将各种代码和数据部分收集起来并组合成一个单一文件的过程</strong>，要理解这句话的含义首先需要明白GNU系统的一般编译流程：<img src="/img/Linux/compile_process.png" alt="compile"></p>
 <p>当然链接这一步并不一定要在程序编译时进行，Linking操作的对象是已经编译完成的目标文件，输出的结果就是可执行文件，链接器在整个编译过程中起到以下两个作用:</p>
 <pre><code>1.解析.o文件将符号引用与定义联系起来
 2.为指令与变量分配运行时地址</code></pre>
@@ -272,11 +274,7 @@
 符号的类型（数据或者是函数）
 符号的大小
  </code></pre>
-<p>书中给出的例子非常清楚，以main.o为例，基本的格式如下图：</p>
-<div class="figure">
-<embed src="/img/Linux/symtab.ps">
-<p class="caption">symtab</p>
-</div>
+<p>书中给出的例子非常清楚，以main.o为例，基本的格式如下图：<img src="/img/Linux/symtab.png" alt="symtab"></p>
 <p>附上源码：</p>
 <pre><code>/* main.c */ 
 void swap();
@@ -307,11 +305,7 @@ int main(){
 <p>对于自己原先的对于静态库的理解，当编译时添加-static参数后，链接器会生成一个完全链接的可执行目标文件，也就是在编译时进行链接，这样生成的可执行文件可以直接在内存中执行，因此链接的时机和链接的库的类型其实并无多大关系</p>
 <h5 id="使用静态库解析引用">使用静态库解析引用</h5>
 <p>回到符号解析，之前介绍了解析符号时，符号定义在原文件中的情况，那么如果符号定义在静态库中怎么进行链接呢？</p>
-<p>首先链接器会按顺序扫描.o文件和静态链接库，在扫描过程中链接器会维护一个.o文件的集合E, 一个未解析的符号集合U,以及一个在输入文件中已定义的符号集合D，链接时按照以下流程进行链接：</p>
-<div class="figure">
-<img src="/img/Linux/compile.jpg" alt="compile">
-<p class="caption">compile</p>
-</div>
+<p>首先链接器会按顺序扫描.o文件和静态链接库，在扫描过程中链接器会维护一个.o文件的集合E, 一个未解析的符号集合U,以及一个在输入文件中已定义的符号集合D，链接时按照以下流程进行链接：<img src="/img/Linux/compile.png" alt="compile"></p>
 <p>按照笔者理解U和D可以认为是两个数组，U用来存储未匹配到定义的符号，而D存储已定义的符号，而E用来存储所有输入文件中链接器对符号的解析结果</p>
 <p>需要注意的链接器只会链接在U中的符号，由于链接器是按顺序扫描的，因此如果符号的定义出现在引用之前并且引用后再也没有出现该符号的定义，那么就会出现扫描结束后U不为空的情况，导致链接出错</p>
 <h3 id="重定位">重定位</h3>
@@ -334,7 +328,6 @@ int main(){
 <pre><code>目标编码 ＝ 目标跳转地址 － （当前指令地址＋4）</code></pre>
 <p>当前指令自然是引用swap的指令地址，该地址可以用节基地址加偏移的方式求得:</p>
 <pre><code>引用swap的指令地址 ＝ 节基地址 ＋ 引用偏移 </code></pre>
-<p>在阅读这一部分时花了许多时间，主要是一些基本概念不清和对PC相对寻址的机制不太了解</p>
 <h4 id="绝对引用">绝对引用</h4>
 <p>绝对引用理解起来就容易许多，修改引用时直接把值修改为目标跳转地址和初始值的和，CPU会直接通过该引用内的值查找对应的数据</p>
 <p>按照书中的例子，bufp0需要重定位指向数组buf的首地址，又由于原本.data节中的重定位条目中的初始值为0，所以直接把buf数组的首地址赋给bufp0即可。由于重定位的对象是指针，因此该过程类似于为指针赋值的过程。</p>
@@ -346,7 +339,9 @@ int main(){
       
         <div class="post-tags">
           
-            <a href="/tags/Linux-OS/" rel="tag">#Linux, OS</a>
+            <a href="/tags/Linux/" rel="tag">#Linux</a>
+          
+            <a href="/tags/OS/" rel="tag">#OS</a>
           
         </div>
       
@@ -355,13 +350,13 @@ int main(){
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/" rel="prev">Caffe 源码阅读笔记一（基本代码框架）</a>
+              <a href="/2015/08/24/Linix链接原理(二)/" rel="prev">Linix系统链接原理(二)</a>
             
           </div>
 
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2015/08/24/Linix链接原理(二)/" rel="next">Linix系统链接原理(二)</a>
+              <a href="/2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/" rel="next">Caffe 源码阅读笔记一（基本代码框架）</a>
             
           </div>
         </div>
@@ -441,7 +436,7 @@ int main(){
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">6</span>
+              <span class="site-state-item-count">7</span>
               <span class="site-state-item-name">標籤</span>
               </a>
           </div>
@@ -500,7 +495,7 @@ int main(){
 <div class="theme-info">
   主題 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-    NexT.Mist
+    NexT
   </a>
 </div>
 
