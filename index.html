@@ -184,6 +184,132 @@
           
           
             
+              <a class="post-title-link" href="/2015/10/02/Backproagation for CNN/" itemprop="url">
+                BP for CNN
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          發表於
+          <time itemprop="dateCreated" datetime="2015-10-02T16:39:22+08:00" content="2015-10-02">
+            2015-10-02
+          </time>
+        </span>
+
+        
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分類於
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
+                  <span itemprop="name">Deep Learning</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+              &nbsp; | &nbsp;
+              <a href="/2015/10/02/Backproagation for CNN/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/10/02/Backproagation for CNN/" itemprop="commentsCount"></span>
+              </a>
+            </span>
+          
+        
+      </div>
+    </header>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody"><p>对于所有从事机器学习工作的研究者及工程师而言，BP算法是最熟悉不过的了，然而自从deep learning成为研究热点之后，为了解决不同种类的问题，神经网络的结构愈发复杂起来，面对图像信息的提取与图像特征的学习，CNN已经成为众多神经网络的佼佼者，由于CNN与普通网络的区别，训练的BP算法也需要进行相应的调整，为此笔者查阅了一些资料，现将CNN的BP算法整理如下</p>
+<h2 id="features-of-cnn">Features of CNN</h2>
+<h3 id="convolutional-layer">Convolutional layer</h3>
+<p>卷积层引入了卷积核的概念，输入向量可以理解为是卷积核与输入向量卷积产生的结果，因此并不是全连接的关系，在这里我们可以回忆一下卷积运算的定义：卷积是通过两个函数f和g生成另一个函数的计算方法，其计算公式为：</p>
+<p><span class="math">\[(f*g)[n] = \sum_{m=-\infty}^\infty f[n-m] \times g[m]\]</span></p>
+<p>直观一点就是将函数f绕y轴翻转从左向右平移，计算f与g的重叠部分的面积，如下图（Wiki）<img src="/img/BP_for_CNN/Wiki-BoxConvAnim.gif" alt="img"></p>
+<p>因此在CNN的卷积运算中，我们可以认为将卷积核翻转在原始图像上进行滑动，计算重叠部分的elementwise的乘积并求和，用数学公式表达就是： <span class="math">\[x_j^l = f(\sum_{i \in M_j} x_i^{l-1} * k\_{ij}^l + b_j^l)\]</span></p>
+<p>式中j表示第j个feature map，在这里仅仅是为了完整性才加上j，为了理解卷积层的反向传播，我们假设feature map仅仅有一个，即卷积核的数量为1</p>
+<h3 id="pooling-layer">Pooling layer</h3>
+<p>池化层比卷积层来得简单，无论是MaxPooling还是Average Pooling我们很容易找到输入与输出向量的关系，需要注意的是对于MaxPooling，计算最大值的同时需要记住该最大值的下标，在反向传播时需要用到该下标。</p>
+<h2 id="backpropagation">BackPropagation</h2>
+<p>按照BP算法的流程， 我们只要知道这一节中我们假设BP算法已经反向传播到最后一个全连接层，记为<span class="math">\[\delta^l\]</span></p>
+<h3 id="pooling-layer-1">Pooling layer</h3>
+<p>先从比较简单的池化层入手，注意到输入向量在经过池化层之后，假设原始图像尺寸为H*W, 窗口尺寸为d，且窗口滑动不重叠，则输出向量的尺寸为：</p>
+<pre><code>H*W -&gt; Ceil(H/d) * Ceil(W/d)</code></pre>
+<p>由于Pooling层没有权值函数，仅仅是压缩了原始向量的尺寸，因此在进行反向传播时，也只需要将残差delta“放大”到原来的大小就可以了，pooling的数学表达式及其偏导关系为：</p>
+<p><span class="math">\[g(x)= \begin{cases}\sum_{k=1}^mx_k \over m, \ &amp; {\partial g \over \partial x} = {1 \over m } \  mean \ pooling
+     \cr max(x) &amp; {\partial g \over \partial x} = {\begin{cases} 1 &amp;if \ x_j = max(x)
+\cr  0 &amp;otherwise \ max \ pooling
+\end{cases}} \end{cases}\]</span></p>
+<p>pooling的BP算法，看上去复杂其实原理非常简单，我们只需要进行一步上采样upsampling的操作，对于maxpooling，我们将输出向量的每个元素扩展成d*d的矩阵，前向传播时纪录的下标所对应的元素为该元素的值，其他置为0，而对于meanpooling，我们只需要将矩阵中元素都置为该元素的值就可以了</p>
+<p>之所以被称作upsampling就是为了对应前向传播时我们使用降采样downsampling，记作<span class="math">\[up(x)\]</span></p>
+<p>因此残差在经过pooling层时，我们可以简单地计算上一层残差为</p>
+<p><span class="math">\[\delta^{l-1} = f^{&#39;}(u_j^l \circ up(\delta_j^{l+1}))\]</span></p>
+<p>式中f表示pooling层后接的激活函数，u表示该f的输入，但是很多的CNN架构中Pooling层后面不经过激活函数，因此一般这一项为1，<span class="math">\(\circ\)</span>指elementwise乘法</p>
+<h3 id="convolution-layer">Convolution layer</h3>
+<p>其实在卷积层我们也用到了池化压缩的思想，但是卷积层有卷积核，相当于全连接层的权值矩阵，因此我们可以类比fc层的残差计算方法：</p>
+<p><span class="math">\[\delta^{l-1} = (W^T \delta^{l}) * f^{&#39;}(u^{l-1})\]</span></p>
+<p>卷积层不像全连接层那样输入与输出之间每两个元素都有联系，对于输出向量中的每个元素，在输入向量中与之相关联的元素只有d*d个，即卷积窗口的大小，为了简单我们以一维向量的卷积为例，我们很容易通过下图看出对应关系：<img src="/img/BP_for_CNN/RiverTrain-ImageConvDiagram.png" alt="kernel"></p>
+<p>因此反向传播时，我们也只需要考虑部分的对应关系:<img src="/img/BP_for_CNN/BP_conv_layer.png" alt="img"></p>
+<p><span class="math">\[\delta_n^{l-1} = {\partial J \over \partial x_n} = {\partial J \over \partial y}{\partial y \over \partial x_n} = \sum_{i=1}^{|w|} {\partial J \over \partial y\_{n-i+1}}{\partial y\_{n-i+1} \over {\partial x_n}} = \sum\_{i=1}^{|w|} {\delta\_{n-i+1}^{l}w_i} = (\delta^{l}*flip(w))[n]\]</span></p>
+<p>式中w代表卷积核的参数，上式的结果可以简化为：</p>
+<p><span class="math">\[\delta^{l-1} = \delta^{l} * flip(w)\]</span> 这里我们忽略了激活函数f，可以看出该公式与全连接层的公式十分类似</p>
+<p>式中flip表示翻转，意思是在反向传播时需要将卷积核进行翻转 这里其实有一个问题，在标准的卷积运算中需要翻转因此在反向传播时也需要翻转，那么如果我们不进行翻转的话，在BP过程中就不需要翻转，我们可以将其视作为全连接层的退化版本(去掉了大部分的连接关系) 事实上，由于卷积层训练的就是卷积核的参数，因此我们不翻转同样可以训练，而且可以简化计算过程</p>
+<p>残差的反向传播文明已经完成，下面就是通过残差计算偏导了，原本全连接层在计算偏导时只需要将残差乘以对应层的向量即可，但是卷积层是部分连通，不需要所有元素参与计算，所以我们需要修改一下：</p>
+<p><span class="math">\[{\partial J \over \partial {k_{ij}^{l}}} = \sum\_{u,v} ({\delta\_{j}^{l}}\_{uv}(p\_{i}^{l-1})\_{uv})\]</span></p>
+<p>可以看出与fc层的区别也只是修改了参与计算的元素而已</p>
+<p>式中p表示的是原输入向量中与卷积核元素<span class="math">\(k_{ij}\)</span>相乘的元素，如下图所示：<img src="/img/BP_for_CNN/kernel_partial.jpg" alt="kernel_partial"></p>
+<p>假设步长为2，那么<span class="math">\(p_i\)</span>指的就是图中红色的部分，如果步长设置为1，那么<span class="math">\(p_i\)</span>指的就是图像中阴影加粗的部分</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>经过分析我们可以得出CNN的反向传播其实也有规律可循，关键是需要了解BP算法的原理，这是理清任何使用BP算法进行优化求解的神经网络的基本，抓住两个点：反向传播其实是将输出层作为输入层计算各层残差的过程，把握好各层的性质理解起来就比较容易了。</p>
+<h2 id="reference">Reference</h2>
+<p>Bouvrie J. Notes on convolutional neural networks[J]. 2006. http://www.slideshare.net/kuwajima/cnnbp</p>
+</span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      
+      
+        <h1 class="post-title" itemprop="name headline">
+          
+          
+            
               <a class="post-title-link" href="/2015/08/24/Linix链接原理(二)/" itemprop="url">
                 Linix系统链接原理(二)
               </a>
@@ -1206,7 +1332,7 @@ int main(){
 <ul>
 <li>卷积层和全连接层一样需要fine-tuning &gt; decrease mAP from 66.9% to 61.4%</li>
 </ul>
-<p>，且浅层的卷积层没有微调的必要。</p>
+<p>且浅层的卷积层没有微调的必要。</p>
 <ul>
 <li><p>首先用classification loss训练，之后加入bbox regression训练效果更好 &gt; improvement ranges from +0.8 to +1.1 mAP points</p></li>
 <li>trade-off: speed &gt; performance improvement brought by multi-scale</li>
@@ -1554,7 +1680,7 @@ else:
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">8</span>
+              <span class="site-state-item-count">9</span>
               <span class="site-state-item-name">文章</span>
             </a>
           </div>
