@@ -248,9 +248,7 @@
 <h3 id="pooling-layer">Pooling layer</h3>
 <p>池化层比卷积层来得简单，无论是MaxPooling还是Average Pooling我们很容易找到输入与输出向量的关系，需要注意的是对于MaxPooling，计算最大值的同时需要记住该最大值的下标，在反向传播时需要用到该下标。</p>
 <h2 id="backpropagation">BackPropagation</h2>
-<p>按照BP算法的流程， 我们只要知道这一节中我们假设BP算法已经反向传播到最后一个全连接层，记为<span class="math">\[\delta^l\]</span></p>
-<h3 id="pooling-layer-1">Pooling layer</h3>
-<p>先从比较简单的池化层入手，注意到输入向量在经过池化层之后，假设原始图像尺寸为H*W, 窗口尺寸为d，且窗口滑动不重叠，则输出向量的尺寸为：</p>
+<p>按照BP算法的流程， 我们只要知道这一节中我们假设BP算法已经反向传播到最后一个全连接层，记为<span class="math">\(\delta^l\)</span> ### Pooling layer 先从比较简单的池化层入手，注意到输入向量在经过池化层之后，假设原始图像尺寸为H*W, 窗口尺寸为d，且窗口滑动不重叠，则输出向量的尺寸为：</p>
 <pre><code>H*W -&gt; Ceil(H/d) * Ceil(W/d)</code></pre>
 <p>由于Pooling层没有权值函数，仅仅是压缩了原始向量的尺寸，因此在进行反向传播时，也只需要将残差delta“放大”到原来的大小就可以了，pooling的数学表达式及其偏导关系为：</p>
 <p><span class="math">\[g(x)= \begin{cases}\sum_{k=1}^mx_k \over m, \ &amp; {\partial g \over \partial x} = {1 \over m } \  mean \ pooling
@@ -258,7 +256,7 @@
 \cr  0 &amp;otherwise \ max \ pooling
 \end{cases}} \end{cases}\]</span></p>
 <p>pooling的BP算法，看上去复杂其实原理非常简单，我们只需要进行一步上采样upsampling的操作，对于maxpooling，我们将输出向量的每个元素扩展成d*d的矩阵，前向传播时纪录的下标所对应的元素为该元素的值，其他置为0，而对于meanpooling，我们只需要将矩阵中元素都置为该元素的值就可以了</p>
-<p>之所以被称作upsampling就是为了对应前向传播时我们使用降采样downsampling，记作<span class="math">\[up(x)\]</span></p>
+<p>之所以被称作upsampling就是为了对应前向传播时我们使用降采样downsampling，记作<span class="math">\(up(x)\)</span></p>
 <p>因此残差在经过pooling层时，我们可以简单地计算上一层残差为</p>
 <p><span class="math">\[\delta^{l-1} = f^{&#39;}(u_j^l \circ up(\delta_j^{l+1}))\]</span></p>
 <p>式中f表示pooling层后接的激活函数，u表示该f的输入，但是很多的CNN架构中Pooling层后面不经过激活函数，因此一般这一项为1，<span class="math">\(\circ\)</span>指elementwise乘法</p>
@@ -279,7 +277,8 @@
 <h2 id="conclusion">Conclusion</h2>
 <p>经过分析我们可以得出CNN的反向传播其实也有规律可循，关键是需要了解BP算法的原理，这是理清任何使用BP算法进行优化求解的神经网络的基本，抓住两个点：反向传播其实是将输出层作为输入层计算各层残差的过程，把握好各层的性质理解起来就比较容易了。</p>
 <h2 id="reference">Reference</h2>
-<p>Bouvrie J. Notes on convolutional neural networks[J]. 2006. http://www.slideshare.net/kuwajima/cnnbp</p>
+<p>Bouvrie J. Notes on convolutional neural networks[J]. 2006.</p>
+<p>http://www.slideshare.net/kuwajima/cnnbp</p>
 </span>
         
       
