@@ -53,7 +53,7 @@ C">
 <meta property="og:image" content="http://yoursite.com/img/BP_for_CNN/RiverTrain-ImageConvDiagram.png">
 <meta property="og:image" content="http://yoursite.com/img/BP_for_CNN/BP_conv_layer.png">
 <meta property="og:image" content="http://yoursite.com/img/BP_for_CNN/kernel_partial.jpg">
-<meta property="og:updated_time" content="2015-10-05T13:57:03.000Z">
+<meta property="og:updated_time" content="2015-10-07T15:26:58.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="BP for CNN">
 <meta name="twitter:description" content="对于所有从事机器学习工作的研究者及工程师而言，BP算法是最熟悉不过的了，然而自从deep learning成为研究热点之后，为了解决不同种类的问题，神经网络的结构愈发复杂起来，面对图像信息的提取与图像特征的学习，CNN已经成为众多神经网络的佼佼者，由于CNN与普通网络的区别，训练的BP算法也需要进行相应的调整，为此笔者查阅了一些资料，现将CNN的BP算法整理如下
@@ -249,7 +249,7 @@ C">
 <p>卷积层引入了卷积核的概念，输入向量可以理解为是卷积核与输入向量卷积产生的结果，因此并不是全连接的关系，在这里我们可以回忆一下卷积运算的定义：卷积是通过两个函数f和g生成另一个函数的计算方法，其计算公式为：</p>
 <p><span class="math">\[(f*g)[n] = \sum_{m=-\infty}^\infty f[n-m] \times g[m]\]</span></p>
 <p>直观一点就是将函数f绕y轴翻转从左向右平移，计算f与g的重叠部分的面积，如下图（Wiki）<img src="/img/BP_for_CNN/Wiki-BoxConvAnim.gif" alt="img"></p>
-<p>因此在CNN的卷积运算中，我们可以认为将卷积核翻转在原始图像上进行滑动，计算重叠部分的elementwise的乘积并求和，用数学公式表达就是： <span class="math">\[x_j^l = f(\sum_{i \in M_j} x_i^{l-1} * k\_{ij}^l + b_j^l)\]</span></p>
+<p>因此在CNN的卷积运算中，我们可以认为将卷积核翻转在原始图像上进行滑动，计算重叠部分的elementwise的乘积并求和，用数学公式表达就是： <span class="math">\[x_j^l = f(\sum_{i \in M_j} x_i^{l-1} * k_{ij}^l + b_j^l)\]</span></p>
 <p>式中j表示第j个feature map，在这里仅仅是为了完整性才加上j，为了理解卷积层的反向传播，我们假设feature map仅仅有一个，即卷积核的数量为1</p>
 <h3 id="pooling-layer">Pooling layer</h3>
 <p>池化层比卷积层来得简单，无论是MaxPooling还是Average Pooling我们很容易找到输入与输出向量的关系，需要注意的是对于MaxPooling，计算最大值的同时需要记住该最大值的下标，在反向传播时需要用到该下标。</p>
@@ -271,12 +271,12 @@ C">
 <p><span class="math">\[\delta^{l-1} = (W^T \delta^{l}) * f^{&#39;}(u^{l-1})\]</span></p>
 <p>卷积层不像全连接层那样输入与输出之间每两个元素都有联系，对于输出向量中的每个元素，在输入向量中与之相关联的元素只有d*d个，即卷积窗口的大小，为了简单我们以一维向量的卷积为例，我们很容易通过下图看出对应关系：<img src="/img/BP_for_CNN/RiverTrain-ImageConvDiagram.png" alt="kernel"></p>
 <p>因此反向传播时，我们也只需要考虑部分的对应关系:<img src="/img/BP_for_CNN/BP_conv_layer.png" alt="img"></p>
-<p><span class="math">\[\delta_n^{l-1} = {\partial J \over \partial x_n} = {\partial J \over \partial y}{\partial y \over \partial x_n} = \sum_{i=1}^{|w|} {\partial J \over \partial y\_{n-i+1}}{\partial y\_{n-i+1} \over {\partial x_n}} = \sum\_{i=1}^{|w|} {\delta\_{n-i+1}^{l}w_i} = (\delta^{l}*flip(w))[n]\]</span></p>
+<p><span class="math">\[\delta_n^{l-1} = {\partial J \over \partial x_n} = {\partial J \over \partial y}{\partial y \over \partial x_n} = \sum_{i=1}^{|w|} {\partial J \over \partial y_{n-i+1}}{\partial y_{n-i+1} \over {\partial x_n}} = \sum_{i=1}^{|w|} {\delta_{n-i+1}^{l}w_i} = (\delta^{l}*flip(w))[n]\]</span></p>
 <p>式中w代表卷积核的参数，上式的结果可以简化为：</p>
 <p><span class="math">\[\delta^{l-1} = \delta^{l} * flip(w)\]</span> 这里我们忽略了激活函数f，可以看出该公式与全连接层的公式十分类似</p>
 <p>式中flip表示翻转，意思是在反向传播时需要将卷积核进行翻转 这里其实有一个问题，在标准的卷积运算中需要翻转因此在反向传播时也需要翻转，那么如果我们不进行翻转的话，在BP过程中就不需要翻转，我们可以将其视作为全连接层的退化版本(去掉了大部分的连接关系) 事实上，由于卷积层训练的就是卷积核的参数，因此我们不翻转同样可以训练，而且可以简化计算过程</p>
 <p>残差的反向传播文明已经完成，下面就是通过残差计算偏导了，原本全连接层在计算偏导时只需要将残差乘以对应层的向量即可，但是卷积层是部分连通，不需要所有元素参与计算，所以我们需要修改一下：</p>
-<p><span class="math">\[{\partial J \over \partial {k_{ij}^{l}}} = \sum\_{u,v} ({\delta\_{j}^{l}}\_{uv}(p\_{i}^{l-1})\_{uv})\]</span></p>
+<p><span class="math">\[{\partial J \over \partial {k_{ij}^{l}}} = \sum_{u,v} ({\delta_{j}^{l}}_{uv}(p_{i}^{l-1})_{uv})\]</span></p>
 <p>可以看出与fc层的区别也只是修改了参与计算的元素而已</p>
 <p>式中p表示的是原输入向量中与卷积核元素<span class="math">\(k_{ij}\)</span>相乘的元素，如下图所示：<img src="/img/BP_for_CNN/kernel_partial.jpg" alt="kernel_partial"></p>
 <p>假设步长为2，那么<span class="math">\(p_i\)</span>指的就是图中红色的部分，如果步长设置为1，那么<span class="math">\(p_i\)</span>指的就是图像中阴影加粗的部分</p>
