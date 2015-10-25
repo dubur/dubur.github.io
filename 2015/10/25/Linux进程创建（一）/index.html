@@ -39,12 +39,12 @@
   <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.1" />
 
 
-<meta name="description" content="本日志将详细介绍Linux系统中进程从创建到执行过程中的细节，包括：子进程地址空间的分配；子进程代码和数据的构成；子进程与父进程之间的交互和堆栈的设置。 ## 概述在开始介绍之前，需要有一些基础的操作系统知识，主要包括 * Linux系统的内存管理框架，Linux地址映射，页(段)式存储管理 * 进程与线程的定义以及两者在Linux系统中的区别 * 进程的映像结构布局  Linux系统中进程的创建">
+<meta name="description" content="本日志将详细介绍Linux系统中进程从创建到执行过程中的细节，包括：子进程地址空间的分配、子进程代码和数据的构成、子进程与父进程之间的交互以及堆栈的设置。 ## 概述在开始介绍之前，需要有一些基础的操作系统知识，主要包括： * Linux系统的内存管理框架，Linux地址映射，页(段)式存储管理* 进程与线程的定义以及两者在Linux系统中的区别* 进程的映像结构布局  Linux系统中进程的创建">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux进程创建（一）">
 <meta property="og:url" content="http://yoursite.com/2015/10/25/Linux进程创建（一）/index.html">
 <meta property="og:site_name" content="Duburs Blog">
-<meta property="og:description" content="本日志将详细介绍Linux系统中进程从创建到执行过程中的细节，包括：子进程地址空间的分配；子进程代码和数据的构成；子进程与父进程之间的交互和堆栈的设置。 ## 概述在开始介绍之前，需要有一些基础的操作系统知识，主要包括 * Linux系统的内存管理框架，Linux地址映射，页(段)式存储管理 * 进程与线程的定义以及两者在Linux系统中的区别 * 进程的映像结构布局  Linux系统中进程的创建">
+<meta property="og:description" content="本日志将详细介绍Linux系统中进程从创建到执行过程中的细节，包括：子进程地址空间的分配、子进程代码和数据的构成、子进程与父进程之间的交互以及堆栈的设置。 ## 概述在开始介绍之前，需要有一些基础的操作系统知识，主要包括： * Linux系统的内存管理框架，Linux地址映射，页(段)式存储管理* 进程与线程的定义以及两者在Linux系统中的区别* 进程的映像结构布局  Linux系统中进程的创建">
 <meta property="og:image" content="http://yoursite.com/img/Linux/ProcessImg.png">
 <meta property="og:image" content="http://yoursite.com/img/Linux/mm_struct.png">
 <meta property="og:image" content="http://yoursite.com/img/Linux/task_struct.png">
@@ -54,10 +54,10 @@
 <meta property="og:image" content="http://yoursite.com/img/Linux/dup_mmap2.png">
 <meta property="og:image" content="http://yoursite.com/img/Linux/copy_thread.png">
 <meta property="og:image" content="http://yoursite.com/img/Linux/pt_reg.png">
-<meta property="og:updated_time" content="2015-10-25T11:02:24.000Z">
+<meta property="og:updated_time" content="2015-10-25T11:05:11.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux进程创建（一）">
-<meta name="twitter:description" content="本日志将详细介绍Linux系统中进程从创建到执行过程中的细节，包括：子进程地址空间的分配；子进程代码和数据的构成；子进程与父进程之间的交互和堆栈的设置。 ## 概述在开始介绍之前，需要有一些基础的操作系统知识，主要包括 * Linux系统的内存管理框架，Linux地址映射，页(段)式存储管理 * 进程与线程的定义以及两者在Linux系统中的区别 * 进程的映像结构布局  Linux系统中进程的创建">
+<meta name="twitter:description" content="本日志将详细介绍Linux系统中进程从创建到执行过程中的细节，包括：子进程地址空间的分配、子进程代码和数据的构成、子进程与父进程之间的交互以及堆栈的设置。 ## 概述在开始介绍之前，需要有一些基础的操作系统知识，主要包括： * Linux系统的内存管理框架，Linux地址映射，页(段)式存储管理* 进程与线程的定义以及两者在Linux系统中的区别* 进程的映像结构布局  Linux系统中进程的创建">
 
 
 <script type="text/javascript" id="hexo.configuration">
@@ -242,9 +242,9 @@
       
 
       
-        <span itemprop="articleBody"><p>本日志将详细介绍Linux系统中进程从创建到执行过程中的细节，包括：子进程地址空间的分配；子进程代码和数据的构成；子进程与父进程之间的交互和堆栈的设置。 ## 概述在开始介绍之前，需要有一些基础的操作系统知识，主要包括 * Linux系统的内存管理框架，Linux地址映射，页(段)式存储管理 * 进程与线程的定义以及两者在Linux系统中的区别 * 进程的映像结构布局 <img src="/img/Linux/ProcessImg.png" alt="Process_Image"> Linux系统中进程的创建分为两步：首先从父进程“派生”出一个子进程，之后子进程通过系统调用execve()执行目标程序。 blog中的代码全部来自《Linux内核源代码情景分析》 在正式开始进程创建的过程之前，我们首先要了解一下Linux系统与进程密切相关的数据结构，如PCB的数据结构task_struct（后面直接用PCB表示task_struct结构），以及虚拟内存的描述符mm，这些会为之后的代码阅读与理解提供很大的便利。</p>
-<h3 id="linux中的pcb数据结构task_struct作为进程的管理单元task_struct结构包含相当多的成员变量基本可以分为状态性质资源和组织等几大类我们重点关注几个与进程创建相关的成员变量--binfmt应用程序的文件格式与进程加载可执行文件相关--user指向一个user_struct数据结构代表这该进程所属的用户创建进程do_fork时需要用到--rlim表示内核对进程资源的使用限制同样在创建时需要用到--pgrp当前进程的运行上下文在进程调度执行时至关重要--mm内存描述符代表进程所拥有的地址空间其结构示意图如下">Linux中的PCB数据结构task_struct作为进程的管理单元，task_struct结构包含相当多的成员变量，基本可以分为状态、性质、资源和组织等几大类，我们重点关注几个与进程创建相关的成员变量：- binfmt——应用程序的文件格式，与进程加载可执行文件相关- user——指向一个user_struct数据结构，代表这该进程所属的用户，创建进程do_fork时需要用到- rlim——表示内核对进程资源的使用限制，同样在创建时需要用到- pgrp——当前进程的运行上下文，在进程调度执行时至关重要- mm——内存描述符，代表进程所拥有的地址空间，其结构示意图如下：</h3>
-<p><img src="/img/Linux/mm_struct.png" alt="mm_struct"> 共分四个段：代码段、数据段、堆和栈，进程创建时对mm_struct的复制是重点。 mm_struct结构中有一个虚拟内存的基本管理单元vm_area_struct，这些单元通过指针的方式形成一个链表， 并用来存储mm_struct中的虚拟内存的地址信息。 - file_struct files<em>——这是一个file_struct类型，它指向进程打开的文件信息- fs_struct fs</em>——记录与进程相关的文件系统信息</p>
+        <span itemprop="articleBody"><p>本日志将详细介绍Linux系统中进程从创建到执行过程中的细节，包括：子进程地址空间的分配、子进程代码和数据的构成、子进程与父进程之间的交互以及堆栈的设置。 ## 概述在开始介绍之前，需要有一些基础的操作系统知识，主要包括： * Linux系统的内存管理框架，Linux地址映射，页(段)式存储管理* 进程与线程的定义以及两者在Linux系统中的区别* 进程的映像结构布局 <img src="/img/Linux/ProcessImg.png" alt="Process_Image"> Linux系统中进程的创建分为两步：首先从父进程“派生”出一个子进程，之后子进程通过系统调用execve()执行目标程序。 blog中的代码全部来自《Linux内核源代码情景分析》 在正式开始进程创建的过程之前，我们首先要了解一下Linux系统与进程密切相关的数据结构，如PCB的数据结构task_struct（后面直接用PCB表示task_struct结构），以及虚拟内存的描述符mm，这些会为之后的代码阅读与理解提供很大的便利。</p>
+<h3 id="linux中的pcb数据结构task_struct作为进程的管理单元task_struct结构包含相当多的成员变量基本可以分为状态性质资源和组织等几大类我们重点关注几个与进程创建相关的成员变量--binfmt应用程序的文件格式与进程加载可执行文件相关--user指向一个user_struct数据结构代表这该进程所属的用户创建进程do_fork时需要用到--rlim表示内核对进程资源的使用限制同样在创建时需要用到--pgrp当前进程的运行上下文在进程调度执行时至关重要--mm内存描述符代表进程所拥有的地址空间其结构示意图如下mm_struct">Linux中的PCB数据结构task_struct作为进程的管理单元，task_struct结构包含相当多的成员变量，基本可以分为状态、性质、资源和组织等几大类，我们重点关注几个与进程创建相关的成员变量:- binfmt——应用程序的文件格式，与进程加载可执行文件相关- user——指向一个user_struct数据结构，代表这该进程所属的用户，创建进程do_fork时需要用到- rlim——表示内核对进程资源的使用限制，同样在创建时需要用到- pgrp——当前进程的运行上下文，在进程调度执行时至关重要- mm——内存描述符，代表进程所拥有的地址空间，其结构示意图如下：<img src="/img/Linux/mm_struct.png" alt="mm_struct"></h3>
+<p>共分四个段：代码段、数据段、堆和栈，进程创建时对mm_struct的复制是重点。 mm_struct结构中有一个虚拟内存的基本管理单元vm_area_struct，这些单元通过指针的方式形成一个链表， 并用来存储mm_struct中的虚拟内存的地址信息。 - file_struct files<em>——这是一个file_struct类型，它指向进程打开的文件信息- fs_struct fs</em>——记录与进程相关的文件系统信息</p>
 <p>下面这张图能很好地展示task_struct相关数据结构的关系<img src="/img/Linux/task_struct.png" alt="task_struct"></p>
 <h3 id="linux系统的内存映射与系统调用mmap">Linux系统的内存映射与系统调用mmap</h3>
 <p>Linux中进程创建与执行离不开内存空间的申请与释放，存储管理的细节不多叙述，但是我们需要了解一些Linux系统如何申请及释放空间的知识，我们主要关注两个系统调用brk与mmap。 之前对于Linux系统中内存、虚拟地址空间和物理页面的概念不太清晰，因此在这复习一下这些基础知识：</p>
@@ -384,7 +384,7 @@
           <div class="post-toc">
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#linux中的pcb数据结构task_struct作为进程的管理单元task_struct结构包含相当多的成员变量基本可以分为状态性质资源和组织等几大类我们重点关注几个与进程创建相关的成员变量--binfmt应用程序的文件格式与进程加载可执行文件相关--user指向一个user_struct数据结构代表这该进程所属的用户创建进程do_fork时需要用到--rlim表示内核对进程资源的使用限制同样在创建时需要用到--pgrp当前进程的运行上下文在进程调度执行时至关重要--mm内存描述符代表进程所拥有的地址空间其结构示意图如下"><span class="nav-number">1.</span> <span class="nav-text">Linux中的PCB数据结构task_struct作为进程的管理单元，task_struct结构包含相当多的成员变量，基本可以分为状态、性质、资源和组织等几大类，我们重点关注几个与进程创建相关的成员变量：- binfmt——应用程序的文件格式，与进程加载可执行文件相关- user——指向一个user_struct数据结构，代表这该进程所属的用户，创建进程do_fork时需要用到- rlim——表示内核对进程资源的使用限制，同样在创建时需要用到- pgrp——当前进程的运行上下文，在进程调度执行时至关重要- mm——内存描述符，代表进程所拥有的地址空间，其结构示意图如下：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#linux系统的内存映射与系统调用mmap"><span class="nav-number">2.</span> <span class="nav-text">Linux系统的内存映射与系统调用mmap</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#linux中的pcb数据结构task_struct作为进程的管理单元task_struct结构包含相当多的成员变量基本可以分为状态性质资源和组织等几大类我们重点关注几个与进程创建相关的成员变量--binfmt应用程序的文件格式与进程加载可执行文件相关--user指向一个user_struct数据结构代表这该进程所属的用户创建进程do_fork时需要用到--rlim表示内核对进程资源的使用限制同样在创建时需要用到--pgrp当前进程的运行上下文在进程调度执行时至关重要--mm内存描述符代表进程所拥有的地址空间其结构示意图如下mm_struct"><span class="nav-number">1.</span> <span class="nav-text">Linux中的PCB数据结构task_struct作为进程的管理单元，task_struct结构包含相当多的成员变量，基本可以分为状态、性质、资源和组织等几大类，我们重点关注几个与进程创建相关的成员变量:- binfmt——应用程序的文件格式，与进程加载可执行文件相关- user——指向一个user_struct数据结构，代表这该进程所属的用户，创建进程do_fork时需要用到- rlim——表示内核对进程资源的使用限制，同样在创建时需要用到- pgrp——当前进程的运行上下文，在进程调度执行时至关重要- mm——内存描述符，代表进程所拥有的地址空间，其结构示意图如下：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#linux系统的内存映射与系统调用mmap"><span class="nav-number">2.</span> <span class="nav-text">Linux系统的内存映射与系统调用mmap</span></a></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>
