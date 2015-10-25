@@ -184,6 +184,100 @@
           
           
             
+              <a class="post-title-link" href="/2015/10/25/Linux进程创建（一）/" itemprop="url">
+                Linux进程创建（一）
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          發表於
+          <time itemprop="dateCreated" datetime="2015-10-25T17:47:07+08:00" content="2015-10-25">
+            2015-10-25
+          </time>
+        </span>
+
+        
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分類於
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/OS/" itemprop="url" rel="index">
+                  <span itemprop="name">OS</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+              &nbsp; | &nbsp;
+              <a href="/2015/10/25/Linux进程创建（一）/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/10/25/Linux进程创建（一）/" itemprop="commentsCount"></span>
+              </a>
+            </span>
+          
+        
+      </div>
+    </header>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody"><p>本日志将详细介绍Linux系统中进程从创建到执行过程中的细节，包括：子进程地址空间的分配；子进程代码和数据的构成；子进程与父进程之间的交互和堆栈的设置。 ## 概述在开始介绍之前，需要有一些基础的操作系统知识，主要包括 * Linux系统的内存管理框架，Linux地址映射，页(段)式存储管理 * 进程与线程的定义以及两者在Linux系统中的区别 * 进程的映像结构布局 <img src="/img/Linux/ProcessImg.png" alt="Process_Image"> Linux系统中进程的创建分为两步：首先从父进程“派生”出一个子进程，之后子进程通过系统调用execve()执行目标程序。 blog中的代码全部来自《Linux内核源代码情景分析》 在正式开始进程创建的过程之前，我们首先要了解一下Linux系统与进程密切相关的数据结构，如PCB的数据结构task_struct（后面直接用PCB表示task_struct结构），以及虚拟内存的描述符mm，这些会为之后的代码阅读与理解提供很大的便利。</p>
+<h3 id="linux中的pcb数据结构task_struct作为进程的管理单元task_struct结构包含相当多的成员变量基本可以分为状态性质资源和组织等几大类我们重点关注几个与进程创建相关的成员变量--binfmt应用程序的文件格式与进程加载可执行文件相关--user指向一个user_struct数据结构代表这该进程所属的用户创建进程do_fork时需要用到--rlim表示内核对进程资源的使用限制同样在创建时需要用到--pgrp当前进程的运行上下文在进程调度执行时至关重要--mm内存描述符代表进程所拥有的地址空间其结构示意图如下">Linux中的PCB数据结构task_struct作为进程的管理单元，task_struct结构包含相当多的成员变量，基本可以分为状态、性质、资源和组织等几大类，我们重点关注几个与进程创建相关的成员变量：- binfmt——应用程序的文件格式，与进程加载可执行文件相关- user——指向一个user_struct数据结构，代表这该进程所属的用户，创建进程do_fork时需要用到- rlim——表示内核对进程资源的使用限制，同样在创建时需要用到- pgrp——当前进程的运行上下文，在进程调度执行时至关重要- mm——内存描述符，代表进程所拥有的地址空间，其结构示意图如下：</h3>
+<p><img src="/img/Linux/mm_struct.png" alt="mm_struct"> 共分四个段：代码段、数据段、堆和栈，进程创建时对mm_struct的复制是重点。 mm_struct结构中有一个虚拟内存的基本管理单元vm_area_struct，这些单元通过指针的方式形成一个链表， 并用来存储mm_struct中的虚拟内存的地址信息。 - file_struct files<em>——这是一个file_struct类型，它指向进程打开的文件信息- fs_struct fs</em>——记录与进程相关的文件系统信息</p>
+<p>下面这张图能很好地展示task_struct相关数据结构的关系<img src="/img/Linux/task_struct.png" alt="task_struct"></p>
+<h3 id="linux系统的内存映射与系统调用mmap">Linux系统的内存映射与系统调用mmap</h3>
+<p>Linux中进程创建与执行离不开内存空间的申请与释放，存储管理的细节不多叙述，但是我们需要了解一些Linux系统如何申请及释放空间的知识，我们主要关注两个系统调用brk与mmap。 之前对于Linux系统中内存、虚拟地址空间和物理页面的概念不太清晰，因此在这复习一下这些基础知识：</p>
+<ul>
+<li>Linux采用页式存储管理（将4kb连续的物理存储空间作为一个页面）* 操作系统内核将虚拟地址与物理内存进行映射来达到操作内存的目的* Linux使用2层地址映射方式（虽然很多书中写的是3层映射，但这只是逻辑上，在实现时本质还是2层映射），通过页面目录及页面表将虚拟地址映射到物理页面上，因此如果我们尝试对没有映射的地址空间进行写操作的话会引发缺页异常。 brk负责动态地向内核申请和释放空间，从进程的映像布局中我们可以看出堆向上增长，每申请一次空间，我们就将这个动态分配区的底部向上推，每释放一次就将底部向下移，brk的实现sys_brk函数接收一个参数brk，该参数正是用来描述新的边界地址。内核将新的边界地址与旧的边界地址进行比较就可以知道需要释放还是分配空间。 从上面的几点可以总结出，Linux在申请内存时的主要步骤 申请：检查进程地址空间和想要申请的空间之间的合法性（检查高端地址是否会出现冲突），如果合法则分配适当的虚拟内存区间同时建立映射，建立映射包括写页面表和页目录。 释放：检查释放的页面是否已建立映射，如果是则解除页面映射表中相应的表项，同时释放内存页面，如果我们想要释放的内存空间也没有进行映射，就可以直接跳过解除映射这一步 而mmap函数为一个以打开的文件映射到进程的用户空间，使得进程可以像访问内存一样访问文件，在进程执行execve时内核会将可执行程序映射到当前进程的用户空间，其底层实现都在文件系统中，这部分与进程关系不大。 注意我们在申请与释放内存空间时，都会对进程的基本内存管理单元构成的数据结构进行插入或者删除操作，这些基本单元可能以链表的形式组织，也可能以AVL的形式组织，这些结构都保存在PCB中，因此我们需要遍历这些结构一一处理。## Linux进程创建 Linux系统中提供三种创建进程的方式，fork／clone／vfork，三者的不同在于fork完全复制父进程的所有资源，子进程可以看作父进程的镜像，而clone则相对灵活一些，用户可以将资源有选择地复制给子进程，vfork是后来增加的系统调用，强制将除了PCB和系统堆栈以外的资源通过指针复制。从复制的数据量角度来说vfork ()&lt;=clone()&lt;=fork() 需要注意的是父进程的全局变量以及代码不会被复制到子进程中，而是通过只读的形式共享，但无论使用哪种方式创建进程，子进程都需要调用execve执行可执行程序。<img src="/img/Linux/child_parent.png" alt="child_parent"></li>
+</ul>
+<p>子进程的创建在do_fork函数中，这个函数会接收多个参数，这些参数的主要目的在于： 1. 控制子进程要创建独立的空间还是与父进程通过指针共享资源2. 控制子进程向父进程发出通知的信号 当以上这些控制参数设置完成之后，通过alloc_task_struct函数为子进程分配两个连续物理页面，低端用作PCB，高端用作系统空间。之后直接开始复制父进程的PCB(task_struct)数据结构。 ### 复制PCB 在复制PCB这一部分作者提到了PCB中两个重要字段，一个是指向该进程拥有者的指针user，这个指针指向的数据结构为user_struct，包含了该user的信息，这些信息里有一个计数器__count，用来统计这个user拥有多少个进程，这个计数器在后面execve()函数中会用到，对释放页面起到关键作用。 另一个字段是rlim，它限制了进程可以占用的资源数量和用户可以拥有的进程数量，因此如果到达上限的话该用户就无法新建进程了，这个字段决定了后面execve函数中执行可执行文件。 每个进程除了拥有者之外还有一个执行域，执行域与操作系统有关，Unix的每个变种都对应一个执行域，Linux也有自己对应的执行域，介绍执行域的原因是因为它和动态链接库有着紧密的关系，只要某个域中还有进程在执行，那么这个域对应的动态链接库就不能拆除。 每个进程执行的程序也属于某种格式，这些格式有不同的驱动模块负责，而这些模块都是动态加载的，有关这些部分在execve部分会详细介绍 之后调用get_pid函数进行PID的复制，前面提到的参数中有一个用来控制子进程是否与父进程共用一个进程号。之后完成各种信息量以及进程创建时间的初始化，至此为止PCB的复制就基本完成了### 复制已打开的文件 系统调用copy_files函数复制已打开的文件控制结构，同样我们需要按照do_fork的输入参数决定是否需要与父进程共享已打开的文件。所有与终端设备相联系的三个文件:stdin，stdout和stderr都是预先打开的。如果我们设置子进程与父进程共享文件的话，就将当前进程的file_struct结构中的共享计数加一，如果需要复制，那么调用kmem_cache_alloc函数为子进程分配一个files_struct结构，再进行复制，files_struct结构有三个重要的成员，其中一个是位图close_on_exec_init，用于初始化那些在执行exec时需要关闭的文件，另一个是open_fds_init，用于初始化描述文件，第三个是文件数组fd_array，这三个成员都是固定大小的，如果需要打开的文件数量超过这个大小则必须另外分配空间。 直观上看共享模式操作简单，但是父子进程在操作自己打开的文件同时其实也在操作对方的文件，因此这就带来了问题，复制模式就不会有这样的问题，父子进程互不干扰。### 复制文件系统信息 大家都知道操作系统中文件都有操作权限，因此每个进程在创建的时候我们除了要复制打开的文件之外，还需要复制父进程的与文件系统相关的信息，这些信息中比较典型的就是文件的操作权限， 另外还有进程的根目录root，当前工作目录等。这里有一点需要注意的是我们仅复制fs_struct数据结构，对于其成员数据结构并不进行深层的复制，因此这些成员数据结构还是共享模式状态，需要增加共享计数。 接着处理用于进程间通信的信号，进程可以为各种信号设置信号处理程序，其PCB中的指针sig就指向signal_struct数据结构：<img src="/img/Linux/signal_struct.png" alt="signal_struct"></p>
+<p>注意到其中有一个count变量，说明子进程可以通过指针共享这个信号表，只需要将共享计数加一就可以了。### 用户空间继承 PCB中的指针mm指向用户空间mm_struct结构，当子进程通过复制模式继承父进程的用户空间时，不像之前的fs_struct仅复制外层结构，而是需要进入该结构复制其成员，主要复制的就是vm_area_struct虚拟内存的管理单元和页面映射表了，这里我们可以看一下负责复制mm_struct的函数dup_mmap的代码<img src="/img/Linux/dup_mmap.png" alt="dup_mmap"><img src="/img/Linux/dup_mmap2.png" alt="dup_mmap2"> 函数的主题在于这个for循环当中，我们遍历当前进程mm指针的每块虚拟内存，新建一块内容空间tmp，并将其独占（变为临界资源），之后把tmp的vm_mm指向当前进程的mm字段，递增共享计数，155到169针对打开文件的处理，之后完成页面的复制，copy_page_range是一个非常关键的函数，其代码比较长，这里主要讲一下函数的执行过程 我们依旧对页面的目录项进行遍历，Linux的地址映射分为三部分，除了页目录和页面表之外还增加了一个中间目录，但其实i386的处理器依旧按照两层映射的结构，所以中间层基本就是全等映射，相当于对输入没有做转换直接输出。我们主要关心父进程页面表，根据表项的内容决定具体操作： 1. 表项内容全0，说明页面尚未设立，不需要做任何事2. 表项最低位为0，说明映射已经建立但页面不在内存中，通过swap_duplicate递增共享计数，之后将此表项复制到子进程的页面表中3. 映射已建立，但是物理页面不是有效的内存页面，由于有些物理页面在外部设备上，其地址是总线地址不是内容页面，不消耗动态分配的内存页面4. 需要从父进程复制的可写页面，这应该是最常见的情景了，然而此时我们并不新分配一个内存页面再复制父进程的页面中内容，内核仅仅通过指针来共享这个页面，这就是Linux的精妙之处，其实我们并不知道复制玩页面后子进程会不会使用这个页面，所以我们引入一种成为“copy on write”的技术，先通过复制页面表项共享这个页面，当有任何一个进程需要写操作时再进行分配和复制，分离子进程和父进程的页面，具体做法如下： - 设置父进程的页面表项为写保护 - 子进程复制该页面表项 这样两个进程的页面都设置为只读，因此当有进程尝试写这个页面时会引发一个异常，到这时在异常处理程序中执行分配和复制，这样依赖使得页面的复制变得相当快捷，当然这值适用子进程以复制模式进行页面继承的情况，如果在共享模式下根本用不到这样的技术 当我们继承完用户空间之后，所有的有条件复制基本已经处理完，我们回顾一下vfork和fork的区别，fork调用do_fork时所有的控制参数均为0，即我们“复制”了所有的资源，但是vfork仅仅复制PCB，因此copy_mm函数不会执行，因此此时创建的实际上是一个线程。 ### 系统空间继承 之前我们分配了两个页面，用于存储PCB的低端页面已经分配完毕，现在开始复制系统空间堆栈。我们调用copy_thread完成这个任务。copy_thread的代码如下：<img src="/img/Linux/copy_thread.png" alt="copy_thread"> 系统堆栈的内容包含了父进程从通过系统调用进入系统空间开始到进入copy_thread的过程，而子进程返回时需要这些信息，但是不能完全照搬，因为返回时我们要区分是哪个进程返回的。我们已经知道当进程通过系统调用进入内核态时，我们需要保存CPU上下文，pt_regs就是用来存储寄存器内容的数据结构，在创建pt_reg时参考下图：<img src="/img/Linux/pt_reg.png" alt="pt_reg"> 首先我们已经有指向子进程PCB的指针p，同时我们也知道p指向两个连续的物理页面，因此我们可以得到这两个页面的顶端THREAD_SIZE+(unsigned long)p，之后将其转换为struct pt_regs*，再减一就指向了子进程系统堆栈的pt_regs结构。 得到子进程的pt_regs之后，先将当前进程的上下文复制给子进程，再将eax置为0，当子进程被调度返回时返回值就为eax的值，除此之外还需要将结构中的esp置为参数esp，它决定了进程在用户空间的堆栈位置。在fork中该参数来自父进程上下文的esp寄存器。注意到PCB一个重要的成员thread，它也是一个数据结构，里面记录着进程切换时的系统堆栈指针，返回地址等关键信息。因此复制这个thread时子进程需要相应修改返回地址，我们之前已经获取到子进程上下文的地址，此时我们将这个地址赋给该指针，使得子进程看上去像之前被切换了一样。此时内核空间的继承也已经完成，最后只需要设置执行域、设置本进程页面可以被换出以及与父进程通信时的信号。此外PCB中的counter字段指的是进程的运行时间配额，这里我们将父进程的时间配额分一半给子进程，如果我们使用vfork创建线程，那么需要在PCB中将子线程加入父进程的线程组。最后把子进程的PCB链入内核的进程队列，至此新进程的创建全部完成并且已经挂入可运行进程的队列接受调度。 这里需要注意的一点是当调用vfork时，子进程与父进程共享用户空间，那么当子进程创建完成之后如果两个进程都进入用户态运行，那么将导致两个进程操作一个用户空间，所以我们必须避免这样的情况，Linux在子进程创建完之后将父进程在一个信号量上执行down操作，让父进程睡眠，并且子进程执行execve直到结束再唤醒父进程。</p>
+</span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      
+      
+        <h1 class="post-title" itemprop="name headline">
+          
+          
+            
               <a class="post-title-link" href="/2015/10/02/Backproagation for CNN/" itemprop="url">
                 BP for CNN
               </a>
@@ -279,315 +373,6 @@
 <h2 id="reference">Reference</h2>
 <p>Bouvrie J. Notes on convolutional neural networks[J]. 2006.</p>
 <p>http://www.slideshare.net/kuwajima/cnnbp</p>
-</span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      
-      
-        <h1 class="post-title" itemprop="name headline">
-          
-          
-            
-              <a class="post-title-link" href="/2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/" itemprop="url">
-                Caffe 源码阅读笔记一（基本代码框架）
-              </a>
-            
-          
-        </h1>
-      
-
-      <div class="post-meta">
-        <span class="post-time">
-          發表於
-          <time itemprop="dateCreated" datetime="2015-08-24T22:11:07+08:00" content="2015-08-24">
-            2015-08-24
-          </time>
-        </span>
-
-        
-          <span class="post-category" >
-            &nbsp; | &nbsp; 分類於
-            
-              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                <a href="/categories/caffe/" itemprop="url" rel="index">
-                  <span itemprop="name">caffe</span>
-                </a>
-              </span>
-
-              
-              
-
-            
-          </span>
-        
-
-        
-          
-            <span class="post-comments-count">
-              &nbsp; | &nbsp;
-              <a href="/2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/#comments" itemprop="discussionUrl">
-                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/" itemprop="commentsCount"></span>
-              </a>
-            </span>
-          
-        
-      </div>
-    </header>
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody"><p>在开始阅读Blob之前，需要预先了解Caffe的架构与protobuf，否则看代码的时候容易一头雾水</p>
-<h3 id="caffe基本架构">Caffe基本架构</h3>
-<p>对于任何一个网络而言，Caffe主要用4个类来构造网络：</p>
-<ul>
-<li>BLob:存储数据，blob既可以存储网络的权重，在进行训练时修改的其实就是每个blob实例</li>
-<li>Layer:构成网络的基础单元，无论是卷积层，pooling层还是全连接层等等都是从这个类派生出来的</li>
-<li>Net:定义一个网络的架构，当我们把网络中每一层都建立完之后，通过Net类来搭建整个网络</li>
-<li>Solver:用来训练网络的类，例如SGD就在这部分实现</li>
-</ul>
-<h3 id="protobuf">Protobuf</h3>
-<p>在理清基本架构之后可能有人会问：一个网络需要那么多参数，且每个参数的数据类型不尽相同，如何解决这个问题呢？</p>
-<p>Protobuf就是用来解决此类问题的，我们只需要像写配置文件一样把网络中每一层的参数设置好(当然配置文件必须按照一定的格式)，protobuf会自动生成代码，用来解析“配置文件”中的参数结构体，代码中包括了对参数的设置、读取和序列化等等操作 另外当网络训练完成之后，存储时也使用了protobuf进行处理，把Net转化为多个Message对象进行存储</p>
-<p>Caffe代码中参数初始化和参数操作都是基于protobuf完成，只需要定义网络参数，不再需要考虑如何把参数传递给应用程序的问题了，protobuf会帮你完成～</p>
-<h3 id="blob">Blob</h3>
-<p>Blob本身其实没有特别多的内容，作为Caffe中数据的基础单元，我们可以简单地吧Blob理解成一个容器，里面存储的是多维向量及其相关的信息</p>
-<p>首先看Blob.hpp:</p>
-<pre><code>Blob()
- : data_(), diff_(), count_(0), capacity_(0) {}
-   </code></pre>
-<p>构造函数中初始化了4个对象，data_表示Blob中的数据，diff_表示反向传播时的误差，count_表示数据当前的维度(因为可以reshape)，而capacity_表示数据最大的维度</p>
-<p>接下来在Blob.cpp里主要包含了实例的初始化和reshape函数，值得注意的是如果blob中存储的是网络的参数(如全连接层和卷积层的kernel)，那么Blob提供update函数用来更新自己的参数。</p>
-<pre><code>void Blob&lt;Dtype&gt;::Update() {                                                                                                                                  
-  // We will perform update based on where the data is located.                                                                                               
-  switch (data_-&gt;head()) {                                                                                                                                    
-  case SyncedMemory::HEAD_AT_CPU:                                                                                                                             
-    // perform computation on CPU                                                                                                                             
-    caffe_axpy&lt;Dtype&gt;(count_, Dtype(-1),                                                                                                                      
-      static_cast&lt;const Dtype*&gt;(diff_-&gt;cpu_data()),                                                                                                         
-      static_cast&lt;Dtype*&gt;(data_-&gt;mutable_cpu_data()));                                                                                                      
-    break;                                                                                                                                                    
-  case SyncedMemory::HEAD_AT_GPU:                                                                                                                             
-  case SyncedMemory::SYNCED:                                                                                                                                  
-  #ifndef CPU_ONLY                                                                                                                                              
-  // perform computation on GPU                                                                                                                             
-  caffe_gpu_axpy&lt;Dtype&gt;(count_, Dtype(-1),                                                                                                                  
-      static_cast&lt;const Dtype*&gt;(diff_-&gt;gpu_data()),                                                                                                         
-      static_cast&lt;Dtype*&gt;(data_-&gt;mutable_gpu_data()));                                                                                                      
-  #else                                                                                                                                                         
-  NO_GPU;                                                                                                                                                   
-  #endif                                                                                                                                                        
-  break;                                                                                                                                                    
-  default:                                                                                                                                                    
-    LOG(FATAL) &lt;&lt; &quot;Syncedmem not initialized.&quot;;                                                                                                               
-  }                                                                                                                                                           
-}                            </code></pre>
-<p>代码中包含了GPU和CPU两种实现，其实核心就是caffe_gpu_axpy那一句更新参数</p>
-<h3 id="layer">Layer</h3>
-<p>对Blob有了一定了解之后可以看Layer了，事实上Layer是caffe架构中内容最多的部分，我们在写配置文件的时候其实都是在组合layer构成一个网络，很多运算操作在caffe中都是以layer的形式存在的，如argmax和elementwise运算等等.许多对caffe的扩展其实也是继承Layer层重新定义了具有新功能的层</p>
-<p>layer的工作模式类似数学中的函数概念，给定一个输入(bottom blobs),layer内部完成自己的功能，返回一个输出(top blobs)</p>
-<p>caffe中的layer分两种，common layer和vision layer: - data_layers.hpp中声明了神经网络与输入数据之间的交互层，如导入/导出hdf5数据，从图像中导入数据等等 - common_layers.hpp中声明了许多常用的包含基础功能(flatten, softmax等)的层 - vision_layers.hpp中主要包含对针对图像处理的层(convolutional, pooling等) - neuron_layers.hpp中主要包含与神经元的定义与操作相关的层(dropout,ReLu等) - loss_layers.hpp中主要包含了计算网络Loss的层，除了我们常见的softmax loss之外还包括了比较常用多euclidean loss, hinge loss等等 看了下vision layer中居然还包含了SPPnet这种处理image scale的层，除此之外还有deconvolution layer,确实是很给力啊</p>
-<p>caffe还提供了layer_factory供其他人快速实现自己的layer</p>
-<p>所有的Layer层都包含Forward和Backward的函数，这两个函数包含了整个layer的计算功能，对于开发者而言如果想实现自己的layer，其实主要就是完成这两个函数逻辑</p>
-<p>具体的某一种Layer的代码解析不在本文的范畴里，以后会另开blog详细描述常用的layer代码实现</p>
-<h3 id="net">Net</h3>
-<p>Net中包含了对整个网络的操作实现，在看源代码之前笔者只想到了设置learning_rate、 weight_decay和迭代次数等等功能，以及控制Forward和Backward等，然而事实上caffe提供了许多非常有用的函数，如在RCNN training中提到的share weights功能，使得你可以直接使用预先训练好的网络参数进行初始化，这也是为什么在caffe的example中我们可以直接通过命令行对imagenet训练出来的网络进行fine－tuning的原因</p>
-<h3 id="solver">Solver</h3>
-<p>相对而言solver的实现比较简单，创建solver对象时我们只需要关注优化算法就可以了，caffe目前提供三种梯度下降的方法： - SGD(momentum) - NesterRov - Adagrad</p>
-</span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      
-      
-        <h1 class="post-title" itemprop="name headline">
-          
-          
-            
-              <a class="post-title-link" href="/2015/08/24/Linix链接原理(一)副本 2/" itemprop="url">
-                Linix系统链接原理(一)
-              </a>
-            
-          
-        </h1>
-      
-
-      <div class="post-meta">
-        <span class="post-time">
-          發表於
-          <time itemprop="dateCreated" datetime="2015-08-24T22:11:07+08:00" content="2015-08-24">
-            2015-08-24
-          </time>
-        </span>
-
-        
-          <span class="post-category" >
-            &nbsp; | &nbsp; 分類於
-            
-              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                <a href="/categories/OS/" itemprop="url" rel="index">
-                  <span itemprop="name">OS</span>
-                </a>
-              </span>
-
-              
-              
-
-            
-          </span>
-        
-
-        
-          
-            <span class="post-comments-count">
-              &nbsp; | &nbsp;
-              <a href="/2015/08/24/Linix链接原理(一)副本 2/#comments" itemprop="discussionUrl">
-                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/24/Linix链接原理(一)副本 2/" itemprop="commentsCount"></span>
-              </a>
-            </span>
-          
-        
-      </div>
-    </header>
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody"><h2 id="computer-systems-linking">Computer Systems: Linking</h2>
-<p>《深入理解计算机系统》中Linking这一章对编译过程中链接器的作用做了非常详尽的介绍，对于程序员而言可能在算法、数据结构以及编程语言上花的时间比较多，然而对于计算机如何将代码编译为可执行文件的过程缺乏系统的了解，然而如果需要了解Linux下程序完整的编译执行过程，阅读本书的相关章节是十分必要的，笔记比较长所以分成两部分</p>
-<h3 id="基本概念">基本概念</h3>
-<p>Linking的定义：<strong>将各种代码和数据部分收集起来并组合成一个单一文件的过程</strong>，要理解这句话的含义首先需要明白GNU系统的一般编译流程：<img src="/img/Linux/compile_process.png" alt="compile"></p>
-<p>当然链接这一步并不一定要在程序编译时进行，Linking操作的对象是已经编译完成的目标文件，输出的结果就是可执行文件，链接器在整个编译过程中起到以下两个作用:</p>
-<pre><code>1.解析.o文件将符号引用与定义联系起来
-2.为指令与变量分配运行时地址</code></pre>
-<h3 id="可重定位目标文件">可重定位目标文件</h3>
-<p>要了解链接器的工作原理首先需要清楚它的输入文件，.o文件</p>
-<p>在弄清可重定位目标文件的内容之前，一些平时不好的习惯可能会引发概念上的混淆 比如在Linux上编译程序时，我们可能会执行这样的指令：</p>
-<pre><code>gcc -o *main.o* -I(dirs for header files) -l(paths for libraries)</code></pre>
-<p>之后可以直接在控制台执行./main.o，这样看来我们似乎直接执行了可重定位目标文件，然而这条指令中的.o文件是编译程序输出的最后结果，也就是说我们把可执行文件的名字命名成了main.o，而实际上汇编器生成的.o文件位于tmp目录下，因此在实际写程序时最好把文件的名字区分开，以免混淆。</p>
-<h4 id="文件格式">文件格式</h4>
-<p>书中可重定位目标文件的文件内容非常繁杂，简单而言该文件分为许多的section，每个section都包含了，总结下来分为以下三类</p>
-<pre><code>1.存储机器指令与全局变量(如.text, .data, .bss)
-2.存储指令与变量的位置相关信息（即重定位信息, 如.rel.text, rel.data）
-3.存储函数与变量的各种属性(.symtab)</code></pre>
-<p>需要注意的是链接器仅仅考虑全局变量，函数中的局部变量由栈管理</p>
-<h4 id="符号表.symtab">符号表.symtab</h4>
-<h5 id="符号">符号</h5>
-<p>从程序员的角度看符号是一个个的变量名和函数名，而对于链接器而言只是一些字符串而已，因此在这里被称作符号，符号表包含了原文件中各个符号(函数和变量)的信息，有一种符号不在链接器的管理范围之内，符号表不包含对应于<strong><em>本地非静态程序变量的符号</em></strong>，因为这些符号也由栈管理</p>
-<p>需要注意的是当变量名前面指定了static关键字之后，无论该变量定义在函数内部还是外部，都会存储在.o文件的符号表中，对于函数也同样如此。</p>
-<h5 id="符号表的格式">符号表的格式</h5>
-<p>如果从数据库的角度看，符号表可以看作是一张普通的关系表，每个符号及其相关属性都可以被看作是一个元祖，整张表中包含的属性包括：</p>
-<pre><code>符号的偏移量(存储格式为int型，可以理解为下标)
-符号的地址
-符号的类型（数据或者是函数）
-符号的大小
- </code></pre>
-<p>书中给出的例子非常清楚，以main.o为例，基本的格式如下图：<img src="/img/Linux/symtab.png" alt="symtab"></p>
-<p>附上源码：</p>
-<pre><code>/* main.c */ 
-void swap();
-
-int buf[2] = {1,2}
-
-int main(){
-    swap();
-    return 0;
-}</code></pre>
-<h3 id="符号解析">符号解析</h3>
-<h4 id="全局变量解析">全局变量解析</h4>
-<p>之前提到链接器的作用之一就是解析.o文件，其实主要解析的就是符号表中的符号，实际上链接器在这一步所做的工作是将原文件出现的变量的引用和符号表中的符号定义联系起来</p>
-<p>如果符号的定义就在原文件中，那么链接器可以直接联系引用和定义，但是如果符号不是定义在原文件中，链接器假设该符号定义在其他某个模块中，同时如果出现多个文件同时定义相同变量的情况，比如一个文件中声明全局变量，另一个文件定义全局变量</p>
-<ul>
-<li>强符号：已初始化的函数及变量</li>
-<li>弱符号：未初始化的函数及变量</li>
-</ul>
-<p>当出现多个同名的全局变量时，链接器遵循以下三个标准进行解析： * 不允许有多个强符号 * 如果有一个强符号和多个弱符号，那么选择强符号 * 如果有多个弱符号，那么从这些弱符号中任意选择一个</p>
-<p>简单而言链接器不允许多重定义，并且会优先连接变量定义的位置</p>
-<p>通过对符号解析部分的介绍我们也明白了为什么写程序时不鼓励定义太多的全局变量的原因，当程序架构比较大，每个人分别编写自己的模块时，很容易发生全局变量的定义冲突，而且编译器不会报这样的错误，因为已经涉及到代码整合时的程序逻辑层面的错误而不是编程语言规范的错误。</p>
-<h4 id="与静态库连接">与静态库连接</h4>
-<p>在阅读此章节之前我认为静态库在编译时进行链接，而动态链接库在运行时进行链接，这种理解其实并不正确，这两种库的不同之处不在链接的时机而在于它们构成和设计思想</p>
-<h5 id="静态库">静态库</h5>
-<p>由于标准函数会被广泛使用，如果在编译时直接生成这些函数的代码不仅增加编译器的工作量，同时当这些函数更新时也难以维护编译器，如果为每个函数都生成一个.o文件，那么我们需要写很冗长的链接命令，同时也会消耗多余的存储空间，费时也费力。</p>
-<p>静态库可以很好地解决链接这些“常用函数”的问题，一个静态库以一种称为存档的特殊文件格式存放在磁盘中，可以理解为是一组.o文件的集合。</p>
-<p>直观上讲，当我们需要链接某个函数时，我们只需要链接该静态库中的对应模块，即该函数对应的.o文件就可以了，因此静态库只需要向链接器提供每个模块的大小和位置就可以了。</p>
-<p>对于自己原先的对于静态库的理解，当编译时添加-static参数后，链接器会生成一个完全链接的可执行目标文件，也就是在编译时进行链接，这样生成的可执行文件可以直接在内存中执行，因此链接的时机和链接的库的类型其实并无多大关系</p>
-<h5 id="使用静态库解析引用">使用静态库解析引用</h5>
-<p>回到符号解析，之前介绍了解析符号时，符号定义在原文件中的情况，那么如果符号定义在静态库中怎么进行链接呢？</p>
-<p>首先链接器会按顺序扫描.o文件和静态链接库，在扫描过程中链接器会维护一个.o文件的集合E, 一个未解析的符号集合U,以及一个在输入文件中已定义的符号集合D，链接时按照以下流程进行链接：<img src="/img/Linux/compile.png" alt="compile"></p>
-<p>按照笔者理解U和D可以认为是两个数组，U用来存储未匹配到定义的符号，而D存储已定义的符号，而E用来存储所有输入文件中链接器对符号的解析结果</p>
-<p>需要注意的链接器只会链接在U中的符号，由于链接器是按顺序扫描的，因此如果符号的定义出现在引用之前并且引用后再也没有出现该符号的定义，那么就会出现扫描结束后U不为空的情况，导致链接出错</p>
-<h3 id="重定位">重定位</h3>
-<p>完成符号解析之后，代码节与数据节的大小就已经确定，之前提到链接器的第二个作用就是分配运行时地址，重定位的目的是为了让CPU知道符号在存储器中的位置，因此重定位分为两步：</p>
-<pre><code>1.将所有输入模块的同类型节(如data节)合并，并将运行时的地址赋给这些合并后的“聚合节”，同时赋给输入模块的每个节
-2.修改代码节和数据节中对每个符号的引用，使得他们指向正确的地址</code></pre>
-<p>这样写可能还是不够清晰，简单而言第一步为每个节分配运行时地址，而第二步为节中每个指令或数据分配运行时地址，而为了给指令与数据分配地址，我们需要明白<em>重定位条目</em>的概念</p>
-<pre><code>`重定位条目`
-
-在介绍可重定向目标文件的内容时提到过有section负责存储重定位信息，如代码的重定位信息在.rel.text中，数据的重定位信息在.rel.data中，这两个张表告诉链接器需要修改的引用在节中的什么位置以及重定位的类型(如何修改引用的地址)，表中每一项就是一个重定位条目，当链接器找到节中的符号后根据重定位类型计算该符号运行时地址。</code></pre>
-<p>书中介绍了两种重定位的类型：PC相对引用与绝对引用</p>
-<h4 id="pc相对引用">PC相对引用</h4>
-<p>相对引用使用基地址加偏移量的方式寻址，基地址存储在程序计数器PC中，所以我们只需要计算出偏移量，CPU就可以找到该指令或者数据的运行时地址了，假设我们已经知道了节的存储器地址和符号的运行时地址，计算方式如下：</p>
-<pre><code>计算swap在节中的地址 refptr ＝ s＋r.offset
-计算引用swap的指令地址： refaddr = ADDR(s) + r.offset
-计算偏移量  *refptr = ADDR(r.symbol) + *refptr - refaddr</code></pre>
-<p>书中给的例子比较难懂，首先抛开那个 *refptr不看， 参考书3.6节的内容，在进行PC相对寻址时，目标跳转地址就是例子中swap函数的地址，而链接器需要修改的就是引用swap的指令的目标编码，这两者之间的关系为：</p>
-<pre><code>目标编码 ＝ 目标跳转地址 － PC</code></pre>
-<p>因此在求目标编码时，实际的目标跳转地址等于swap的地址：0x80483c8,从3.6节的例子中我们可以看出PC的值是在当前指令的地址基础上＋4，即当前指令的后面一条指令，因此实际上原式等于</p>
-<pre><code>目标编码 ＝ 目标跳转地址 － （当前指令地址＋4）</code></pre>
-<p>当前指令自然是引用swap的指令地址，该地址可以用节基地址加偏移的方式求得:</p>
-<pre><code>引用swap的指令地址 ＝ 节基地址 ＋ 引用偏移 </code></pre>
-<h4 id="绝对引用">绝对引用</h4>
-<p>绝对引用理解起来就容易许多，修改引用时直接把值修改为目标跳转地址和初始值的和，CPU会直接通过该引用内的值查找对应的数据</p>
-<p>按照书中的例子，bufp0需要重定位指向数组buf的首地址，又由于原本.data节中的重定位条目中的初始值为0，所以直接把buf数组的首地址赋给bufp0即可。由于重定位的对象是指针，因此该过程类似于为指针赋值的过程。</p>
 </span>
         
       
@@ -885,6 +670,146 @@ int main(){
 <h4 id="绝对引用">绝对引用</h4>
 <p>绝对引用理解起来就容易许多，修改引用时直接把值修改为目标跳转地址和初始值的和，CPU会直接通过该引用内的值查找对应的数据</p>
 <p>按照书中的例子，bufp0需要重定位指向数组buf的首地址，又由于原本.data节中的重定位条目中的初始值为0，所以直接把buf数组的首地址赋给bufp0即可。由于重定位的对象是指针，因此该过程类似于为指针赋值的过程。</p>
+</span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      
+      
+        <h1 class="post-title" itemprop="name headline">
+          
+          
+            
+              <a class="post-title-link" href="/2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/" itemprop="url">
+                Caffe 源码阅读笔记一（基本代码框架）
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          發表於
+          <time itemprop="dateCreated" datetime="2015-08-24T22:11:07+08:00" content="2015-08-24">
+            2015-08-24
+          </time>
+        </span>
+
+        
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分類於
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/caffe/" itemprop="url" rel="index">
+                  <span itemprop="name">caffe</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+              &nbsp; | &nbsp;
+              <a href="/2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/24/Caffe-源码阅读笔记一（基本代码架构）/" itemprop="commentsCount"></span>
+              </a>
+            </span>
+          
+        
+      </div>
+    </header>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody"><p>在开始阅读Blob之前，需要预先了解Caffe的架构与protobuf，否则看代码的时候容易一头雾水</p>
+<h3 id="caffe基本架构">Caffe基本架构</h3>
+<p>对于任何一个网络而言，Caffe主要用4个类来构造网络：</p>
+<ul>
+<li>BLob:存储数据，blob既可以存储网络的权重，在进行训练时修改的其实就是每个blob实例</li>
+<li>Layer:构成网络的基础单元，无论是卷积层，pooling层还是全连接层等等都是从这个类派生出来的</li>
+<li>Net:定义一个网络的架构，当我们把网络中每一层都建立完之后，通过Net类来搭建整个网络</li>
+<li>Solver:用来训练网络的类，例如SGD就在这部分实现</li>
+</ul>
+<h3 id="protobuf">Protobuf</h3>
+<p>在理清基本架构之后可能有人会问：一个网络需要那么多参数，且每个参数的数据类型不尽相同，如何解决这个问题呢？</p>
+<p>Protobuf就是用来解决此类问题的，我们只需要像写配置文件一样把网络中每一层的参数设置好(当然配置文件必须按照一定的格式)，protobuf会自动生成代码，用来解析“配置文件”中的参数结构体，代码中包括了对参数的设置、读取和序列化等等操作 另外当网络训练完成之后，存储时也使用了protobuf进行处理，把Net转化为多个Message对象进行存储</p>
+<p>Caffe代码中参数初始化和参数操作都是基于protobuf完成，只需要定义网络参数，不再需要考虑如何把参数传递给应用程序的问题了，protobuf会帮你完成～</p>
+<h3 id="blob">Blob</h3>
+<p>Blob本身其实没有特别多的内容，作为Caffe中数据的基础单元，我们可以简单地吧Blob理解成一个容器，里面存储的是多维向量及其相关的信息</p>
+<p>首先看Blob.hpp:</p>
+<pre><code>Blob()
+ : data_(), diff_(), count_(0), capacity_(0) {}
+   </code></pre>
+<p>构造函数中初始化了4个对象，data_表示Blob中的数据，diff_表示反向传播时的误差，count_表示数据当前的维度(因为可以reshape)，而capacity_表示数据最大的维度</p>
+<p>接下来在Blob.cpp里主要包含了实例的初始化和reshape函数，值得注意的是如果blob中存储的是网络的参数(如全连接层和卷积层的kernel)，那么Blob提供update函数用来更新自己的参数。</p>
+<pre><code>void Blob&lt;Dtype&gt;::Update() {                                                                                                                                  
+  // We will perform update based on where the data is located.                                                                                               
+  switch (data_-&gt;head()) {                                                                                                                                    
+  case SyncedMemory::HEAD_AT_CPU:                                                                                                                             
+    // perform computation on CPU                                                                                                                             
+    caffe_axpy&lt;Dtype&gt;(count_, Dtype(-1),                                                                                                                      
+      static_cast&lt;const Dtype*&gt;(diff_-&gt;cpu_data()),                                                                                                         
+      static_cast&lt;Dtype*&gt;(data_-&gt;mutable_cpu_data()));                                                                                                      
+    break;                                                                                                                                                    
+  case SyncedMemory::HEAD_AT_GPU:                                                                                                                             
+  case SyncedMemory::SYNCED:                                                                                                                                  
+  #ifndef CPU_ONLY                                                                                                                                              
+  // perform computation on GPU                                                                                                                             
+  caffe_gpu_axpy&lt;Dtype&gt;(count_, Dtype(-1),                                                                                                                  
+      static_cast&lt;const Dtype*&gt;(diff_-&gt;gpu_data()),                                                                                                         
+      static_cast&lt;Dtype*&gt;(data_-&gt;mutable_gpu_data()));                                                                                                      
+  #else                                                                                                                                                         
+  NO_GPU;                                                                                                                                                   
+  #endif                                                                                                                                                        
+  break;                                                                                                                                                    
+  default:                                                                                                                                                    
+    LOG(FATAL) &lt;&lt; &quot;Syncedmem not initialized.&quot;;                                                                                                               
+  }                                                                                                                                                           
+}                            </code></pre>
+<p>代码中包含了GPU和CPU两种实现，其实核心就是caffe_gpu_axpy那一句更新参数</p>
+<h3 id="layer">Layer</h3>
+<p>对Blob有了一定了解之后可以看Layer了，事实上Layer是caffe架构中内容最多的部分，我们在写配置文件的时候其实都是在组合layer构成一个网络，很多运算操作在caffe中都是以layer的形式存在的，如argmax和elementwise运算等等.许多对caffe的扩展其实也是继承Layer层重新定义了具有新功能的层</p>
+<p>layer的工作模式类似数学中的函数概念，给定一个输入(bottom blobs),layer内部完成自己的功能，返回一个输出(top blobs)</p>
+<p>caffe中的layer分两种，common layer和vision layer: - data_layers.hpp中声明了神经网络与输入数据之间的交互层，如导入/导出hdf5数据，从图像中导入数据等等 - common_layers.hpp中声明了许多常用的包含基础功能(flatten, softmax等)的层 - vision_layers.hpp中主要包含对针对图像处理的层(convolutional, pooling等) - neuron_layers.hpp中主要包含与神经元的定义与操作相关的层(dropout,ReLu等) - loss_layers.hpp中主要包含了计算网络Loss的层，除了我们常见的softmax loss之外还包括了比较常用多euclidean loss, hinge loss等等 看了下vision layer中居然还包含了SPPnet这种处理image scale的层，除此之外还有deconvolution layer,确实是很给力啊</p>
+<p>caffe还提供了layer_factory供其他人快速实现自己的layer</p>
+<p>所有的Layer层都包含Forward和Backward的函数，这两个函数包含了整个layer的计算功能，对于开发者而言如果想实现自己的layer，其实主要就是完成这两个函数逻辑</p>
+<p>具体的某一种Layer的代码解析不在本文的范畴里，以后会另开blog详细描述常用的layer代码实现</p>
+<h3 id="net">Net</h3>
+<p>Net中包含了对整个网络的操作实现，在看源代码之前笔者只想到了设置learning_rate、 weight_decay和迭代次数等等功能，以及控制Forward和Backward等，然而事实上caffe提供了许多非常有用的函数，如在RCNN training中提到的share weights功能，使得你可以直接使用预先训练好的网络参数进行初始化，这也是为什么在caffe的example中我们可以直接通过命令行对imagenet训练出来的网络进行fine－tuning的原因</p>
+<h3 id="solver">Solver</h3>
+<p>相对而言solver的实现比较简单，创建solver对象时我们只需要关注优化算法就可以了，caffe目前提供三种梯度下降的方法： - SGD(momentum) - NesterRov - Adagrad</p>
 </span>
         
       
