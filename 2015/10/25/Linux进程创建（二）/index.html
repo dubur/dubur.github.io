@@ -1,0 +1,763 @@
+<!doctype html>
+<html class="theme-next use-motion ">
+<head>
+  
+
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5"/>
+
+
+
+  <link href='//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+
+
+<link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.5.1"/>
+
+
+    <meta name="description" content="Dubers Blog" />
+
+
+
+  <meta name="keywords" content="Linux,OS," />
+
+
+
+
+
+  <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.1" />
+
+
+<meta name="description" content="系统调用exec
+上一步中我们完成了子进程的创建，但是子进程还没有开始运行自己的程序，因此在这一步子进程开始执行新的可执行程序，在进行详细介绍之前，借用书中的例子，我们调用fork创建子进程，fork在返回时会给父进程和子进程返回不同的值，因此两个进程通过该返回值判断自己是父进程还是子进程。 
+execve的基本流程
+注意到子进程中调用了execve()，其函数声明如下：
+int execve(c">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux进程创建(二)">
+<meta property="og:url" content="http://yoursite.com/2015/10/25/Linux进程创建（二）/index.html">
+<meta property="og:site_name" content="Duburs Blog">
+<meta property="og:description" content="系统调用exec
+上一步中我们完成了子进程的创建，但是子进程还没有开始运行自己的程序，因此在这一步子进程开始执行新的可执行程序，在进行详细介绍之前，借用书中的例子，我们调用fork创建子进程，fork在返回时会给父进程和子进程返回不同的值，因此两个进程通过该返回值判断自己是父进程还是子进程。 
+execve的基本流程
+注意到子进程中调用了execve()，其函数声明如下：
+int execve(c">
+<meta property="og:image" content="http://yoursite.com/img/Linux/child_parent.png">
+<meta property="og:image" content="http://yoursite.com/img/Linux/load_aout_binary.png">
+<meta property="og:image" content="http://yoursite.com/img/Linux/mm_release.png">
+<meta property="og:image" content="http://yoursite.com/img/Linux/get_user.png">
+<meta property="og:updated_time" content="2015-10-26T06:41:51.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux进程创建(二)">
+<meta name="twitter:description" content="系统调用exec
+上一步中我们完成了子进程的创建，但是子进程还没有开始运行自己的程序，因此在这一步子进程开始执行新的可执行程序，在进行详细介绍之前，借用书中的例子，我们调用fork创建子进程，fork在返回时会给父进程和子进程返回不同的值，因此两个进程通过该返回值判断自己是父进程还是子进程。 
+execve的基本流程
+注意到子进程中调用了execve()，其函数声明如下：
+int execve(c">
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var CONFIG = {
+    scheme: '',
+    sidebar: 'post'
+  };
+</script>
+
+  <title> Linux进程创建(二) | Duburs Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zsaf">
+
+  <!--[if lte IE 8]>
+  <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
+    <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode">
+      <img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820"
+           alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari."
+           style='margin-left:auto;margin-right:auto;display: block;'/>
+    </a>
+  </div>
+<![endif]-->
+  
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?de04554947ef5ddb1d9dd95ef6598c19";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><h1 class="site-meta">
+  <span class="logo-line-before"><i></i></span>
+  <a href="/" class="brand" rel="start">
+      <span class="logo">
+        <i class="icon-next-logo"></i>
+      </span>
+      <span class="site-title">Duburs Blog</span>
+  </a>
+  <span class="logo-line-after"><i></i></span>
+</h1>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon icon-next-home"></i> <br />
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            <i class="menu-item-icon icon-next-categories"></i> <br />
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            <i class="menu-item-icon icon-next-about"></i> <br />
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            <i class="menu-item-icon icon-next-archives"></i> <br />
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            <i class="menu-item-icon icon-next-tags"></i> <br />
+            标签
+          </a>
+        </li>
+      
+
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content"> 
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      
+      
+        <h1 class="post-title" itemprop="name headline">
+          
+          
+            
+              Linux进程创建(二)
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          发表于
+          <time itemprop="dateCreated" datetime="2015-10-25T17:47:07+08:00" content="2015-10-25">
+            2015-10-25
+          </time>
+        </span>
+
+        
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分类于
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/OS/" itemprop="url" rel="index">
+                  <span itemprop="name">OS</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+              &nbsp; | &nbsp;
+              <a href="/2015/10/25/Linux进程创建（二）/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/10/25/Linux进程创建（二）/" itemprop="commentsCount"></span>
+              </a>
+            </span>
+          
+        
+      </div>
+    </header>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <span itemprop="articleBody"><h2 id="系统调用exec">系统调用exec</h2>
+<p>上一步中我们完成了子进程的创建，但是子进程还没有开始运行自己的程序，因此在这一步子进程开始执行新的可执行程序，在进行详细介绍之前，借用书中的例子，我们调用fork创建子进程，fork在返回时会给父进程和子进程返回不同的值，因此两个进程通过该返回值判断自己是父进程还是子进程。 <img src="/img/Linux/child_parent.png" alt="child_parent"></p>
+<h3 id="execve的基本流程">execve的基本流程</h3>
+<p>注意到子进程中调用了execve()，其函数声明如下：</p>
+<pre><code>int execve(const char *filename, char *const argv[], char *const envp[]);</code></pre>
+<p>其中第一个参数表示执行的程序路径，第二个参数argv表示程序的参数，envp表示子进程的执行环境，即上下文。 首先介绍下execve()的基本流程：</p>
+<ol style="list-style-type: decimal">
+<li>首先将程序路径指针从用户空间拷贝到系统空间，这其中的过程比较复杂，考虑到该字符串可能非常长，为了不占用系统堆栈，系统会分配一个物理页面作为缓冲区，之后从用户空间拷贝字符串</li>
+<li>第一步可以看作执行文件之前的预处理，之后execve通过调用do_execve执行主体部分工作：打开可执行文件并进行加载，值得注意的是加载时Linux内核定义了linux_binprm结构体来保存加载时所需的参数和字段</li>
+<li>打开文件之后，函数开始解析每个参数，这里的参数也位于用户堆栈，因此采用与第一步相同的方式加载到内核空间，因此每有一个参数就会新建一个页面缓冲区，在拷贝参数的同时调用count()对参数计数，需要注意的是argv[0]永远是可执行文件的路径，每个可执行文件的参数数量等于传入的参数数量加一</li>
+<li>第三步中虽然打开了文件，但是此时系统还不知道文件的格式，这里提点题外话，Linux中文件的前128个字节包含了该文件的属性信息，因此不像windows那样，Linux并不通过后缀名判断文件格式，我们可以通过file命令判断文件的类型。</li>
+<li>最后把程序执行的参数和运行环境，从用户空间拷贝到系统空间中，由bprm统一管理</li>
+</ol>
+<p>完成以上步骤的预处理之后我们执行目标文件的加载工作，首先运行search_binary_handler来寻找与目标文件类型对应的处理工具handler，不同的handler构成一个数组format，函数会遍历整个数组查找对应的handler，当找不到时去查看目标文件的第2、3个字节通过request_module()尝试读入相应的handler</p>
+<p>加载目标文件的代码框架如下：</p>
+<pre><code>    for (try=0; try&lt;2; try++){//尝试两次，第一次找不到handler之后尝试安装handler再试一次
+        for (fmt = formats ; fmt ; fmt = fmt-&gt;next) {//遍历format数组
+                调用load_binary
+                if(load_binary不成功){ 
+                    尝试下一个handler
+                }
+                //load_binary成功
+                装载目标文件直接运行
+                ret=运行返回结果
+                if(ret &gt;=0){
+                    //说明找到了对应的handler
+                    执行目标文件
+                    }
+                if(ret不为0且不是-ENOEXEC){
+                    //说明找到了handler但出现其他错误,直接退出
+                    }
+                //ret=ENOEXEC说明handler与文件类型不匹配
+            }
+        //内层循环结束
+        if(ret为-ENOEXEC){ //说明handler对不上号
+            读取目标文件第2、3字节生成bitfmt模块并读入
+                再次遍历format
+            }
+        }</code></pre>
+<p>从上面的代码分析中可以看出关键在于load_binary的内部机制，这也是目标文件的加载核心代码</p>
+<p>书中以a.out作为可执行文件的例子说明load_library的装载和执行的过程，旧版本的Linux系统内核编译输出a.out格式的可执行文件，如centos和redhat等，而比较新的系统如ubuntu等已经使用elf格式</p>
+<h3 id="目标文件的装载和投入运行a.out格式为例">目标文件的装载和投入运行（a.out格式为例）</h3>
+<h4 id="解析目标文件格式">解析目标文件格式</h4>
+<p>前面说过在不同类型的目标文件对应不同的handler，各个handler都存在format数组中，下面的数据结构对应的就是a.out的handler</p>
+<pre><code>static struct linux_binfmt aout_format = {
+    NULL, THIS_MODULE, load_aout_binary, load_aout_library, aout_core_dump, PAGE_SIZ
+};</code></pre>
+<p>该结构体中load_aout_binary负责a.out格式的目标文件的装载和运行，我们看这个函数的开头部分： <img src="/img/Linux/load_aout_binary.png" alt="load_aout_binary"> 回忆一下bprm中包含了装载所需要的参数，其中就包括文件类型，代码里面ex变量是一个exec数据结构，该结构中包含着文件的MagicNumber， 这里需要介绍一下MagicNumber的概念：</p>
+<p>MagicNumber本身是一种编码，也可以是字符，a.out文件格式一共有四种MagicNumber：ZMAGIC、OMAGIC、QMAGIC和NMAGIC</p>
+<p>如果找不到与ex变量中匹配的magic number，那么说明该文件不是a.out格式。如果匹配到了magic number，那么我们可以获取目标文件的正文位置。但是在这之前还需要做一些检查，如PCB中对于数据最大空间的限制等，如果这些检查都通过，子进程这时可以放弃用户空间，因为需要拷贝的内容已经都在内核空间了</p>
+<h4 id="flush_old_exec清空用户空间">flush_old_exec清空用户空间</h4>
+<p>完成用户空间内容到系统空间的复制之后load_aout_binary执行flush_old_exec函数，首先处理信号处理表，如果子进程在这时与父进程共享一个信号处理表的话，需要将该表复制给子进程。</p>
+<p>前面我们提到子进程可能共享父进程的用户空间，同样程序也只需要检查用户空间的共享计数，如果父进程独占用户空间，那么需要释放子进程mm_struct数据结构下面的所有页面，调用exec_mmap函数放弃父进程的用户空间。</p>
+<p>然而我们fork创建进程时先拷贝了父进程用户空间的所有数据结构，却又在这里释放了所有空间，为什么这么大费周章呢，所以我们需要vfork作为fork的补充，我们调用vfor就不需要拷贝这些用户空间，vfork仅复制父进程的系统堆栈空间和PCB，且与父进程共享用户空间，因此这两个函数的实现不同点在于sys_vfork多了两个标志位指示子进程通过指针共享还是复制父进程的用户空间。</p>
+<p>但是共享的情形下会出现一个问题：前面我们提到过Copy on Write， 子进程的页面访问权限设置为只读，只有当子进程需要写页面时才在页面异常处理程序为子进程复制物理页面，在共享状态下，子进程写页面会影响父进程，因此绝对不能让两个进程同时在内核态运行，所以Linux系统在创建子进程之后让父进程进入睡眠状态，等待子进程运行结束之后唤醒或者调用exit()退出，来避免这个问题。</p>
+<p>唤醒和睡眠通过信号量的操作来实现，唤醒操作mm_release的代码如下： <img src="/img/Linux/mm_release.png" alt="mm_release"> 通过上面的分析，我们可以得出如果子进程与父进程共享用户空间，那么其实也就没有释放用户空间这一说了，但此时需要为子进程分配一个mm_struct数据结构以及页面目录，以便于为子进程建立自己的用户空间，之后切换到新的用户空间。</p>
+<p>到这里为止，当前进程的用户空间与父进程完全独立，可以唤醒父进程，并更新父进程用户空间的共享计数。</p>
+<p>值得注意的是作者又详细介绍了PCB中的mm与active_mm指针的细节，mm指向用户空间，如果本进程是内核线程，那么mm为空，但是该进程被调用时要求active_mm不能为空，所以在调度时内核将其设置为在其之前运行的某个进程的active_mm，在运行时又将这个指针设置为0。</p>
+<p>对于一般进程而言，mm不为空，因此我们不使用active_mm，我们调用mmdrop释放active_mm，递减其共享计数。</p>
+<p>释放继承下来的用户空间之后，子进程的用户空间变为空，如果子进程原来只是一个线程的话，它的PCB会被挂入由其父进程为首的“线程组”队列，然而调用execve之后，子进程变成了真正意义上的进程，因此需要调用de_thread从线程组中脱离出来。同时由于子进程生成了独立的信号处理表，那么这个时候需要更新父进程信号处理表的共享计数，如果为0那么就释放。</p>
+<p>这里需要介绍一下信号处理表的具体内容，基本与中断向量表类似，但不同的是，信号处理表中的每一项又对各种信号的预设响应，由于上面一步我们已经将内核线程的用户空间置为0并把它变为进程，我们需要将原来指向用户空间服务程序的表项更改为SIG_DFL，即默认预设值。</p>
+<p>最后处理已打开的文件，PCB中有专门保存已打开文件信息的变量，同时还包含一个位图用来指示哪些文件在执行新的程序时应关闭的信息。所以flush_old_files最后一步工作就是根据这个位图关闭这些文件，并将该位图清0。一般情况下进程的头三个文件分别指stdin,stdout以及stderr,这三个文件不应关闭，而其他应该关闭。</p>
+<h4 id="子进程用户空间分配">子进程用户空间分配</h4>
+<p>Flush_old_exec函数返回之后，子进程与父进程之间已经完全独立，但是子进程的用户空间依旧为空，现在load_aout_binary函数将对mm_struct结构中的变量进行初始化并分配存储空间。</p>
+<p>熟悉可执行目标文件格式的读者知道，目标文件的映像分为text、data及bss三段，分别用来存储指令、已初始化的全局变量和未初始化的全局变量。mm_struct为每个段都设置了start和end指针，程序映像的正文从text段开始，这里我们需要回顾一下之前讲到的magic number，当magic number为OMAGIC时，说明该文件中的可执行代码并不是纯代码，对这类文件分配空间时首先为text和data段合在一起分配空间，之后再把这两部分从文件中读进来，对于bss段只需要分配空间就可以。</p>
+<p>除了OMAGIC之外的其他三种均为纯代码，这类代码在执行时不会改变，其data段的内容也不会改变，因此内核将可执行文件映射到用户空间中，之后是一些比较细节的工作，如果文件系统提供mmap，则需要将已打开的文件映射到虚存空间，此时检查text段与data段与页面大小对齐，如果不满足以上条件则分配空间并将text段与data段读入到用户空间，如果满足条件则直接映射。</p>
+<p>至此，text段与data段的装载全部完成，下面就是bss段和堆栈段了。</p>
+<p>接下来load_aout_binary函数通过set_brk函数为bss段分配空间并建立页面映射，接着在用户空间的堆栈顶部建立一个虚存空间，将执行参数以及进程上下文所占的物理页面与此空间建立映射。</p>
+<p>用户空间中最高地址为堆栈区，堆栈区的顶部为一个数组，数组中每个元素都是一个页面，我们知道一般程序默认有两个参数，参数列表argv与参数数量argc，还有一个隐含的之前提到的上下文参数envp，该参数也是execve的参数之一，用户堆栈中从一开始就是设置好这三项数据，并将这些参数复制到用户空间的顶端。这些工作由create_aout_tables函数完成。</p>
+<p>在这里作者又提出了一个问题，如果我们要从用户空间读取某个变量到内核空间，那么我们应该使用get_user 函数，我们来看一下get_user的函数声明： <img src="/img/Linux/get_user.png" alt="get_user"> 首先get_user是一个宏定义，用于从用户空间读取简单类型的变量，如一个字节，短整数和长整数，那么为什么要用x而不是x的地址呢？ get_user中实际调用的是__get_user_x这个汇编函数，该函数的指令只有三条：</p>
+<ol style="list-style-type: decimal">
+<li>首先将ret的值赋给eax寄存器</li>
+<li>接着将x的值存入edx寄存器</li>
+<li>把ptr指针置为0</li>
+</ol>
+<p>因此实际的赋值过程只是寄存器操作，这也就是我们不使用变量地址的原因。</p>
+<p>从create_aout_tables返回之后，堆栈顶端的参数已经准备好，这里只剩下最后一步start_thread的工作就是保留保存上下文，当进程从系统调用返回时，这些数值会恢复到CPU的各个寄存器中。</p>
+<p>至此，可执行代码的装载已经完成，do_execve在调用search_binary_handler之后也结束了。</p>
+</span>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag">#Linux</a>
+          
+            <a href="/tags/OS/" rel="tag">#OS</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/10/25/Linux进程创建（一)/" rel="prev">Linux进程创建(一)</a>
+            
+          </div>
+
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/10/02/Backproagation for CNN/" rel="next">BP for CNN</a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+ </div>
+
+        
+
+        
+          <div class="comments" id="comments">
+            
+              <div class="ds-thread" data-thread-key="2015/10/25/Linux进程创建（二）/"
+                   data-title="Linux进程创建(二)" data-url="http://yoursite.com/2015/10/25/Linux进程创建（二）/">
+              </div>
+            
+          </div>
+        
+      </div>
+
+      
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" src="/images/default_avatar.jpg" alt="John Yao" itemprop="image"/>
+          <p class="site-author-name" itemprop="name">John Yao</p>
+        </div>
+        <p class="site-description motion-element" itemprop="description">Dubers Blog</p>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">11</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            <a href="/categories">
+              <span class="site-state-item-count">5</span>
+              <span class="site-state-item-name">分类</span>
+              </a>
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">7</span>
+              <span class="site-state-item-name">标签</span>
+              </a>
+          </div>
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator"></div>
+          <div class="post-toc">
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#系统调用exec"><span class="nav-number">1.</span> <span class="nav-text">系统调用exec</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#execve的基本流程"><span class="nav-number">1.1.</span> <span class="nav-text">execve的基本流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#目标文件的装载和投入运行a.out格式为例"><span class="nav-number">1.2.</span> <span class="nav-text">目标文件的装载和投入运行（a.out格式为例）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#解析目标文件格式"><span class="nav-number">1.2.1.</span> <span class="nav-text">解析目标文件格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#flush_old_exec清空用户空间"><span class="nav-number">1.2.2.</span> <span class="nav-text">flush_old_exec清空用户空间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#子进程用户空间分配"><span class="nav-number">1.2.3.</span> <span class="nav-text">子进程用户空间分配</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator"></div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner"> <div class="copyright" >
+  
+  &copy; &nbsp; 
+  <span itemprop="copyrightYear">2015</span>
+  <span class="with-love">
+    <i class="icon-next-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Yao</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT
+  </a>
+</div>
+
+
+ </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+  
+    
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"dubur"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+    
+     
+  	<script src="/js/ua-parser.min.js"></script>
+  	<script src="/js/hook-duoshuo.js"></script>
+  
+
+    
+  
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/fancy-box.js?v=0.4.5.1"></script>
+
+
+  <script type="text/javascript" src="/js/helpers.js?v=0.4.5.1"></script>
+  
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/js/motion_global.js?v=0.4.5.1" id="motion.global"></script>
+
+
+
+
+  <script type="text/javascript" src="/js/nav-toggle.js?v=0.4.5.1"></script>
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  
+<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.5.1" id="bootstrap.scrollspy.custom"></script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 0.4 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    var $tocContent = $('.post-toc-content');
+    if (isDesktop() && CONFIG.sidebar === 'post') {
+      if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+        displaySidebar();
+      }
+    }
+  });
+</script>
+
+
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      if (CONFIG.sidebar === 'always') {
+        displaySidebar();
+      }
+      if (isMobile()) {
+        FastClick.attach(document.body);
+      }
+    });
+  </script>
+
+  
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/lazyload.js"></script>
+  <script type="text/javascript">
+    $(function () {
+      $("#posts").find('img').lazyload({
+        placeholder: "/images/loading.gif",
+        effect: "fadeIn"
+      });
+    });
+  </script>
+</body>
+</html>

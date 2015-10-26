@@ -1,0 +1,778 @@
+<!doctype html>
+<html class="theme-next use-motion ">
+<head>
+  
+
+<meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+  <link rel="stylesheet" type="text/css" href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5"/>
+
+
+
+  <link href='//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+
+
+<link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.5.1"/>
+
+
+    <meta name="description" content="Dubers Blog" />
+
+
+
+  <meta name="keywords" content="Linux,OS," />
+
+
+
+
+
+  <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.1" />
+
+
+<meta name="description" content="本日志将详细介绍Linux系统中进程从创建到执行过程中的细节，包括：子进程地址空间的分配、子进程代码和数据的构成、子进程与父进程之间的交互以及堆栈的设置
+概述
+在开始介绍之前，需要有一些基础的操作系统知识，主要包括：
+
+Linux系统的内存管理框架，Linux地址映射，页(段)式存储管理
+进程与线程的定义以及两者在Linux系统中的区别
+进程的映像结构布局
+
+ Linux系统中进程的创建分为两步：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux进程创建(一)">
+<meta property="og:url" content="http://yoursite.com/2015/10/25/Linux进程创建（一)/index.html">
+<meta property="og:site_name" content="Duburs Blog">
+<meta property="og:description" content="本日志将详细介绍Linux系统中进程从创建到执行过程中的细节，包括：子进程地址空间的分配、子进程代码和数据的构成、子进程与父进程之间的交互以及堆栈的设置
+概述
+在开始介绍之前，需要有一些基础的操作系统知识，主要包括：
+
+Linux系统的内存管理框架，Linux地址映射，页(段)式存储管理
+进程与线程的定义以及两者在Linux系统中的区别
+进程的映像结构布局
+
+ Linux系统中进程的创建分为两步：">
+<meta property="og:image" content="http://yoursite.com/img/Linux/ProcessImg.png">
+<meta property="og:image" content="http://yoursite.com/img/Linux/mm_struct.png">
+<meta property="og:image" content="http://yoursite.com/img/Linux/task_struct.png">
+<meta property="og:image" content="http://yoursite.com/img/Linux/child_parent.png">
+<meta property="og:image" content="http://yoursite.com/img/Linux/signal_struct.png">
+<meta property="og:image" content="http://yoursite.com/img/Linux/dup_mmap.png">
+<meta property="og:image" content="http://yoursite.com/img/Linux/dup_mmap2.png">
+<meta property="og:image" content="http://yoursite.com/img/Linux/copy_thread.png">
+<meta property="og:image" content="http://yoursite.com/img/Linux/pt_reg.png">
+<meta property="og:updated_time" content="2015-10-25T11:50:18.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux进程创建(一)">
+<meta name="twitter:description" content="本日志将详细介绍Linux系统中进程从创建到执行过程中的细节，包括：子进程地址空间的分配、子进程代码和数据的构成、子进程与父进程之间的交互以及堆栈的设置
+概述
+在开始介绍之前，需要有一些基础的操作系统知识，主要包括：
+
+Linux系统的内存管理框架，Linux地址映射，页(段)式存储管理
+进程与线程的定义以及两者在Linux系统中的区别
+进程的映像结构布局
+
+ Linux系统中进程的创建分为两步：">
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var CONFIG = {
+    scheme: '',
+    sidebar: 'post'
+  };
+</script>
+
+  <title> Linux进程创建(一) | Duburs Blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zsaf">
+
+  <!--[if lte IE 8]>
+  <div style=' clear: both; height: 59px; padding:0 0 0 15px; position: relative;margin:0 auto;'>
+    <a href="http://windows.microsoft.com/en-US/internet-explorer/products/ie/home?ocid=ie6_countdown_bannercode">
+      <img src="http://7u2nvr.com1.z0.glb.clouddn.com/picouterie.jpg" border="0" height="42" width="820"
+           alt="You are using an outdated browser. For a faster, safer browsing experience, upgrade for free today or use other browser ,like chrome firefox safari."
+           style='margin-left:auto;margin-right:auto;display: block;'/>
+    </a>
+  </div>
+<![endif]-->
+  
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?de04554947ef5ddb1d9dd95ef6598c19";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+  <div class="container one-column page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><h1 class="site-meta">
+  <span class="logo-line-before"><i></i></span>
+  <a href="/" class="brand" rel="start">
+      <span class="logo">
+        <i class="icon-next-logo"></i>
+      </span>
+      <span class="site-title">Duburs Blog</span>
+  </a>
+  <span class="logo-line-after"><i></i></span>
+</h1>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu ">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            <i class="menu-item-icon icon-next-home"></i> <br />
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            <i class="menu-item-icon icon-next-categories"></i> <br />
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            <i class="menu-item-icon icon-next-about"></i> <br />
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            <i class="menu-item-icon icon-next-archives"></i> <br />
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            <i class="menu-item-icon icon-next-tags"></i> <br />
+            标签
+          </a>
+        </li>
+      
+
+      
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div id="content" class="content"> 
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      
+      
+        <h1 class="post-title" itemprop="name headline">
+          
+          
+            
+              Linux进程创建(一)
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          发表于
+          <time itemprop="dateCreated" datetime="2015-10-25T17:47:07+08:00" content="2015-10-25">
+            2015-10-25
+          </time>
+        </span>
+
+        
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分类于
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/OS/" itemprop="url" rel="index">
+                  <span itemprop="name">OS</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+              &nbsp; | &nbsp;
+              <a href="/2015/10/25/Linux进程创建（一)/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/10/25/Linux进程创建（一)/" itemprop="commentsCount"></span>
+              </a>
+            </span>
+          
+        
+      </div>
+    </header>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        <span itemprop="articleBody"><p>本日志将详细介绍Linux系统中进程从创建到执行过程中的细节，包括：子进程地址空间的分配、子进程代码和数据的构成、子进程与父进程之间的交互以及堆栈的设置</p>
+<h2 id="概述">概述</h2>
+<p>在开始介绍之前，需要有一些基础的操作系统知识，主要包括：</p>
+<ul>
+<li>Linux系统的内存管理框架，Linux地址映射，页(段)式存储管理</li>
+<li>进程与线程的定义以及两者在Linux系统中的区别</li>
+<li>进程的映像结构布局</li>
+</ul>
+<p><img src="/img/Linux/ProcessImg.png" alt="Process_Image"> Linux系统中进程的创建分为两步：首先从父进程“派生”出一个子进程，之后子进程通过系统调用execve()执行目标程序。 在正式开始进程创建的过程之前，我们首先要了解一下Linux系统与进程密切相关的数据结构，如PCB的数据结构task_struct（后面直接用PCB表示task_struct结构），以及虚拟内存的描述符mm，这些会为之后的代码阅读与理解提供很大的便利。</p>
+<h3 id="linux中的pcb数据结构task_struct">Linux中的PCB数据结构task_struct</h3>
+<p>作为进程的管理单元，task_struct结构包含相当多的成员变量，基本可以分为状态、性质、资源和组织等几大类，我们重点关注几个与进程创建相关的成员变量:</p>
+<ul>
+<li>binfmt——应用程序的文件格式，与进程加载可执行文件相关</li>
+<li>user——指向一个user_struct数据结构，代表这该进程所属的用户，创建进程do_fork时需要用到</li>
+<li>rlim——表示内核对进程资源的使用限制，同样在创建时需要用到</li>
+<li>pgrp——当前进程的运行上下文，在进程调度执行时至关重要</li>
+<li>mm——内存描述符，代表进程所拥有的地址空间，其结构示意图如下： <img src="/img/Linux/mm_struct.png" alt="mm_struct"> 共分四个段：代码段、数据段、堆和栈，进程创建时对mm_struct的复制是重点。</li>
+</ul>
+<p>mm_struct结构中有一个虚拟内存的基本管理单元vm_area_struct，这些单元通过指针的方式形成一个链表，并用来存储mm_struct中的虚拟内存的地址信息。</p>
+<ul>
+<li>file_struct files*——这是一个file_struct类型，它指向进程打开的文件信息</li>
+<li>fs_struct fs*——记录与进程相关的文件系统信息</li>
+</ul>
+<p>下面这张图能很好地展示task_struct相关数据结构的关系<img src="/img/Linux/task_struct.png" alt="task_struct"></p>
+<h3 id="linux系统的内存映射与系统调用mmap">Linux系统的内存映射与系统调用mmap</h3>
+<p>Linux中进程创建与执行离不开内存空间的申请与释放，存储管理的细节不多叙述，但是我们需要了解一些Linux系统如何申请及释放空间的知识，我们主要关注两个系统调用brk与mmap。之前对于Linux系统中内存、虚拟地址空间和物理页面的概念不太清晰，因此在这复习一下这些基础知识：</p>
+<ul>
+<li>Linux采用页式存储管理（将4kb连续的物理存储空间作为一个页面）</li>
+<li>操作系统内核将虚拟地址与物理内存进行映射来达到操作内存的目的</li>
+<li>Linux使用2层地址映射方式（虽然很多书中写的是3层映射，但这只是逻辑上，在实现时本质还是2层映射），通过页面目录及页面表将虚拟地址映射到物理页面上，因此如果我们尝试对没有映射的地址空间进行写操作的话会引发缺页异常。</li>
+</ul>
+<p>brk负责动态地向内核申请和释放空间，从进程的映像布局中我们可以看出堆向上增长，每申请一次空间，我们就将这个动态分配区的底部向上推，每释放一次就将底部向下移，brk的实现sys_brk函数接收一个参数brk，该参数正是用来描述新的边界地址。内核将新的边界地址与旧的边界地址进行比较就可以知道需要释放还是分配空间。</p>
+<p>从上面的几点可以总结出，Linux在申请内存时的主要步骤</p>
+<pre><code>申请：检查进程地址空间和想要申请的空间之间的合法性（检查高端地址是否会出现冲突），如果合法则分配适当的虚拟内存区间同时建立映射，建立映射包括写页面表和页目录。
+释放：检查释放的页面是否已建立映射，如果是则解除页面映射表中相应的表项，同时释放内存页面，如果我们想要释放的内存空间也没有进行映射，就可以直接跳过解除映射这一步</code></pre>
+<p>而mmap函数为一个以打开的文件映射到进程的用户空间，使得进程可以像访问内存一样访问文件，在进程执行execve时内核会将可执行程序映射到当前进程的用户空间，其底层实现都在文件系统中，这部分与进程关系不大。</p>
+<p>注意我们在申请与释放内存空间时，都会对进程的基本内存管理单元构成的数据结构进行插入或者删除操作，这些基本单元可能以链表的形式组织，也可能以AVL的形式组织，这些结构都保存在PCB中，因此我们需要遍历这些结构一一处理</p>
+<h2 id="linux进程创建">Linux进程创建</h2>
+<p>Linux系统中提供三种创建进程的方式，fork／clone／vfork，三者的不同在于fork完全复制父进程的所有资源，子进程可以看作父进程的镜像，而clone则相对灵活一些，用户可以将资源有选择地复制给子进程，vfork是后来增加的系统调用，强制将除了PCB和系统堆栈以外的资源通过指针复制。从复制的数据量角度来说vfork ()&lt;=clone()&lt;=fork()</p>
+<p>需要注意的是父进程的全局变量以及代码不会被复制到子进程中，而是通过只读的形式共享，但无论使用哪种方式创建进程，子进程都需要调用execve执行可执行程序。 <img src="/img/Linux/child_parent.png" alt="child_parent"></p>
+<p>子进程的创建在do_fork函数中，这个函数会接收多个参数，这些参数的主要目的在于：</p>
+<ol style="list-style-type: decimal">
+<li>控制子进程要创建独立的空间还是与父进程通过指针共享资源</li>
+<li>控制子进程向父进程发出通知的信号</li>
+</ol>
+<p>当以上这些控制参数设置完成之后，通过alloc_task_struct函数为子进程分配两个连续物理页面，低端用作PCB，高端用作系统空间。之后直接开始复制父进程的PCB(task_struct)数据结构。</p>
+<h3 id="复制pcb">复制PCB</h3>
+<p>在复制PCB这一部分作者提到了PCB中两个重要字段，一个是指向该进程拥有者的指针user，这个指针指向的数据结构为user_struct，包含了该user的信息，这些信息里有一个计数器__count，用来统计这个user拥有多少个进程，这个计数器在后面execve()函数中会用到，对释放页面起到关键作用。</p>
+<p>另一个字段是rlim，它限制了进程可以占用的资源数量和用户可以拥有的进程数量，因此如果到达上限的话该用户就无法新建进程了，这个字段决定了后面execve函数中执行可执行文件。</p>
+<p>每个进程除了拥有者之外还有一个执行域，执行域与操作系统有关，Unix的每个变种都对应一个执行域，Linux也有自己对应的执行域，介绍执行域的原因是因为它和动态链接库有着紧密的关系，只要某个域中还有进程在执行，那么这个域对应的动态链接库就不能拆除。</p>
+<p>每个进程执行的程序也属于某种格式，这些格式有不同的驱动模块负责，而这些模块都是动态加载的，有关这些部分在execve部分会详细介绍</p>
+<p>之后调用get_pid函数进行PID的复制，前面提到的参数中有一个用来控制子进程是否与父进程共用一个进程号。之后完成各种信息量以及进程创建时间的初始化，至此为止PCB的复制就基本完成了</p>
+<h3 id="复制已打开的文件">复制已打开的文件</h3>
+<p>系统调用copy_files函数复制已打开的文件控制结构，同样我们需要按照do_fork的输入参数决定是否需要与父进程共享已打开的文件。所有与终端设备相联系的三个文件:stdin，stdout和stderr都是预先打开的。</p>
+<p>如果我们设置子进程与父进程共享文件的话，就将当前进程的file_struct结构中的共享计数加一，如果需要复制，那么调用kmem_cache_alloc函数为子进程分配一个files_struct结构，再进行复制，files_struct结构有三个重要的成员，其中一个是位图close_on_exec_init，用于初始化那些在执行exec时需要关闭的文件，另一个是open_fds_init，用于初始化描述文件，第三个是文件数组fd_array，这三个成员都是固定大小的，如果需要打开的文件数量超过这个大小则必须另外分配空间。</p>
+<p>直观上看共享模式操作简单，但是父子进程在操作自己打开的文件同时其实也在操作对方的文件，因此这就带来了问题，复制模式就不会有这样的问题，父子进程互不干扰。</p>
+<h3 id="复制文件系统信息">复制文件系统信息</h3>
+<p>大家都知道操作系统中文件都有操作权限，因此每个进程在创建的时候我们除了要复制打开的文件之外，还需要复制父进程的与文件系统相关的信息，这些信息中比较典型的就是文件的操作权限， 另外还有进程的根目录root，当前工作目录等。这里有一点需要注意的是我们仅复制fs_struct数据结构，对于其成员数据结构并不进行深层的复制，因此这些成员数据结构还是共享模式状态，需要增加共享计数。 接着处理用于进程间通信的信号，进程可以为各种信号设置信号处理程序，其PCB中的指针sig就指向signal_struct数据结构： <img src="/img/Linux/signal_struct.png" alt="signal_struct"> 注意到其中有一个count变量，说明子进程可以通过指针共享这个信号表，只需要将共享计数加一就可以了</p>
+<h3 id="用户空间继承">用户空间继承</h3>
+<p>PCB中的指针mm指向用户空间mm_struct结构，当子进程通过复制模式继承父进程的用户空间时，不像之前的fs_struct仅复制外层结构，而是需要进入该结构复制其成员，主要复制的就是vm_area_struct虚拟内存的管理单元和页面映射表了，这里我们可以看一下负责复制mm_struct的函数dup_mmap的代码 <img src="/img/Linux/dup_mmap.png" alt="dup_mmap"> <img src="/img/Linux/dup_mmap2.png" alt="dup_mmap2"> 函数的主题在于这个for循环当中，我们遍历当前进程mm指针的每块虚拟内存，新建一块内容空间tmp，并将其独占（变为临界资源），之后把tmp的vm_mm指向当前进程的mm字段，递增共享计数，155到169针对打开文件的处理，之后完成页面的复制，copy_page_range是一个非常关键的函数，其代码比较长，这里主要讲一下函数的执行过程</p>
+<p>我们依旧对页面的目录项进行遍历，Linux的地址映射分为三部分，除了页目录和页面表之外还增加了一个中间目录，但其实i386的处理器依旧按照两层映射的结构，所以中间层基本就是全等映射，相当于对输入没有做转换直接输出。 我们主要关心父进程页面表，根据表项的内容决定具体操作：</p>
+<ol style="list-style-type: decimal">
+<li>表项内容全0，说明页面尚未设立，不需要做任何事</li>
+<li>表项最低位为0，说明映射已经建立但页面不在内存中，通过swap_duplicate递增共享计数，之后将此表项复制到子进程的页面表中</li>
+<li>映射已建立，但是物理页面不是有效的内存页面，由于有些物理页面在外部设备上，其地址是总线地址不是内容页面，不消耗动态分配的内存页面</li>
+<li>需要从父进程复制的可写页面，这应该是最常见的情景了，然而此时我们并不新分配一个内存页面再复制父进程的页面中内容，内核仅仅通过指针来共享这个页面，这就是Linux的精妙之处，其实我们并不知道复制玩页面后子进程会不会使用这个页面，所以我们引入一种成为“copy on write”的技术，先通过复制页面表项共享这个页面，当有任何一个进程需要写操作时再进行分配和复制，分离子进程和父进程的页面，具体做法如下：
+<ul>
+<li>设置父进程的页面表项为写保护</li>
+<li>子进程复制该页面表项 这样两个进程的页面都设置为只读，因此当有进程尝试写这个页面时会引发一个异常，到这时在异常处理程序中执行分配和复制，这样依赖使得页面的复制变得相当快捷，当然这值适用子进程以复制模式进行页面继承的情况，如果在共享模式下根本用不到这样的技术</li>
+</ul></li>
+</ol>
+<p>当我们继承完用户空间之后，所有的有条件复制基本已经处理完，我们回顾一下vfork和fork的区别，fork调用do_fork时所有的控制参数均为0，即我们“复制”了所有的资源，但是vfork仅仅复制PCB，因此copy_mm函数不会执行，因此此时创建的实际上是一个线程。</p>
+<h3 id="系统空间继承">系统空间继承</h3>
+<p>之前我们分配了两个页面，用于存储PCB的低端页面已经分配完毕，现在开始复制系统空间堆栈。我们调用copy_thread完成这个任务。copy_thread的代码如下：<img src="/img/Linux/copy_thread.png" alt="copy_thread"> 系统堆栈的内容包含了父进程从通过系统调用进入系统空间开始到进入copy_thread的过程，而子进程返回时需要这些信息，但是不能完全照搬，因为返回时我们要区分是哪个进程返回的。我们已经知道当进程通过系统调用进入内核态时，我们需要保存CPU上下文，pt_regs就是用来存储寄存器内容的数据结构，在创建pt_reg时参考下图： <img src="/img/Linux/pt_reg.png" alt="pt_reg"> 首先我们已经有指向子进程PCB的指针p，同时我们也知道p指向两个连续的物理页面，因此我们可以得到这两个页面的顶端THREAD_SIZE+(unsigned long)p，之后将其转换为struct pt_regs*，再减一就指向了子进程系统堆栈的pt_regs结构。</p>
+<p>得到子进程的pt_regs之后，先将当前进程的上下文复制给子进程，再将eax置为0，当子进程被调度返回时返回值就为eax的值，除此之外还需要将结构中的esp置为参数esp，它决定了进程在用户空间的堆栈位置。在fork中该参数来自父进程上下文的esp寄存器。</p>
+<p>注意到PCB一个重要的成员thread，它也是一个数据结构，里面记录着进程切换时的系统堆栈指针，返回地址等关键信息。因此复制这个thread时子进程需要相应修改返回地址，我们之前已经获取到子进程上下文的地址，此时我们将这个地址赋给该指针，使得子进程看上去像之前被切换了一样。</p>
+<p>此时内核空间的继承也已经完成，最后只需要设置执行域、设置本进程页面可以被换出以及与父进程通信时的信号。此外PCB中的counter字段指的是进程的运行时间配额，这里我们将父进程的时间配额分一半给子进程，如果我们使用vfork创建线程，那么需要在PCB中将子线程加入父进程的线程组。最后把子进程的PCB链入内核的进程队列，至此新进程的创建全部完成并且已经挂入可运行进程的队列接受调度。</p>
+<p>这里需要注意的一点是当调用vfork时，子进程与父进程共享用户空间，那么当子进程创建完成之后如果两个进程都进入用户态运行，那么将导致两个进程操作一个用户空间，所以我们必须避免这样的情况，Linux在子进程创建完之后将父进程在一个信号量上执行down操作，让父进程睡眠，并且子进程执行execve直到结束再唤醒父进程。</p>
+</span>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Linux/" rel="tag">#Linux</a>
+          
+            <a href="/tags/OS/" rel="tag">#OS</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/10/25/Linux进程创建（二）/" rel="next">Linux进程创建(二)</a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+ </div>
+
+        
+
+        
+          <div class="comments" id="comments">
+            
+              <div class="ds-thread" data-thread-key="2015/10/25/Linux进程创建（一)/"
+                   data-title="Linux进程创建(一)" data-url="http://yoursite.com/2015/10/25/Linux进程创建（一)/">
+              </div>
+            
+          </div>
+        
+      </div>
+
+      
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" src="/images/default_avatar.jpg" alt="John Yao" itemprop="image"/>
+          <p class="site-author-name" itemprop="name">John Yao</p>
+        </div>
+        <p class="site-description motion-element" itemprop="description">Dubers Blog</p>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">11</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          <div class="site-state-item site-state-categories">
+            <a href="/categories">
+              <span class="site-state-item-count">5</span>
+              <span class="site-state-item-name">分类</span>
+              </a>
+          </div>
+
+          <div class="site-state-item site-state-tags">
+            <a href="/tags">
+              <span class="site-state-item-count">7</span>
+              <span class="site-state-item-name">标签</span>
+              </a>
+          </div>
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator"></div>
+          <div class="post-toc">
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#linux中的pcb数据结构task_struct"><span class="nav-number">1.1.</span> <span class="nav-text">Linux中的PCB数据结构task_struct</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#linux系统的内存映射与系统调用mmap"><span class="nav-number">1.2.</span> <span class="nav-text">Linux系统的内存映射与系统调用mmap</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#linux进程创建"><span class="nav-number">2.</span> <span class="nav-text">Linux进程创建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#复制pcb"><span class="nav-number">2.1.</span> <span class="nav-text">复制PCB</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#复制已打开的文件"><span class="nav-number">2.2.</span> <span class="nav-text">复制已打开的文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#复制文件系统信息"><span class="nav-number">2.3.</span> <span class="nav-text">复制文件系统信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用户空间继承"><span class="nav-number">2.4.</span> <span class="nav-text">用户空间继承</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统空间继承"><span class="nav-number">2.5.</span> <span class="nav-text">系统空间继承</span></a></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator"></div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner"> <div class="copyright" >
+  
+  &copy; &nbsp; 
+  <span itemprop="copyrightYear">2015</span>
+  <span class="with-love">
+    <i class="icon-next-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Yao</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT
+  </a>
+</div>
+
+
+ </div>
+    </footer>
+
+    <div class="back-to-top"></div>
+  </div>
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  
+  
+    
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"dubur"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+    
+     
+  	<script src="/js/ua-parser.min.js"></script>
+  	<script src="/js/hook-duoshuo.js"></script>
+  
+
+    
+  
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/fancy-box.js?v=0.4.5.1"></script>
+
+
+  <script type="text/javascript" src="/js/helpers.js?v=0.4.5.1"></script>
+  
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/js/motion_global.js?v=0.4.5.1" id="motion.global"></script>
+
+
+
+
+  <script type="text/javascript" src="/js/nav-toggle.js?v=0.4.5.1"></script>
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  
+<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.5.1" id="bootstrap.scrollspy.custom"></script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 0.4 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    var $tocContent = $('.post-toc-content');
+    if (isDesktop() && CONFIG.sidebar === 'post') {
+      if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+        displaySidebar();
+      }
+    }
+  });
+</script>
+
+
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      if (CONFIG.sidebar === 'always') {
+        displaySidebar();
+      }
+      if (isMobile()) {
+        FastClick.attach(document.body);
+      }
+    });
+  </script>
+
+  
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/lazyload.js"></script>
+  <script type="text/javascript">
+    $(function () {
+      $("#posts").find('img').lazyload({
+        placeholder: "/images/loading.gif",
+        effect: "fadeIn"
+      });
+    });
+  </script>
+</body>
+</html>
