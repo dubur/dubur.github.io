@@ -57,7 +57,7 @@ int execve(c">
 <meta property="og:image" content="http://yoursite.com/img/Linux/load_aout_binary.png">
 <meta property="og:image" content="http://yoursite.com/img/Linux/mm_release.png">
 <meta property="og:image" content="http://yoursite.com/img/Linux/get_user.png">
-<meta property="og:updated_time" content="2015-10-26T06:41:51.000Z">
+<meta property="og:updated_time" content="2015-10-26T07:50:03.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux进程创建(二)">
 <meta name="twitter:description" content="系统调用exec
@@ -318,11 +318,12 @@ int execve(c">
 <p>至此，text段与data段的装载全部完成，下面就是bss段和堆栈段了。</p>
 <p>接下来load_aout_binary函数通过set_brk函数为bss段分配空间并建立页面映射，接着在用户空间的堆栈顶部建立一个虚存空间，将执行参数以及进程上下文所占的物理页面与此空间建立映射。</p>
 <p>用户空间中最高地址为堆栈区，堆栈区的顶部为一个数组，数组中每个元素都是一个页面，我们知道一般程序默认有两个参数，参数列表argv与参数数量argc，还有一个隐含的之前提到的上下文参数envp，该参数也是execve的参数之一，用户堆栈中从一开始就是设置好这三项数据，并将这些参数复制到用户空间的顶端。这些工作由create_aout_tables函数完成。</p>
-<p>在这里作者又提出了一个问题，如果我们要从用户空间读取某个变量到内核空间，那么我们应该使用get_user 函数，我们来看一下get_user的函数声明： <img src="/img/Linux/get_user.png" alt="get_user"> 首先get_user是一个宏定义，用于从用户空间读取简单类型的变量，如一个字节，短整数和长整数，那么为什么要用x而不是x的地址呢？ get_user中实际调用的是__get_user_x这个汇编函数，该函数的指令只有三条：</p>
+<p>在这里作者又提出了一个问题，如果我们要从用户空间读取某个变量到内核空间，那么我们应该使用get_user 函数，我们来看一下get_user的函数声明： <img src="/img/Linux/get_user.png" alt="get_user"> 首先get_user是一个宏定义，用于从用户空间读取简单类型的变量，如一个字节，短整数和长整数，那么为什么要用x而不是x的地址呢？ get_user中实际调用的是__get_user_x这个汇编函数，该函数只有一条汇编指令，该指令执行以下操作：</p>
 <ol style="list-style-type: decimal">
-<li>首先将ret的值赋给eax寄存器</li>
-<li>接着将x的值存入edx寄存器</li>
-<li>把ptr指针置为0</li>
+<li>eax寄存器和ret绑定</li>
+<li>edx寄存器与x绑定</li>
+<li>以上两个寄存器作为__get_user_x的输出</li>
+<li>ptr指针存入eax寄存器 我们结合__get_user_x看，可以发现__ret_gu中存着用户空间的变量地址，122行的代码表示考虑到符号原因，我们要强制对x做类型转换，所以不得不使用变量，最后get_user返回ptr的值</li>
 </ol>
 <p>因此实际的赋值过程只是寄存器操作，这也就是我们不使用变量地址的原因。</p>
 <p>从create_aout_tables返回之后，堆栈顶端的参数已经准备好，这里只剩下最后一步start_thread的工作就是保留保存上下文，当进程从系统调用返回时，这些数值会恢复到CPU的各个寄存器中。</p>
