@@ -184,6 +184,155 @@
           
           
             
+              <a class="post-title-link" href="/2015/11/24/Lagrange-Dual-Problem/" itemprop="url">
+                Lagrange_Dual_Problem
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          發表於
+          <time itemprop="dateCreated" datetime="2015-11-24T15:11:59+08:00" content="2015-11-24">
+            2015-11-24
+          </time>
+        </span>
+
+        
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分類於
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/Machine-Learning/" itemprop="url" rel="index">
+                  <span itemprop="name">Machine Learning</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+              &nbsp; | &nbsp;
+              <a href="/2015/11/24/Lagrange-Dual-Problem/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/11/24/Lagrange-Dual-Problem/" itemprop="commentsCount"></span>
+              </a>
+            </span>
+          
+        
+      </div>
+    </header>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody"><p>理解SVM原理一直是一个比较难的问题，因为牵涉到的数学知识比较多，网上SVM相关的资料非常多，但大部分的教程中的推导都大同小异，笔者认为July的SVM的三层境界和pluskid的支持向量机系列博文都是非常好的入门资源，多数的参考资料多多少少都照搬了许多Andrew NG的Machine Learning讲义内容，可惜的是笔者翻来覆去看了好几遍还是不能融会贯通，特别是当推导到对偶问题与KKT条件时，看来看去还是一头雾水，因此本文将结合Convex Optimization一书从纯数学的角度对于SVM推导过程中的优化问题进行详细的阐述，文中如有不妥当不严密之处烦请告知，谢谢</p>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<h2 id="lagrange对偶函数">Lagrange对偶函数</h2>
+<p>首先我们定义优化问题：<img src="/img/Lagrange/Primal_problem.png" alt="transformation"></p>
+<p>我们称这个问题为原始问题（primal problem），对于这样的优化问题，相信之前学习过Lagrange乘数法的话会比较熟悉，但是与一般问题不同的是上面的问题包含不等式约束，这里我们先放一放， 首先写出目标函数L： <span class="math">\[L(x,\lambda,\upsilon) ＝ f_0(x) + \sum\_{i=1}^m (\alpha_if_i(x)) + \sum\_{j=1}^p(\beta_jh_j(x))\]</span></p>
+<p>该函数在Convex Optimization一书中被称为Lagrangian，式中<span class="math">\(\alpha\)</span>和<span class="math">\(\beta\)</span>是Lagrange乘子（我们假设alpha大于0），显然Lagrangian函数是关于x，<span class="math">\(\alpha\)</span>和<span class="math">\(\beta\)</span>的函数</p>
+<p>对于每一组<span class="math">\(\alpha\)</span>，<span class="math">\(\beta\)</span>，我们在<span class="math">\(f(x)\)</span>的定义域上求取Lagrangian的下确界，产生的新的函数表达式如下： <span class="math">\[g(\alpha,\beta) = \mathop{inf} \limits_{x\in D}L(x,\alpha,\beta) = \mathop{inf}\_{x\in D}(f_0(x)+\sum\_{i=1}^m (\alpha_if_i(x)) + \sum\_{j=1}^p(\beta_jh_j(x))\]</span> <span class="math">\(g(alpha，beta)\)</span>这个函数就称为Lagrange对偶函数</p>
+<p>那么对偶函数有什么用呢？</p>
+<p>从定义上看，<strong>对偶函数定义了原问题所有可行解的下界</strong>，因为对于任何一个可行解<span class="math">\(\mathop{x}^\sim\)</span>,无论<span class="math">\(\alpha\)</span>和<span class="math">\(\beta\)</span>的值为多少，Lagrangian后面两项的和不会大于0,所以<span class="math">\(Lagrangian(\mathop{x}^\sim)\)</span> 的值一定小于等于<span class="math">\(f(\mathop{x}^\sim)\)</span>，而对偶函数又是Lagrangian的下确界，所以我们有：</p>
+<p><span class="math">\[g(\alpha,\beta) \leq p^*\]</span></p>
+<p>这里<span class="math">\(p^*\)</span>表示原始问题的任一可行解</p>
+<h2 id="lagrange对偶函数与共轭函数的关系">Lagrange对偶函数与共轭函数的关系</h2>
+<p>清楚对偶函数的定义之后，我们继续介绍共轭函数的概念，之所以需要了解这个概念的原因是因为共轭函数拥有一个非常优秀的性质：<strong>无论原函数是否是凸函数，共轭函数一定是凸函数</strong></p>
+<p>首先需要弄清楚共轭函数的定义： <span class="math">\[f^*(y) = \mathop {sup}_{x\in \bf{dom} \, f} (y^{T}x-f(x)) \]</span> 共轭函数由两部分组成，首先是线性函数<span class="math">\(y^Tx\)</span>, 该函数的斜率是自变量y,另一部分就是原函数在x上的值，因此共轭函数求的对于一个固定的斜率y，求线性函数<span class="math">\(y^Tx\)</span>和原函数的差值的上确界。</p>
+<p>我们可以大致猜测共轭函数的性质，由于共轭函数其实隐含着求最大值的目的，因此我们可以简单地把它看作求极值问题，那么显然对函数直接求导可以得出共轭函数在某个特定输入y处的函数值，即</p>
+<p><span class="math">\[y = f^{&#39;}(x)\]</span></p>
+<p>得出x与y的关系<span class="math">\(x = {f^{&#39;}}^{-1}(y)\)</span>，再把上式带入到<span class="math">\(y^{T}x-f(x)\)</span>就可以求出解析式了。</p>
+<p>由于共轭函数凹凸性的优势是的它在优化问题中非常有优势，下一步我们看共轭函数与Lagrange对偶函数的关系，假设原问题的约束条件为线性函数(SVM的函数间隔约束显然也是线性约束):<img src="/img/Lagrange/Conjugate.png" alt="transformation"></p>
+<p>由对偶函数的定义我们有：</p>
+<p><span class="math">\[g(\alpha,\beta) = \mathop{inf} \limits_{x}(f_0(x)+\sum\_{i=1}^m (\alpha_if_i(x)) + \sum\_{j=1}^p(\beta_jh_j(x))
+= -b^{T}\alpha-d^{T}\beta+\mathop{inf} \limits\_{x}(f_0(x)+(A^{T}\alpha+C^{T}\beta)^{T}x)=-b^{T}\alpha-d^{T}\beta-{f_0}^*(-A^{T}\alpha-C^{T}\beta)\]</span></p>
+<p>我们成功地从对偶问题中找到了共轭函数，因此对于<strong>仅有线性约束条件的优化问题而言对偶函数也一定是凸的</strong></p>
+<h2 id="lagrange对偶问题">Lagrange对偶问题</h2>
+<p>我们已经知道了对偶函数的优良性质(当然约束条件要求是线性函数)，如果我们能想办法将对偶函数用到原始问题的求解上，那么就能够方便地求出最后的解，因此这里我们引入对偶问题</p>
+<p>对偶问题的数学表达如下：<img src="/img/Lagrange/Dual_problem.png" alt="transformation"> 前面讲过对偶函数定义了原始问题可行解的下界，那么对偶问题的目标就是试图从找到这些下界的最大值，当然我们前面已经假设<span class="math">\(\alpha\)</span>必须大于零。这也是为什么在许多SVM教程中对偶函数被定义为<span class="math">\(max \, min\, L(x)\)</span>的原因</p>
+<h3 id="弱对偶与强对偶">弱对偶与强对偶</h3>
+<p>由于对偶函数的保证了凹凸性，所以对偶问题的求解非常方便，我们把对偶问题的解记为<span class="math">\(d^*\)</span>,有我们之前的结论有： <span class="math">\[d^{\*} \leq p^{\*}\]</span> 上面的式子揭示了对偶问题的特性，称为弱对偶</p>
+<p>如果我们能把不等号转变为等号，那么原始问题的解就求出来了，同时如果<span class="math">\(d^{\*} = p^{\*}\)</span>,那么弱对偶就变成了强对偶。</p>
+<p>一般情况下强对偶的要求比较苛刻，仅在某些条件下强对偶才成立，最常见的就是Slater条件，但是Slater条件要求原问题是convex的，因此这里到了最关键的一步：利用KKT条件</p>
+<h3 id="kkt条件">KKT条件</h3>
+<p>KKT条件在convex optimizaiton中的描述如下：</p>
+<pre><code>We now assume that the functions f0, . . . , fm, h1, . . . , hp are differentiable (and therefore have open domains), but we make no assumptions yet about convexity.
+
+KKT conditions for nonconvex problems
+
+As above, let x⋆ and (λ⋆,ν⋆) be any primal and dual optimal points with zero duality gap. Since x⋆ minimizes L(x, λ⋆, ν⋆) over x, it follows that its gradient must vanish at x⋆, i.e.,</code></pre>
+<p>dualty gap的意思是原问题解<span class="math">\(p^*\)</span>和对偶问题解<span class="math">\(d^*\)</span>的差值，显然强对偶情况下差值为0，按照Lagrange乘数法的思想，Lagrangian函数在<span class="math">\(x^*\)</span>处的导数为0</p>
+<p><span class="math">\[\nabla f_0(x^*) + \sum_{i=1}^mDf_i(x^*)^T\alpha\_{i}^{*} + \sum\_{i=1}^p\beta\_{i}^{*}\nabla h_i(x^*) = 0\]</span></p>
+<p>式中<span class="math">\(Df_i(x^*)\)</span>表示的是约束函数<span class="math">\(f_i\)</span>在<span class="math">\(x^*\)</span>处的导数，从上式中我们可以推导出KKT条件(偷懒直接上图)：</p>
+<div class="figure">
+<img src="/img/Lagrange/Spring.png" alt="transformation">
+<p class="caption">transformation</p>
+</div>
+<p>当然这里要求<span class="math">\(f_i\)</span>为凸函数，<span class="math">\(h_i\)</span>为线性函数(仿射)且两者均可导，函数<span class="math">\(f_i\)</span>和<span class="math">\(h_i\)</span>分别表示不等式约束和等式约束，前两个式子是原始问题的要求，图中<span class="math">\(\lambda\)</span>和<span class="math">\(\upsilon\)</span>对应前面的<span class="math">\(\alpha\)</span>和<span class="math">\(\beta\)</span>,我们关注第三和第四个式子，结合SVM我们可以发现如果Lagrange乘子<span class="math">\(\lambda\)</span>大于0，那么对应的不等约束变为等式约束，对应支持向量的情况，如果<span class="math">\(\lambda\)</span>等于0，那么对<span class="math">\(f_i\)</span>的值没有要求，对应非支持向量的情况。</p>
+<p>同时KKT条件也说明了我们为什么在前面定义Lagrangian时要求<span class="math">\(\alpha\)</span>大于等于0的原因。</p>
+<p>笔者在看其他教程时一直不明白第三第四个式子从哪里推导出来的，书中好像没有给出严密的证明和推导，但是给出了一种非常直观的interpretation——物理学中的弹簧问题</p>
+<p>简单而言就是两个滑块由三个弹簧链接，并且位于两堵墙中间，求平衡状态下使整个系统的能量最小的<span class="math">\(x_1\)</span>,<span class="math">\(x_2\)</span> 首先求能量函数为：</p>
+<p><span class="math">\[f_0(x_1,x_2) = \frac 1 2 k_1 {x_1}^2 + \frac 1 2 k_2(x_2-x_1)^2 + \frac 1 2 k_3(l-x_2)^2\]</span></p>
+<p>从图中我们可以看出一些基本的约束条件(两堵墙中间要有足够的空间，滑块之间不能重叠)： <span class="math">\(\frac w 2 - x_1 \leq 0\)</span>, <span class="math">\(w + x_1 + x_2\)</span>, <span class="math">\(\frac w 2 - l + x_2 \leq 0\)</span></p>
+<p>因此我们得到了原始的优化问题，假设Lagrange乘子分别为<span class="math">\(\lambda1\)</span>,<span class="math">\(\lambda2\)</span>,<span class="math">\(\lambda3\)</span>,那么由KKT条件我们有(对应第三第四个式子)</p>
+<p><span class="math">\(\lambda_i \geq 0\)</span></p>
+<p>且<span class="math">\(\lambda_1(w/2-x_1)=0\)</span>, <span class="math">\(\lambda_2(w-x_2+x_1)=0\)</span>, <span class="math">\(\lambda_3(w/2-l+x_2)=0\)</span></p>
+<p>同时由于在解的位置梯度为0，我们有：</p>
+<div class="figure">
+<img src="/img/Lagrange/Zero_Gradient.png" alt="transformation">
+<p class="caption">transformation</p>
+</div>
+<p>另一方面，由于系统处于平衡状态，滑块一定是受力平衡的，我们对滑块进行受力分析:</p>
+<p><img src="/img/Lagrange/Blocks.png" alt="transformation"> 动手写一下受力平衡方程就可以发现与上面的梯度为0的式子是一样的，说明了Lagrange乘子可以看作是题目中滑块受到的反作用力，KKT条件与平衡状态的受力分析殊途同归</p>
+<p>这个例子说明了KKT条件是对于原始问题另一角度的解读，如果我们的优化问题存在一个“平衡状态”的话，那么我们可以通过解对偶问题来获得原始问题的解</p>
+<p>推广到SVM，如果支持向量确定的话那么相当于给出了“平衡状态”，我们可以直接求解对偶问题来求分割超平面，而当我们获得训练集的时候其实支持向量已经确定了(当然可能需要核函数映射)。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>[1] Boyd S, Vandenberghe L. Convex optimization[M]. Cambridge university press, 2004.</p>
+<p>[2] http://www.duzelong.com/wordpress/201507/archives1023/</p>
+</span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      
+      
+        <h1 class="post-title" itemprop="name headline">
+          
+          
+            
               <a class="post-title-link" href="/2015/10/25/Linux进程创建（一)/" itemprop="url">
                 Linux进程创建(一)
               </a>
@@ -1527,160 +1676,6 @@ int main(){
 
 
     
-      
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      
-      
-        <h1 class="post-title" itemprop="name headline">
-          
-          
-            
-              <a class="post-title-link" href="/2015/08/12/Fast RCNN论文笔记/" itemprop="url">
-                Fast RCNN论文笔记
-              </a>
-            
-          
-        </h1>
-      
-
-      <div class="post-meta">
-        <span class="post-time">
-          發表於
-          <time itemprop="dateCreated" datetime="2015-08-12T16:17:30+08:00" content="2015-08-12">
-            2015-08-12
-          </time>
-        </span>
-
-        
-          <span class="post-category" >
-            &nbsp; | &nbsp; 分類於
-            
-              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
-                  <span itemprop="name">Deep Learning</span>
-                </a>
-              </span>
-
-              
-              
-
-            
-          </span>
-        
-
-        
-          
-            <span class="post-comments-count">
-              &nbsp; | &nbsp;
-              <a href="/2015/08/12/Fast RCNN论文笔记/#comments" itemprop="discussionUrl">
-                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/12/Fast RCNN论文笔记/" itemprop="commentsCount"></span>
-              </a>
-            </span>
-          
-        
-      </div>
-    </header>
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <span itemprop="articleBody"><p>Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强</p>
-<h2 id="motivation-drawbacks-of-rcnn">Motivation (Drawbacks of RCNN)</h2>
-<ul>
-<li>RCNN的训练方式按照一个一个阶段分的比较开</li>
-<li>训练时RCNN会将每个proposal的特征向量存储在硬盘上，不仅占用存储空间，时间上也因为读写磁盘而变得很慢</li>
-<li>在进行detection测试时耗时长</li>
-</ul>
-<h2 id="fast-rcnn-training">Fast RCNN Training</h2>
-<p>文章的亮点在于对原来网络结构的改进，这里就不得不膜拜大神了</p>
-<ul>
-<li>RoI Pooling Layer 按照作者所述，该层的思想类似于SPPnet，我们假设最后一个卷积层得到输入N个feature map(这些feature map包含原始图像的所有信息)，而我们只想提取感兴趣的部分，因此这就需要引入RoI了</li>
-</ul>
-<p>将这N个feature map和R个region proposal输入到RoI pooling层中，根据RoI中指定的区域对原始的feature map进行pooling得到这R个region proposal的N个feature map</p>
-<p>笔者觉得其实和SPPnet没有多大的关系……由于各个RoI的大小不一样，而为了使得每个RoI pooling出来的feature长度相同，采用不同大小的pooling窗口而已</p>
-<ul>
-<li>对原始CNN网络结构的修改 修改主要有3处</li>
-</ul>
-<ol style="list-style-type: decimal">
-<li>将最后一个max pooling层替换为RoI pooling层</li>
-<li>将最后一个全连接层和softmax层替换为两个同并列的层
-<ol style="list-style-type: decimal">
-<li>K+1个class的分类器</li>
-<li>Bounding box回归(Localization)</li>
-</ol></li>
-<li>修改网络的输入使其接收N个image和R个RoI 最后网络结构如图所示：<img src="/img/Fast_RCNN/fast-rcnn.jpeg" alt="fast-rcnn"></li>
-</ol>
-<p>核心在于使用RoI pooling层直接提取原始feature map中属于RoI的那一部分</p>
-<ul>
-<li><p>Fine-tuning微调</p>
-<p>网络结构变化带来的是训练方式的变化，作者在现有的CNN分类网络上进行了微调，类似于RCNN中的domain-specific fine-tuning,只不过这次是针对网络结构而调整训练方式</p></li>
-</ul>
-<ol style="list-style-type: decimal">
-<li><p>Multi-task Loss</p>
-<p>简单来说就是将分类的Loss和bounding box回归的Loss做了加权和</p>
-<p><span class="math">\[ L(p,k^*,t,t^*) = L_{cls}(p,k^*) + \lambda[k^*\ &gt;\ 1]L_{loc}(t,t^*) \]</span></p>
-<p><span class="math">\[ smooth_{L_1}(x) = \begin{cases}0.5x^2 \ &amp;if \ |x| &lt; 1
- \cr |x|-0.5 \ &amp;otherwise \end{cases} \]</span></p>
-<p>第一部分是softmax分类器的Loss，第二部分是regression的Loss，值得注意的是第二部分有个指示函数，说明不会计算那些background类型的proposal的locaolization误差</p></li>
-<li><p>mini-batch sampling</p>
-<p>每一次SGD的batch使用2个image和128个RoI，每个batch中RoI的构成: 1.25% ground truth中的bounding box IoU&gt;0.5, 2.75% IoU &lt; 0.5, 看作background example</p></li>
-<li><p>BP through RoI pooling layer</p>
-<p>在进行反向传播时RoI pooling layer有些许不同, 参与pooling的不再是整幅图像而是可能有重叠的RoI区域，计算公式如下:</p>
-<p><span class="math">\[ {\partial L \over \partial x} = \sum_{r\in R} \sum_{y\in r} [y\ pooled\ x] {\partial L \over \partial y} \]</span></p>
-<p>y代表pooling后的值, 反向传播的思想是要将每个y的偏导传递给所有参与pooling的变量x，这也就是指示函数 [y pooled x] 的含义，在这里x代表的是原来RoI中的元素</p></li>
-</ol>
-<ul>
-<li>Scale invariance 如何处理输入图像尺寸不一的问题？ 作者给出了两种方案:</li>
-<li>brute force 强制把图像resize到同一尺寸下</li>
-<li>image pyramids 利用图像金字塔，把图片resize成不同的大小，选取其中最接近optimal scale（也就是227*227）的大小用作训练。</li>
-</ul>
-<h2 id="fast-rcnn-detection">Fast RCNN Detection</h2>
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
-</script>
-<ul>
-<li>Truncated SVD 全连接层的计算时间太长，占用了整个前向传播的一半时间，因此在进行矩阵乘法时，作者采用SVD将权重矩阵<span class="math">\(W (u \times v)\)</span>分解为三个矩阵的乘积：</li>
-</ul>
-<p><span class="math">\[ W \approx U \Sigma_tV^T \]</span></p>
-<p>SVD分解后的U和V都是对称矩阵 最后一个全连接层被分解为两个子层:第一层的权重矩阵为$ _tV^T <span class="math">\(,第二层的权重矩阵为\)</span>U<span class="math">\(,因此整个参数的个数由\)</span>uv<span class="math">\(变成了\)</span>t(u+v)$,当t比较小(意味着原参数矩阵的特征值少)的时候计算时间就会大大减少 <img src="/img/Fast_RCNN/training_time.png" alt="training_time"></p>
-<h2 id="experiment-insights">Experiment Insights</h2>
-<ul>
-<li>卷积层和全连接层一样需要fine-tuning &gt; decrease mAP from 66.9% to 61.4%</li>
-</ul>
-<p>且浅层的卷积层没有微调的必要。</p>
-<ul>
-<li><p>首先用classification loss训练，之后加入bbox regression训练效果更好 &gt; improvement ranges from +0.8 to +1.1 mAP points</p></li>
-<li>trade-off: speed &gt; performance improvement brought by multi-scale</li>
-<li>More data brings higher mAP</li>
-<li>Softmax slightly outperforms SVM</li>
-<li><p>Sparse proposals(selective search) improve detection quality and dense proposals(sliding window) free the heavy running cost.</p></li>
-</ul>
-</span>
-        
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -1719,7 +1714,7 @@ int main(){
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">11</span>
+              <span class="site-state-item-count">12</span>
               <span class="site-state-item-name">文章</span>
             </a>
           </div>
