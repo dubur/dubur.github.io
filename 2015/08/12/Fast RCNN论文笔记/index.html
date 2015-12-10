@@ -57,7 +57,7 @@ RCNN的训练方式按照一个一个阶段分的比较开
 在进行detection">
 <meta property="og:image" content="http://yoursite.com/img/Fast_RCNN/fast-rcnn.jpeg">
 <meta property="og:image" content="http://yoursite.com/img/Fast_RCNN/training_time.png">
-<meta property="og:updated_time" content="2015-11-24T14:40:29.000Z">
+<meta property="og:updated_time" content="2015-12-10T04:40:08.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Fast RCNN论文笔记">
 <meta name="twitter:description" content="Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强
@@ -258,47 +258,51 @@ RCNN的训练方式按照一个一个阶段分的比较开
 <li>在进行detection测试时耗时长</li>
 </ul>
 <h2 id="fast-rcnn-training">Fast RCNN Training</h2>
-<p>文章的亮点在于对原来网络结构的改进，这里就不得不膜拜大神了</p>
+<p>文章的亮点在于对原来网络结构的改进</p>
 <ul>
 <li>RoI Pooling Layer 按照作者所述，该层的思想类似于SPPnet，我们假设最后一个卷积层得到输入N个feature map(这些feature map包含原始图像的所有信息)，而我们只想提取感兴趣的部分，因此这就需要引入RoI了</li>
 </ul>
-<p>将这N个feature map和R个region proposal输入到RoI pooling层中，根据RoI中指定的区域对原始的feature map进行pooling得到这R个region proposal的N个feature map</p>
-<p>笔者觉得其实和SPPnet没有多大的关系……由于各个RoI的大小不一样，而为了使得每个RoI pooling出来的feature长度相同，采用不同大小的pooling窗口而已</p>
+<p>将这N个feature map和selective search得到的R个region proposal输入到RoI pooling层中，根据RoI中指定的区域对原始的feature map进行pooling得到这R个region proposal的N个feature map</p>
+<p>由于各个RoI的大小不一样，而为了使得每个RoI pooling出来的feature长度相同，采用不同大小的pooling窗口而已</p>
 <ul>
-<li>对原始CNN网络结构的修改 修改主要有3处</li>
-</ul>
+<li><p>对原始CNN网络结构的修改 修改主要有3处</p>
 <ol style="list-style-type: decimal">
 <li>将最后一个max pooling层替换为RoI pooling层</li>
-<li>将最后一个全连接层和softmax层替换为两个同并列的层
+<li>将最后一个全连接层和softmax层替换为两个同并列的层</li>
+</ol>
 <ol style="list-style-type: decimal">
 <li>K+1个class的分类器</li>
 <li>Bounding box回归(Localization)</li>
-</ol></li>
-<li>修改网络的输入使其接收N个image和R个RoI 最后网络结构如图所示：<img src="/img/Fast_RCNN/fast-rcnn.jpeg" alt="fast-rcnn"></li>
 </ol>
+<ol start="3" style="list-style-type: decimal">
+<li>修改网络的输入，使其接收N个image和R个RoI 最后网络结构如图所示：<img src="/img/Fast_RCNN/fast-rcnn.jpeg" alt="fast-rcnn"></li>
+</ol></li>
+</ul>
 <p>核心在于使用RoI pooling层直接提取原始feature map中属于RoI的那一部分</p>
 <ul>
 <li><p>Fine-tuning微调</p>
-<p>网络结构变化带来的是训练方式的变化，作者在现有的CNN分类网络上进行了微调，类似于RCNN中的domain-specific fine-tuning,只不过这次是针对网络结构而调整训练方式</p></li>
-</ul>
+<p>网络结构变化带来的是训练方式的变化，作者在现有的CNN分类网络上进行了微调，类似于RCNN中的domain-specific fine-tuning,只不过这次是针对网络结构而调整训练方式</p>
 <ol style="list-style-type: decimal">
-<li><p>Multi-task Loss</p>
+<li>Multi-task Loss</li>
+</ol>
 <p>简单来说就是将分类的Loss和bounding box回归的Loss做了加权和</p>
 <p><span class="math">\[ L(p,k^*,t,t^*) = L_{cls}(p,k^*) + \lambda[k^*\ &gt;\ 1]L_{loc}(t,t^*) \]</span></p>
 <p><span class="math">\[ smooth_{L_1}(x) = \begin{cases}0.5x^2 \ &amp;if \ |x| &lt; 1
  \cr |x|-0.5 \ &amp;otherwise \end{cases} \]</span></p>
-<p>第一部分是softmax分类器的Loss，第二部分是regression的Loss，值得注意的是第二部分有个指示函数，说明不会计算那些background类型的proposal的locaolization误差</p></li>
-<li><p>mini-batch sampling</p>
-<p>每一次SGD的batch使用2个image和128个RoI，每个batch中RoI的构成: 1.25% ground truth中的bounding box IoU&gt;0.5, 2.75% IoU &lt; 0.5, 看作background example</p></li>
-<li><p>BP through RoI pooling layer</p>
+<p>第一部分是softmax分类器的Loss，第二部分是regression的Loss，值得注意的是第二部分有个指示函数，说明不会计算那些background类型的proposal的locaolization误差</p>
+<ol start="2" style="list-style-type: decimal">
+<li>mini-batch sampling</li>
+</ol>
+<p>每一次SGD的batch使用2个image和128个RoI，每个batch中RoI的构成: 1.25% ground truth中的bounding box IoU&gt;0.5, 2.75% IoU &lt; 0.5, 看作background example</p>
+<ol start="3" style="list-style-type: decimal">
+<li>BP through RoI pooling layer</li>
+</ol>
 <p>在进行反向传播时RoI pooling layer有些许不同, 参与pooling的不再是整幅图像而是可能有重叠的RoI区域，计算公式如下:</p>
 <p><span class="math">\[ {\partial L \over \partial x} = \sum_{r\in R} \sum_{y\in r} [y\ pooled\ x] {\partial L \over \partial y} \]</span></p>
 <p>y代表pooling后的值, 反向传播的思想是要将每个y的偏导传递给所有参与pooling的变量x，这也就是指示函数 [y pooled x] 的含义，在这里x代表的是原来RoI中的元素</p></li>
-</ol>
-<ul>
 <li>Scale invariance 如何处理输入图像尺寸不一的问题？ 作者给出了两种方案:</li>
 <li>brute force 强制把图像resize到同一尺寸下</li>
-<li>image pyramids 利用图像金字塔，把图片resize成不同的大小，选取其中最接近optimal scale（也就是227*227）的大小用作训练。</li>
+<li><p>image pyramids 利用图像金字塔，把图片resize成不同的大小，选取其中最接近optimal scale（也就是227*227）的大小用作训练。</p></li>
 </ul>
 <h2 id="fast-rcnn-detection">Fast RCNN Detection</h2>
 <script type="text/x-mathjax-config">
@@ -311,10 +315,7 @@ RCNN的训练方式按照一个一个阶段分的比较开
 <p>SVD分解后的U和V都是对称矩阵 最后一个全连接层被分解为两个子层:第一层的权重矩阵为$ _tV^T <span class="math">\(,第二层的权重矩阵为\)</span>U<span class="math">\(,因此整个参数的个数由\)</span>uv<span class="math">\(变成了\)</span>t(u+v)$,当t比较小(意味着原参数矩阵的特征值少)的时候计算时间就会大大减少 <img src="/img/Fast_RCNN/training_time.png" alt="training_time"></p>
 <h2 id="experiment-insights">Experiment Insights</h2>
 <ul>
-<li>卷积层和全连接层一样需要fine-tuning &gt; decrease mAP from 66.9% to 61.4%</li>
-</ul>
-<p>且浅层的卷积层没有微调的必要。</p>
-<ul>
+<li><p>卷积层和全连接层一样需要fine-tuning,且浅层的卷积层没有微调的必要。 &gt; decrease mAP from 66.9% to 61.4%</p></li>
 <li><p>首先用classification loss训练，之后加入bbox regression训练效果更好 &gt; improvement ranges from +0.8 to +1.1 mAP points</p></li>
 <li>trade-off: speed &gt; performance improvement brought by multi-scale</li>
 <li>More data brings higher mAP</li>

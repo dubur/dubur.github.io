@@ -52,7 +52,7 @@ caffe的example中给出了Alexnet和Goo">
 <meta property="og:image" content="http://yoursite.com/img/CNN/OverFeat.png">
 <meta property="og:image" content="http://yoursite.com/img/CNN/Pooling.png">
 <meta property="og:image" content="http://yoursite.com/img/CNN/SlidingWindow.png">
-<meta property="og:updated_time" content="2015-09-16T15:13:38.000Z">
+<meta property="og:updated_time" content="2015-12-10T04:42:38.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CNN经典论文集">
 <meta name="twitter:description" content="这篇日志主要用来整合近几年在ImageNet竞赛中获得较高成绩的CNN网络相关论文的笔记，因为思想都是基于CNN，在实际训练网络或者网络结构上有创新的地方，因此就统一写成一篇文档了，实验结果部分就省略了，主要集中在文章亮点的地方，一共有4篇相关的论文(Alexnet, GoogleNet, VGGnet和OverFeat)，会保持长期更新。
@@ -257,7 +257,7 @@ caffe的example中给出了Alexnet和Goo">
 <p>整体网络结构直接上图：<img src="/img/CNN/AlexNet.jpeg" alt="AlexNet"></p>
 <h3 id="training-details">Training Details</h3>
 <h4 id="data-augmentation">Data Augmentation</h4>
-<p>笔者认为这一部分内容在工业界相当有用，Deep learning需要大量的数据，而当数据集不够充足的时候如何做好数据增量是十分关键的，同时还能减少overfitting</p>
+<p>笔者认为这一部分内容在工业界相当有用，Deep learning需要大量的数据，而当数据集不够充足的时候如何做好数据增量十分关键，同时还能减少overfitting</p>
 <p>文中介绍了两种方法： - generating image translations and horizontal reflections(截取部分图像和镜像翻转) - alter the intensities of the RGB channels(借助PCA改变RGB通道的像素值)</p>
 <h4 id="dropout">Dropout</h4>
 <p>Dropout有专门的文献介绍，简单来说就是每次Forward的时候神经元以某概率输出0，这样在BP的时候该神经元的权重也不会更改</p>
@@ -267,7 +267,7 @@ caffe的example中给出了Alexnet和Goo">
 <p>单纯加深网络会导致过拟合问题出现，且由于90%的计算量集中在最后的全连接层，为了降低计算量，文中提出了将全连接层替换为稀疏连接层。</p>
 <h3 id="architecture-1">Architecture</h3>
 <p>Inception Module是构成整个GoogleNet的关键组件，其主要思想就是用密集的组件来逼近稀疏的卷积网络结构</p>
-<p>Naive Inception结构如下图，假设每个Inception视作一个部件级联起来，Inception在接收上一层的结果后，用不同尺寸的卷积层(1*1,3*3,5*5)和pooling层并行计算结果，将每层的结果合并起来，最后经过一个滤波器进行分组</p>
+<p>Naive Inception结构如下图，假设每个Inception视作一个部件component，Inception在接收上一层的结果后，用不同尺寸的卷积层(1*1,3*3,5*5)和pooling层并行计算结果，将每层的结果合并起来，最后经过一个滤波器进行分组</p>
 <p>但是会带来一个问题：即使是一个合适数量的卷积，也会因为大量的滤波而变得特别expensive。经过pooling层输出的合并，最终可能会导致数量级增大不可避免。处理效率不高导致计算崩溃。</p>
 <p>因此改进方案是：在需要大量计算的地方进行降维。压缩信息以聚合。1*1卷积不仅用来降维，还用来引入非线性特性。</p>
 <h3 id="googlenet-1">GoogleNet</h3>

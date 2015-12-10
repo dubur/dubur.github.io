@@ -48,10 +48,10 @@
 <meta property="og:image" content="http://yoursite.com/img/Lagrange/Primal_problem.png">
 <meta property="og:image" content="http://yoursite.com/img/Lagrange/Conjugate.png">
 <meta property="og:image" content="http://yoursite.com/img/Lagrange/Dual_problem.png">
-<meta property="og:image" content="http://yoursite.com/img/Lagrange/Spring.png">
+<meta property="og:image" content="http://yoursite.com/img/Lagrange/KKT.png">
 <meta property="og:image" content="http://yoursite.com/img/Lagrange/Zero_Gradient.png">
 <meta property="og:image" content="http://yoursite.com/img/Lagrange/Blocks.png">
-<meta property="og:updated_time" content="2015-11-24T13:25:16.000Z">
+<meta property="og:updated_time" content="2015-12-07T11:54:34.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Lagrange_Dual_Problem">
 <meta name="twitter:description" content="理解SVM原理一直是一个比较难的问题，因为牵涉到的数学知识比较多，网上SVM相关的资料非常多，但大部分的教程中的推导都大同小异，笔者认为July的SVM的三层境界和pluskid的支持向量机系列博文都是非常好的入门资源，多数的参考资料多多少少都照搬了许多Andrew NG的Machine Learning讲义内容，可惜的是笔者翻来覆去看了好几遍还是不能融会贯通，特别是当推导到对偶问题与KKT条件时">
@@ -260,14 +260,14 @@
 <p>得出x与y的关系<span class="math">\(x = {f^{&#39;}}^{-1}(y)\)</span>，再把上式带入到<span class="math">\(y^{T}x-f(x)\)</span>就可以求出解析式了。</p>
 <p>由于共轭函数凹凸性的优势是的它在优化问题中非常有优势，下一步我们看共轭函数与Lagrange对偶函数的关系，假设原问题的约束条件为线性函数(SVM的函数间隔约束显然也是线性约束):<img src="/img/Lagrange/Conjugate.png" alt="transformation"></p>
 <p>由对偶函数的定义我们有：</p>
-<p><span class="math">\[g(\alpha,\beta) = \mathop{inf} \limits_{x}(f_0(x)+\sum\_{i=1}^m (\alpha_if_i(x)) + \sum\_{j=1}^p(\beta_jh_j(x))
-= -b^{T}\alpha-d^{T}\beta+\mathop{inf} \limits\_{x}(f_0(x)+(A^{T}\alpha+C^{T}\beta)^{T}x)=-b^{T}\alpha-d^{T}\beta-{f_0}^*(-A^{T}\alpha-C^{T}\beta)\]</span></p>
+<p><span class="math">\[g(\alpha,\beta) = \mathop{inf} \limits_{x}(f_0(x)+\sum_{i=1}^m (\alpha_if_i(x)) + \sum_{j=1}^p(\beta_jh_j(x))
+= -b^{T}\alpha-d^{T}\beta+\mathop{inf} \limits_{x}(f_0(x)+(A^{T}\alpha+C^{T}\beta)^{T}x)=-b^{T}\alpha-d^{T}\beta-{f_0}^*(-A^{T}\alpha-C^{T}\beta)\]</span></p>
 <p>我们成功地从对偶问题中找到了共轭函数，因此对于<strong>仅有线性约束条件的优化问题而言对偶函数也一定是凸的</strong></p>
 <h2 id="lagrange对偶问题">Lagrange对偶问题</h2>
 <p>我们已经知道了对偶函数的优良性质(当然约束条件要求是线性函数)，如果我们能想办法将对偶函数用到原始问题的求解上，那么就能够方便地求出最后的解，因此这里我们引入对偶问题</p>
 <p>对偶问题的数学表达如下：<img src="/img/Lagrange/Dual_problem.png" alt="transformation"> 前面讲过对偶函数定义了原始问题可行解的下界，那么对偶问题的目标就是试图从找到这些下界的最大值，当然我们前面已经假设<span class="math">\(\alpha\)</span>必须大于零。这也是为什么在许多SVM教程中对偶函数被定义为<span class="math">\(max \, min\, L(x)\)</span>的原因</p>
 <h3 id="弱对偶与强对偶">弱对偶与强对偶</h3>
-<p>由于对偶函数的保证了凹凸性，所以对偶问题的求解非常方便，我们把对偶问题的解记为<span class="math">\(d^*\)</span>,有我们之前的结论有： <span class="math">\[d^{\*} \leq p^{\*}\]</span> 上面的式子揭示了对偶问题的特性，称为弱对偶</p>
+<p>由于对偶函数的保证了凹凸性，所以对偶问题的求解非常方便，我们把对偶问题的解记为<span class="math">\(d^*\)</span>,有我们之前的结论有： <span class="math">\[d^{*} \leq p^{*}\]</span> 上面的式子揭示了对偶问题的特性，称为弱对偶</p>
 <p>如果我们能把不等号转变为等号，那么原始问题的解就求出来了，同时如果<span class="math">\(d^{\*} = p^{\*}\)</span>,那么弱对偶就变成了强对偶。</p>
 <p>一般情况下强对偶的要求比较苛刻，仅在某些条件下强对偶才成立，最常见的就是Slater条件，但是Slater条件要求原问题是convex的，因此这里到了最关键的一步：利用KKT条件</p>
 <h3 id="kkt条件">KKT条件</h3>
@@ -278,11 +278,11 @@ KKT conditions for nonconvex problems
 
 As above, let x⋆ and (λ⋆,ν⋆) be any primal and dual optimal points with zero duality gap. Since x⋆ minimizes L(x, λ⋆, ν⋆) over x, it follows that its gradient must vanish at x⋆, i.e.,</code></pre>
 <p>dualty gap的意思是原问题解<span class="math">\(p^*\)</span>和对偶问题解<span class="math">\(d^*\)</span>的差值，显然强对偶情况下差值为0，按照Lagrange乘数法的思想，Lagrangian函数在<span class="math">\(x^*\)</span>处的导数为0</p>
-<p><span class="math">\[\nabla f_0(x^*) + \sum_{i=1}^mDf_i(x^*)^T\alpha\_{i}^{*} + \sum\_{i=1}^p\beta\_{i}^{*}\nabla h_i(x^*) = 0\]</span></p>
+<p><span class="math">\[\nabla f_0(x^*) + \sum_{i=1}^mDf_i(x^*)^T\alpha_{i}^{*} + \sum_{i=1}^p\beta_{i}^{*}\nabla h_i(x^*) = 0\]</span></p>
 <p>式中<span class="math">\(Df_i(x^*)\)</span>表示的是约束函数<span class="math">\(f_i\)</span>在<span class="math">\(x^*\)</span>处的导数，从上式中我们可以推导出KKT条件(偷懒直接上图)：</p>
 <div class="figure">
-<img src="/img/Lagrange/Spring.png" alt="transformation">
-<p class="caption">transformation</p>
+<img src="/img/Lagrange/KKT.png">
+
 </div>
 <p>当然这里要求<span class="math">\(f_i\)</span>为凸函数，<span class="math">\(h_i\)</span>为线性函数(仿射)且两者均可导，函数<span class="math">\(f_i\)</span>和<span class="math">\(h_i\)</span>分别表示不等式约束和等式约束，前两个式子是原始问题的要求，图中<span class="math">\(\lambda\)</span>和<span class="math">\(\upsilon\)</span>对应前面的<span class="math">\(\alpha\)</span>和<span class="math">\(\beta\)</span>,我们关注第三和第四个式子，结合SVM我们可以发现如果Lagrange乘子<span class="math">\(\lambda\)</span>大于0，那么对应的不等约束变为等式约束，对应支持向量的情况，如果<span class="math">\(\lambda\)</span>等于0，那么对<span class="math">\(f_i\)</span>的值没有要求，对应非支持向量的情况。</p>
 <p>同时KKT条件也说明了我们为什么在前面定义Lagrangian时要求<span class="math">\(\alpha\)</span>大于等于0的原因。</p>
@@ -295,8 +295,8 @@ As above, let x⋆ and (λ⋆,ν⋆) be any primal and dual optimal points with 
 <p>且<span class="math">\(\lambda_1(w/2-x_1)=0\)</span>, <span class="math">\(\lambda_2(w-x_2+x_1)=0\)</span>, <span class="math">\(\lambda_3(w/2-l+x_2)=0\)</span></p>
 <p>同时由于在解的位置梯度为0，我们有：</p>
 <div class="figure">
-<img src="/img/Lagrange/Zero_Gradient.png" alt="transformation">
-<p class="caption">transformation</p>
+<img src="/img/Lagrange/Zero_Gradient.png">
+
 </div>
 <p>另一方面，由于系统处于平衡状态，滑块一定是受力平衡的，我们对滑块进行受力分析:</p>
 <p><img src="/img/Lagrange/Blocks.png" alt="transformation"> 动手写一下受力平衡方程就可以发现与上面的梯度为0的式子是一样的，说明了Lagrange乘子可以看作是题目中滑块受到的反作用力，KKT条件与平衡状态的受力分析殊途同归</p>

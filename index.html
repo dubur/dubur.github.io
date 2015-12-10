@@ -258,14 +258,14 @@
 <p>得出x与y的关系<span class="math">\(x = {f^{&#39;}}^{-1}(y)\)</span>，再把上式带入到<span class="math">\(y^{T}x-f(x)\)</span>就可以求出解析式了。</p>
 <p>由于共轭函数凹凸性的优势是的它在优化问题中非常有优势，下一步我们看共轭函数与Lagrange对偶函数的关系，假设原问题的约束条件为线性函数(SVM的函数间隔约束显然也是线性约束):<img src="/img/Lagrange/Conjugate.png" alt="transformation"></p>
 <p>由对偶函数的定义我们有：</p>
-<p><span class="math">\[g(\alpha,\beta) = \mathop{inf} \limits_{x}(f_0(x)+\sum\_{i=1}^m (\alpha_if_i(x)) + \sum\_{j=1}^p(\beta_jh_j(x))
-= -b^{T}\alpha-d^{T}\beta+\mathop{inf} \limits\_{x}(f_0(x)+(A^{T}\alpha+C^{T}\beta)^{T}x)=-b^{T}\alpha-d^{T}\beta-{f_0}^*(-A^{T}\alpha-C^{T}\beta)\]</span></p>
+<p><span class="math">\[g(\alpha,\beta) = \mathop{inf} \limits_{x}(f_0(x)+\sum_{i=1}^m (\alpha_if_i(x)) + \sum_{j=1}^p(\beta_jh_j(x))
+= -b^{T}\alpha-d^{T}\beta+\mathop{inf} \limits_{x}(f_0(x)+(A^{T}\alpha+C^{T}\beta)^{T}x)=-b^{T}\alpha-d^{T}\beta-{f_0}^*(-A^{T}\alpha-C^{T}\beta)\]</span></p>
 <p>我们成功地从对偶问题中找到了共轭函数，因此对于<strong>仅有线性约束条件的优化问题而言对偶函数也一定是凸的</strong></p>
 <h2 id="lagrange对偶问题">Lagrange对偶问题</h2>
 <p>我们已经知道了对偶函数的优良性质(当然约束条件要求是线性函数)，如果我们能想办法将对偶函数用到原始问题的求解上，那么就能够方便地求出最后的解，因此这里我们引入对偶问题</p>
 <p>对偶问题的数学表达如下：<img src="/img/Lagrange/Dual_problem.png" alt="transformation"> 前面讲过对偶函数定义了原始问题可行解的下界，那么对偶问题的目标就是试图从找到这些下界的最大值，当然我们前面已经假设<span class="math">\(\alpha\)</span>必须大于零。这也是为什么在许多SVM教程中对偶函数被定义为<span class="math">\(max \, min\, L(x)\)</span>的原因</p>
 <h3 id="弱对偶与强对偶">弱对偶与强对偶</h3>
-<p>由于对偶函数的保证了凹凸性，所以对偶问题的求解非常方便，我们把对偶问题的解记为<span class="math">\(d^*\)</span>,有我们之前的结论有： <span class="math">\[d^{\*} \leq p^{\*}\]</span> 上面的式子揭示了对偶问题的特性，称为弱对偶</p>
+<p>由于对偶函数的保证了凹凸性，所以对偶问题的求解非常方便，我们把对偶问题的解记为<span class="math">\(d^*\)</span>,有我们之前的结论有： <span class="math">\[d^{*} \leq p^{*}\]</span> 上面的式子揭示了对偶问题的特性，称为弱对偶</p>
 <p>如果我们能把不等号转变为等号，那么原始问题的解就求出来了，同时如果<span class="math">\(d^{\*} = p^{\*}\)</span>,那么弱对偶就变成了强对偶。</p>
 <p>一般情况下强对偶的要求比较苛刻，仅在某些条件下强对偶才成立，最常见的就是Slater条件，但是Slater条件要求原问题是convex的，因此这里到了最关键的一步：利用KKT条件</p>
 <h3 id="kkt条件">KKT条件</h3>
@@ -276,11 +276,11 @@ KKT conditions for nonconvex problems
 
 As above, let x⋆ and (λ⋆,ν⋆) be any primal and dual optimal points with zero duality gap. Since x⋆ minimizes L(x, λ⋆, ν⋆) over x, it follows that its gradient must vanish at x⋆, i.e.,</code></pre>
 <p>dualty gap的意思是原问题解<span class="math">\(p^*\)</span>和对偶问题解<span class="math">\(d^*\)</span>的差值，显然强对偶情况下差值为0，按照Lagrange乘数法的思想，Lagrangian函数在<span class="math">\(x^*\)</span>处的导数为0</p>
-<p><span class="math">\[\nabla f_0(x^*) + \sum_{i=1}^mDf_i(x^*)^T\alpha\_{i}^{*} + \sum\_{i=1}^p\beta\_{i}^{*}\nabla h_i(x^*) = 0\]</span></p>
+<p><span class="math">\[\nabla f_0(x^*) + \sum_{i=1}^mDf_i(x^*)^T\alpha_{i}^{*} + \sum_{i=1}^p\beta_{i}^{*}\nabla h_i(x^*) = 0\]</span></p>
 <p>式中<span class="math">\(Df_i(x^*)\)</span>表示的是约束函数<span class="math">\(f_i\)</span>在<span class="math">\(x^*\)</span>处的导数，从上式中我们可以推导出KKT条件(偷懒直接上图)：</p>
 <div class="figure">
-<img src="/img/Lagrange/Spring.png" alt="transformation">
-<p class="caption">transformation</p>
+<img src="/img/Lagrange/KKT.png">
+
 </div>
 <p>当然这里要求<span class="math">\(f_i\)</span>为凸函数，<span class="math">\(h_i\)</span>为线性函数(仿射)且两者均可导，函数<span class="math">\(f_i\)</span>和<span class="math">\(h_i\)</span>分别表示不等式约束和等式约束，前两个式子是原始问题的要求，图中<span class="math">\(\lambda\)</span>和<span class="math">\(\upsilon\)</span>对应前面的<span class="math">\(\alpha\)</span>和<span class="math">\(\beta\)</span>,我们关注第三和第四个式子，结合SVM我们可以发现如果Lagrange乘子<span class="math">\(\lambda\)</span>大于0，那么对应的不等约束变为等式约束，对应支持向量的情况，如果<span class="math">\(\lambda\)</span>等于0，那么对<span class="math">\(f_i\)</span>的值没有要求，对应非支持向量的情况。</p>
 <p>同时KKT条件也说明了我们为什么在前面定义Lagrangian时要求<span class="math">\(\alpha\)</span>大于等于0的原因。</p>
@@ -293,8 +293,8 @@ As above, let x⋆ and (λ⋆,ν⋆) be any primal and dual optimal points with 
 <p>且<span class="math">\(\lambda_1(w/2-x_1)=0\)</span>, <span class="math">\(\lambda_2(w-x_2+x_1)=0\)</span>, <span class="math">\(\lambda_3(w/2-l+x_2)=0\)</span></p>
 <p>同时由于在解的位置梯度为0，我们有：</p>
 <div class="figure">
-<img src="/img/Lagrange/Zero_Gradient.png" alt="transformation">
-<p class="caption">transformation</p>
+<img src="/img/Lagrange/Zero_Gradient.png">
+
 </div>
 <p>另一方面，由于系统处于平衡状态，滑块一定是受力平衡的，我们对滑块进行受力分析:</p>
 <p><img src="/img/Lagrange/Blocks.png" alt="transformation"> 动手写一下受力平衡方程就可以发现与上面的梯度为0的式子是一样的，说明了Lagrange乘子可以看作是题目中滑块受到的反作用力，KKT条件与平衡状态的受力分析殊途同归</p>
@@ -709,41 +709,47 @@ As above, let x⋆ and (λ⋆,ν⋆) be any primal and dual optimal points with 
 
       
         
-          <span itemprop="articleBody"><p>对于所有从事机器学习工作的研究者及工程师而言，BP算法是最熟悉不过的了，然而自从deep learning成为研究热点之后，为了解决不同种类的问题，神经网络的结构愈发复杂起来，面对图像信息的提取与图像特征的学习，CNN已经成为众多神经网络的佼佼者，由于CNN与普通网络的区别，训练的BP算法也需要进行相应的调整，为此笔者查阅了一些资料，现将CNN的BP算法整理如下</p>
+          <span itemprop="articleBody"><p>自从deep learning成为研究热点之后，为了解决不同种类的问题，神经网络的结构愈发复杂起来，面对图像信息的提取与图像特征的学习，CNN已经成为众多神经网络的佼佼者，由于CNN与普通网络的区别，训练的BP算法也需要进行相应的调整，为此笔者查阅了一些资料，现将CNN的BP算法整理如下:</p>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
 <h2 id="features-of-cnn">Features of CNN</h2>
-<h3 id="convolutional-layer">Convolutional layer</h3>
-<p>卷积层引入了卷积核的概念，输入向量可以理解为是卷积核与输入向量卷积产生的结果，因此并不是全连接的关系，在这里我们可以回忆一下卷积运算的定义：卷积是通过两个函数f和g生成另一个函数的计算方法，其计算公式为：</p>
+<h3 id="convolution-layer">Convolution layer</h3>
+<p>卷积层引入了卷积核的概念，输出向量可以理解为是卷积核与输入向量卷积产生的结果，因此并不是全连接的关系，在这里我们可以回忆一下卷积运算的定义：卷积是通过两个函数f和g生成另一个函数的计算方法，其计算公式为：</p>
 <p><span class="math">\[(f*g)[n] = \sum_{m=-\infty}^\infty f[n-m] \times g[m]\]</span></p>
 <p>直观一点就是将函数f绕y轴翻转从左向右平移，计算f与g的重叠部分的面积，如下图（Wiki）<img src="/img/BP_for_CNN/Wiki-BoxConvAnim.gif" alt="img"></p>
-<p>因此在CNN的卷积运算中，我们可以认为将卷积核翻转在原始图像上进行滑动，计算重叠部分的elementwise的乘积并求和，用数学公式表达就是： <span class="math">\[x_j^l = f(\sum_{i \in M_j} x_i^{l-1} * k_{ij}^l + b_j^l)\]</span></p>
-<p>式中j表示第j个feature map，在这里仅仅是为了完整性才加上j，为了理解卷积层的反向传播，我们假设feature map仅仅有一个，即卷积核的数量为1</p>
+<p>因此在CNN的卷积运算中，我们可以认为将卷积核翻转后在原始图像上进行滑动，计算重叠部分的elementwise的乘积并求和，用数学公式表达就是： <span class="math">\[x_j^l = f(\sum_{i \in M_j} x_i^{l-1} * k_{ij}^l + b_j^l)\]</span></p>
+<p>式中j表示第j个feature map，l表示第l层，<span class="math">\(M_j\)</span>表示原图像与卷积和的重叠部分，在这里仅仅因为完整性才加上j，为了理解卷积层的反向传播，我们假设feature map只有一个，即卷积核的数量为1</p>
 <h3 id="pooling-layer">Pooling layer</h3>
-<p>池化层比卷积层来得简单，无论是MaxPooling还是Average Pooling我们很容易找到输入与输出向量的关系，需要注意的是对于MaxPooling，计算最大值的同时需要记住该最大值的下标，在反向传播时需要用到该下标。</p>
+<p>池化层比卷积层来得简单，无论是MaxPooling还是Average Pooling我们很容易找到输入与输出向量的关系，需要注意的是对于MaxPooling，计算最大值的同时需要记住该最大值的下标，因为在反向传播时需要用到该下标。</p>
 <h2 id="backpropagation">BackPropagation</h2>
-<p>按照BP算法的流程， 我们只要知道这一节中我们假设BP算法已经反向传播到最后一个全连接层，记为<span class="math">\(\delta^l\)</span> ### Pooling layer 先从比较简单的池化层入手，注意到输入向量在经过池化层之后，假设原始图像尺寸为H*W, 窗口尺寸为d，且窗口滑动不重叠，则输出向量的尺寸为：</p>
-<pre><code>H*W -&gt; Ceil(H/d) * Ceil(W/d)</code></pre>
-<p>由于Pooling层没有权值函数，仅仅是压缩了原始向量的尺寸，因此在进行反向传播时，也只需要将残差delta“放大”到原来的大小就可以了，pooling的数学表达式及其偏导关系为：</p>
+<p>按照BP算法的流程， 我们只要知道这一节中我们假设BP算法已经反向传播到最后一个全连接层，记为<span class="math">\(\delta^l\)</span></p>
+<h3 id="pooling-layer-1">Pooling layer</h3>
+<p>先从比较简单的池化层入手，注意到输入向量在经过池化层之后，假设原始图像尺寸为<span class="math">\(H\*W\)</span>, 窗口尺寸为d，且窗口滑动不重叠，则输出向量的尺寸为： <span class="math">\[H*W -&gt; Ceil(H/d) * Ceil(W/d)\]</span></p>
+<p>由于Pooling层没有权值矩阵参与运算，仅仅是压缩了原始向量的尺寸，因此在进行反向传播时，也只需要将残差delta“放大”到原来的大小就可以了，pooling的数学表达式及其偏导关系为：</p>
 <p><span class="math">\[g(x)= \begin{cases}\sum_{k=1}^mx_k \over m, \ &amp; {\partial g \over \partial x} = {1 \over m } \  mean \ pooling
      \cr max(x) &amp; {\partial g \over \partial x} = {\begin{cases} 1 &amp;if \ x_j = max(x)
 \cr  0 &amp;otherwise \ max \ pooling
 \end{cases}} \end{cases}\]</span></p>
-<p>pooling的BP算法，看上去复杂其实原理非常简单，我们只需要进行一步上采样upsampling的操作，对于maxpooling，我们将输出向量的每个元素扩展成d*d的矩阵，前向传播时纪录的下标所对应的元素为该元素的值，其他置为0，而对于meanpooling，我们只需要将矩阵中元素都置为该元素的值就可以了</p>
-<p>之所以被称作upsampling就是为了对应前向传播时我们使用降采样downsampling，记作<span class="math">\(up(x)\)</span></p>
-<p>因此残差在经过pooling层时，我们可以简单地计算上一层残差为</p>
-<p><span class="math">\[\delta^{l-1} = f^{&#39;}(u_j^l \circ up(\delta_j^{l+1}))\]</span></p>
-<p>式中f表示pooling层后接的激活函数，u表示该f的输入，但是很多的CNN架构中Pooling层后面不经过激活函数，因此一般这一项为1，<span class="math">\(\circ\)</span>指elementwise乘法</p>
-<h3 id="convolution-layer">Convolution layer</h3>
+<p>pooling的BP算法，看上去复杂其实原理非常简单，我们只需要进行一步上采样upsampling的操作：</p>
+<ul>
+<li>maxpooling:将输出向量的每个元素扩展成d*d的矩阵，前向传播时记录的下标所对应的元素为该元素的值，其他置为0</li>
+<li>meanpooling:只需要将矩阵中元素都置为该元素的值就可以了</li>
+</ul>
+<p>我们把上采样记作<span class="math">\(up(x)\)</span>，因此残差在经过pooling层时，可以简单地计算上一层残差为</p>
+<p><span class="math">\[\delta^{l} = f^{&#39;}(u_j^l \circ up(\delta_j^{l+1}))\]</span></p>
+<p>式中<span class="math">\(f\)</span>表示pooling层后接的激活函数，<span class="math">\(u\)</span>表示该<span class="math">\(f\)</span>的输入，但是很多的CNN架构中Pooling层中这一项为1，<span class="math">\(\circ\)</span>指elementwise乘法</p>
+<h3 id="convolution-layer-1">Convolution layer</h3>
 <p>其实在卷积层我们也用到了池化压缩的思想，但是卷积层有卷积核，相当于全连接层的权值矩阵，因此我们可以类比fc层的残差计算方法：</p>
 <p><span class="math">\[\delta^{l-1} = (W^T \delta^{l}) * f^{&#39;}(u^{l-1})\]</span></p>
-<p>卷积层不像全连接层那样输入与输出之间每两个元素都有联系，对于输出向量中的每个元素，在输入向量中与之相关联的元素只有d*d个，即卷积窗口的大小，为了简单我们以一维向量的卷积为例，我们很容易通过下图看出对应关系：<img src="/img/BP_for_CNN/RiverTrain-ImageConvDiagram.png" alt="kernel"></p>
-<p>因此反向传播时，我们也只需要考虑部分的对应关系:<img src="/img/BP_for_CNN/BP_conv_layer.png" alt="img"></p>
+<p>卷积层不像全连接层那样输入与输出之间每两个元素都有联系，前向传播时对于输出向量中的每个元素，在输入向量中与之相关联的元素只有d*d个，即卷积窗口的大小，我们很容易通过下图看出对应关系：<img src="/img/BP_for_CNN/RiverTrain-ImageConvDiagram.png" alt="kernel"></p>
+<p>因此反向传播时，我们也只需要考虑部分的对应关系,为了简单我们以一维向量的卷积为例:<img src="/img/BP_for_CNN/BP_conv_layer.png" alt="img"></p>
 <p><span class="math">\[\delta_n^{l-1} = {\partial J \over \partial x_n} = {\partial J \over \partial y}{\partial y \over \partial x_n} = \sum_{i=1}^{|w|} {\partial J \over \partial y_{n-i+1}}{\partial y_{n-i+1} \over {\partial x_n}} = \sum_{i=1}^{|w|} {\delta_{n-i+1}^{l}w_i} = (\delta^{l}*flip(w))[n]\]</span></p>
 <p>式中w代表卷积核的参数，上式的结果可以简化为：</p>
-<p><span class="math">\[\delta^{l-1} = \delta^{l} * flip(w)\]</span> 这里我们忽略了激活函数f，可以看出该公式与全连接层的公式十分类似</p>
-<p>式中flip表示翻转，意思是在反向传播时需要将卷积核进行翻转 这里其实有一个问题，在标准的卷积运算中需要翻转因此在反向传播时也需要翻转，那么如果我们不进行翻转的话，在BP过程中就不需要翻转，我们可以将其视作为全连接层的退化版本(去掉了大部分的连接关系) 事实上，由于卷积层训练的就是卷积核的参数，因此我们不翻转同样可以训练，而且可以简化计算过程</p>
-<p>残差的反向传播文明已经完成，下面就是通过残差计算偏导了，原本全连接层在计算偏导时只需要将残差乘以对应层的向量即可，但是卷积层是部分连通，不需要所有元素参与计算，所以我们需要修改一下：</p>
+<p><span class="math">\[\delta^{l-1} = \delta^{l} * flip(w)\]</span> 这里我们忽略了激活函数<span class="math">\(f\)</span>，可以看出该公式与全连接层的公式十分类似，式中flip表示翻转，意思是在反向传播时需要将卷积核进行翻转</p>
+<p>这里其实有一个trick，在标准的卷积运算中定义了翻转因此在反向传播时我们也对应进行翻转，但是在实际训练时我们不进行翻转的话，在BP过程中就不需要翻转回来 事实上，由于卷积层训练的就是卷积核的参数，因此我们不翻转同样可以训练，而且可以简化计算过程</p>
+<p>残差的反向传播已经完成，下面就是通过残差计算偏导了，全连接层在计算偏导时只需要将后一层的残差向量乘以前面一层的对应元素即可，但是卷积核的滑动窗口特性，实际参与计算的元素要多一些，所以我们需要修改一下：</p>
 <p><span class="math">\[{\partial J \over \partial {k_{ij}^{l}}} = \sum_{u,v} ({\delta_{j}^{l}}_{uv}(p_{i}^{l-1})_{uv})\]</span></p>
-<p>可以看出与fc层的区别也只是修改了参与计算的元素而已</p>
 <p>式中p表示的是原输入向量中与卷积核元素<span class="math">\(k_{ij}\)</span>相乘的元素，如下图所示：<img src="/img/BP_for_CNN/kernel_partial.jpg" alt="kernel_partial"></p>
 <p>假设步长为2，那么<span class="math">\(p_i\)</span>指的就是图中红色的部分，如果步长设置为1，那么<span class="math">\(p_i\)</span>指的就是图像中阴影加粗的部分</p>
 <h2 id="conclusion">Conclusion</h2>
@@ -1181,7 +1187,7 @@ int main(){
 <p>对Blob有了一定了解之后可以看Layer了，事实上Layer是caffe架构中内容最多的部分，我们在写配置文件的时候其实都是在组合layer构成一个网络，很多运算操作在caffe中都是以layer的形式存在的，如argmax和elementwise运算等等.许多对caffe的扩展其实也是继承Layer层重新定义了具有新功能的层</p>
 <p>layer的工作模式类似数学中的函数概念，给定一个输入(bottom blobs),layer内部完成自己的功能，返回一个输出(top blobs)</p>
 <p>caffe中的layer分两种，common layer和vision layer: - data_layers.hpp中声明了神经网络与输入数据之间的交互层，如导入/导出hdf5数据，从图像中导入数据等等 - common_layers.hpp中声明了许多常用的包含基础功能(flatten, softmax等)的层 - vision_layers.hpp中主要包含对针对图像处理的层(convolutional, pooling等) - neuron_layers.hpp中主要包含与神经元的定义与操作相关的层(dropout,ReLu等) - loss_layers.hpp中主要包含了计算网络Loss的层，除了我们常见的softmax loss之外还包括了比较常用多euclidean loss, hinge loss等等 看了下vision layer中居然还包含了SPPnet这种处理image scale的层，除此之外还有deconvolution layer,确实是很给力啊</p>
-<p>caffe还提供了layer_factory供其他人快速实现自己的layer</p>
+<p>caffe还提供了layer_factory供我们快速实现自己的layer</p>
 <p>所有的Layer层都包含Forward和Backward的函数，这两个函数包含了整个layer的计算功能，对于开发者而言如果想实现自己的layer，其实主要就是完成这两个函数逻辑</p>
 <p>具体的某一种Layer的代码解析不在本文的范畴里，以后会另开blog详细描述常用的layer代码实现</p>
 <h3 id="net">Net</h3>
@@ -1287,7 +1293,7 @@ int main(){
 <p>整体网络结构直接上图：<img src="/img/CNN/AlexNet.jpeg" alt="AlexNet"></p>
 <h3 id="training-details">Training Details</h3>
 <h4 id="data-augmentation">Data Augmentation</h4>
-<p>笔者认为这一部分内容在工业界相当有用，Deep learning需要大量的数据，而当数据集不够充足的时候如何做好数据增量是十分关键的，同时还能减少overfitting</p>
+<p>笔者认为这一部分内容在工业界相当有用，Deep learning需要大量的数据，而当数据集不够充足的时候如何做好数据增量十分关键，同时还能减少overfitting</p>
 <p>文中介绍了两种方法： - generating image translations and horizontal reflections(截取部分图像和镜像翻转) - alter the intensities of the RGB channels(借助PCA改变RGB通道的像素值)</p>
 <h4 id="dropout">Dropout</h4>
 <p>Dropout有专门的文献介绍，简单来说就是每次Forward的时候神经元以某概率输出0，这样在BP的时候该神经元的权重也不会更改</p>
@@ -1297,7 +1303,7 @@ int main(){
 <p>单纯加深网络会导致过拟合问题出现，且由于90%的计算量集中在最后的全连接层，为了降低计算量，文中提出了将全连接层替换为稀疏连接层。</p>
 <h3 id="architecture-1">Architecture</h3>
 <p>Inception Module是构成整个GoogleNet的关键组件，其主要思想就是用密集的组件来逼近稀疏的卷积网络结构</p>
-<p>Naive Inception结构如下图，假设每个Inception视作一个部件级联起来，Inception在接收上一层的结果后，用不同尺寸的卷积层(1*1,3*3,5*5)和pooling层并行计算结果，将每层的结果合并起来，最后经过一个滤波器进行分组</p>
+<p>Naive Inception结构如下图，假设每个Inception视作一个部件component，Inception在接收上一层的结果后，用不同尺寸的卷积层(1*1,3*3,5*5)和pooling层并行计算结果，将每层的结果合并起来，最后经过一个滤波器进行分组</p>
 <p>但是会带来一个问题：即使是一个合适数量的卷积，也会因为大量的滤波而变得特别expensive。经过pooling层输出的合并，最终可能会导致数量级增大不可避免。处理效率不高导致计算崩溃。</p>
 <p>因此改进方案是：在需要大量计算的地方进行降维。压缩信息以聚合。1*1卷积不仅用来降维，还用来引入非线性特性。</p>
 <h3 id="googlenet-1">GoogleNet</h3>
@@ -1435,7 +1441,7 @@ int main(){
 <p><a href="http://arxiv.org/pdf/1504.08083v1.pdf" target="_blank" rel="external">Fast RCNN</a></p>
 <p>或者我的Fast RCNN笔记</p>
 <p><a href="http://dubur.github.io/2015/08/12/Fast%20RCNN%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/" target="_blank" rel="external">Notes on Fast RCNN</a></p>
-<p>MSR的研究员似乎对Fast RCNN的成果还不够满意，从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的方法，进一步提升检测速度的同时还提升了检测的准确率，然而代码现在还没有公开。</p>
+<p>从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的方法，进一步提升检测速度的同时还提升了检测的准确率.</p>
 <h2 id="motivation">Motivation</h2>
 <ul>
 <li>Fast RCNN ignores the time spent on region proposals</li>
@@ -1451,12 +1457,13 @@ int main(){
 <h3 id="architecture">Architecture</h3>
 <ul>
 <li>RPN与卷积层共享权重，也就是说RPN的输入就是最后一个卷积层的输出的feature map，得到输入后使用滑动窗口的方式得到更低维的向量</li>
-<li>将得到的向量输入到两个并联的全连接层</li>
-</ul>
+<li>将得到的向量输入到两个并联的全连接层
 <ol style="list-style-type: decimal">
 <li>box-regression layer (bounding box regressor)</li>
-<li>box-classification layer (objectness) 类似于Fast RCNN的RoI pooling层后面的架构，feature用来训练两个分类器，一个用来判断这个RoI是否包含object，另一个用来做bounding box回归(即给定一个anchor判断bounding box的位置)</li>
-</ol>
+<li>box-classification layer (objectness)</li>
+</ol></li>
+</ul>
+<p>类似于Fast RCNN的RoI pooling层后面的架构，feature用来训练两个分类器，一个用来判断这个RoI是否包含object，另一个用来做bounding box回归(即给定一个anchor判断bounding box的位置)</p>
 <ul>
 <li><p>每个滑动窗口中心记作一个anchor，对应9种variant，相当于对于每一个feature map用9种sliding window计算vector，后面的输出也变成9倍，这么做是为了对图像的transformation有更好的鲁棒性 <img src="/img/Faster_RCNN/RPN.png" alt="RPN"></p></li>
 <li><p>Loss Function的定义与Fast RCNN类似</p></li>
@@ -1464,25 +1471,23 @@ int main(){
 <!--<script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 </script>-->
-<p><span class="math">\[ L(p\_{i},t\_{i}) = L\_{cls}(p\_{i},{p\_{i}}^{*}) + \lambda{p\_{i}}^{*}L\_{reg}(t\_{i},{t\_{i}}^{*}) \]</span></p>
+<p><span class="math">\[ L(p_{i},t_{i}) = L_{cls}(p_{i},{p_{i}}^{*}) + \lambda{p_{i}}^{*}L_{reg}(t_{i},{t_{i}}^{*}) \]</span></p>
 <p>由两部分构成：regression的Loss和classification的Loss，通过<span class="math">\(\lambda\)</span>控制两类Loss的比重 公式中<span class="math">\(p_{i}\)</span>表示一个region中包含object的概率，<span class="math">\({p_{i}}^{*}\)</span>表示ground truth， 是一个0-1指示器，当某个anchor被标注为含有一个object时它的值才是1，否则为0, <span class="math">\(L_{cls}(p_{i},{p_{i}}^{*})\)</span>的定义方式与Fast RCNN中相同</p>
 <h2 id="training-rpn">Training RPN</h2>
 <ul>
-<li>mini batch构成</li>
-</ul>
+<li>mini batch构成
 <ol style="list-style-type: decimal">
 <li>随机选取一张图片的256个anchor，正负样本为1:1</li>
 <li>用高斯分布初始化权重</li>
-</ol>
-<ul>
-<li>Trainging的四个步骤 这里引用一下原文:</li>
-</ul>
+</ol></li>
+<li>Trainging的四个步骤 这里引用一下原文:
 <ol style="list-style-type: decimal">
 <li>First, train the RPN is initialized with an ImageNet-pre-trained model and fine-tuned end-to-end for the region proposal task.</li>
 <li>In the second step, we train a separate detection network by Fast R-CNN using the proposals generated by the step-1 RPN. This detection network is also initialized by the ImageNet-pre-trained model.</li>
 <li>In the third step, we use the detector network to initialize RPN training, but we fix the shared conv layers and only fine-tune the layers unique to RPN.</li>
 <li>Now the two networks share conv layers. Finally, keeping the shared conv layers fixed, we fine-tune the fc layers of the Fast R-CNN.</li>
-</ol>
+</ol></li>
+</ul>
 <p>总体而言训练方式在训练Fast RCNN的基础上做了改进，Fast RCNN输入的region proposal由RPN提供，之后用Fast RCNN的权重重新初始化RPN的参数，做到权重共享，保持这些权重不变，只对RPN中的几层进行微调，最后再对全连接层进行微调。</p>
 <p>这样做的好处显而易见，实时检测时，前面卷积层提取feature map直接送给RPN， Fast RCNN等待RPN计算proposal，用GPU计算proposal速度很快，与Fast RCNN不同的是不需要selective search，提取proposal的步骤与detection合并，在原先的卷积层与RoI pooling层之间加入了一个RPN提取proposal，之后Fast RCNN的全连接层利用RPN的输出向量进行detection</p>
 <p>笔者认为从RCNN到这里的Faster RCNN，有一点bounding box regression和object classification的joint learning的味道了。</p>
@@ -1574,14 +1579,14 @@ int main(){
           <span itemprop="articleBody"><p>RCNN本身概念比较简单，但是论文中提到了许多object detection的经典方法非常有用，这些内容绝大部分在附录中，在阅读其他论文时相信会有很大帮助。</p>
 <h2 id="basic-notions">Basic Notions</h2>
 <ul>
-<li>Pipeline method</li>
-</ul>
+<li>Pipeline method
 <ol style="list-style-type: decimal">
 <li>提取独立于物体类别的region proposal</li>
 <li>使用CNN做特征提取</li>
 <li>调整CNN参数用于从候选的proposal中获取包含object的proposal(domain-specific fine-tuning)</li>
 <li>SVM进行分类</li>
-</ol>
+</ol></li>
+</ul>
 <h2 id="rcnn-for-object-detection">RCNN for Object Detection</h2>
 <h3 id="testing">Testing</h3>
 <ul>
@@ -1590,63 +1595,55 @@ int main(){
 <li>CNN提取的特征输入到SVM中进行分类</li>
 </ul>
 <h3 id="training">Training</h3>
-<p>按照个人理解，为了让CNN有detection的能力，我们需要让网络具备分辨哪些proposal可能包含object，因为selective search选取的许多proposal其实没有object或者仅包含了object的一小部分。</p>
+<p>按照笔者个人理解，为了让CNN有detection的能力，我们需要让网络具备分辨哪些proposal可能包含object，因为selective search选取的许多proposal其实没有object或者仅包含了object的一小部分。</p>
 <p>因此文中加了一步对CNN参数的调整(domain-specific fine-tuning),主要目的就是筛选proposal</p>
 <p>在实验部分作者也进行了对比，结果证明使用了fine-tuning比不使用要高8%的mAP</p>
 <ul>
-<li>Supervised pre-training</li>
-</ul>
+<li>Supervised pre-training
 <ol style="list-style-type: decimal">
 <li>CNN on ILSVRC2012 with 2.2% error rate</li>
 <li>training set: images with image-level annotations, <strong><em>no bounding boxes</em></strong></li>
-</ol>
-<ul>
-<li>Domain specific fine-tuning</li>
-</ul>
+</ol></li>
+<li>Domain specific fine-tuning
 <ol style="list-style-type: decimal">
 <li>N+1 classification: N object classes and 1 background</li>
 <li>Use warped region proposals for tuning</li>
 <li>Positive training examples: region proposals with &gt;0.5IoU overlap(the rest as negative)</li>
-</ol>
-<ul>
-<li>Object category classification</li>
-</ul>
+</ol></li>
+<li>Object category classification
 <ol style="list-style-type: decimal">
 <li>Positive examples: ground-truth boxes, Negative: region proposals with &lt;0.3IoU overlap</li>
 <li>Trade-off between SVM and Softmax</li>
 <li>Different definition for training sets between fine-tuning and classification</li>
-</ol>
+</ol></li>
+</ul>
 <p>这里作者提了两个问题 (在附录里均有解答):</p>
-<ol style="list-style-type: decimal">
-<li>为什么在第二步调整CNN参数使用的训练集和训练SVM分类器的训练集不同(尤其是threshold的选择不一样)?</li>
-<li>为什么不使用softmax分类器而选择SVM?</li>
-</ol>
+<pre><code>1. 为什么在第二步fine-tune CNN参数使用的训练集和训练SVM分类器的训练集不同(尤其是threshold的选择不一样)?
+2. 为什么不使用softmax分类器而选择SVM?  </code></pre>
 <h2 id="appendix">Appendix</h2>
 <ul>
-<li>Object proposal transformations 由于CNN输入是227*227的正方形图像，因此需要对proposal进行缩放处理，文中提出了3种不同的处理方式：</li>
-</ul>
+<li>Object proposal transformations 由于CNN输入是227*227的正方形图像，因此需要对proposal进行缩放处理，文中提出了3种不同的处理方式：
 <ol style="list-style-type: decimal">
 <li>tightest square with context(等比例缩放proposal在原始图像中的bounding square)</li>
 <li>tightest square without context(等比例缩放proposal在原始图像中的bounding square,但要去掉在bounding square中而不在原始proposal中的部分)</li>
-<li>强制缩放proposal 3种变形的方式如图中所示:<img src="/img/RCNN/transformation.png" alt="transformation"></li>
-</ol>
+<li>强制缩放proposal 3种变形的方式如下图中所示:<img src="/img/RCNN/transformation.png" alt="transformation"></li>
+</ol></li>
+</ul>
 <ol style="list-style-type: upper-alpha">
 <li>origin proposal (B) tightest square with context (C) tightest square without context (D) warp</li>
 </ol>
 <ul>
-<li>Positive vs negative examples and softmax</li>
-</ul>
+<li>Positive vs negative examples and softmax
 <ol style="list-style-type: decimal">
 <li>用于fine－tuning的数据集过少，因此将降低了positive example的要求，只要IoU大于0.5就认为可能有object在这个proposal里面，作者同时指出这样能够防止overfitting</li>
 <li>使用softmax比SVM降低3.3%的mAP，主要原因可能在于fine-tuning的训练集不那么强调box的位置，且SVM使用的nagative sample更具有区分度</li>
-</ol>
-<ul>
-<li>Bounding-box 回归</li>
-</ul>
+</ol></li>
+<li>Bounding-box 回归
 <ol style="list-style-type: decimal">
-<li>使用最后一个pool层的输出训练线性回归模型来预测detection window</li>
+<li>使用最后一个pooling层的输出训练线性回归模型来预测detection window</li>
 <li>实验结果表明使用BB regression效果更优</li>
-</ol>
+</ol></li>
+</ul>
 <h2 id="insights">Insights</h2>
 <ul>
 <li>Most feature information is extracted by the convolutional layers</li>

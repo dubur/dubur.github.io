@@ -57,7 +57,7 @@ Caffe基本架构
 BLob:存储数据，blob既可以存储网络的权重，在进行训练时修改的其实就是每个blob实例
 Layer:构成网络的基础单元，无论是卷积层，pooling层还是全连接层等等都是从这个类派生出来的
 Net:定义一个网络的">
-<meta property="og:updated_time" content="2015-08-25T15:29:18.000Z">
+<meta property="og:updated_time" content="2015-12-10T04:47:22.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Caffe 源码阅读笔记一（基本代码框架）">
 <meta name="twitter:description" content="在开始阅读Blob之前，需要预先了解Caffe的架构与protobuf，否则看代码的时候容易一头雾水
@@ -301,7 +301,7 @@ Net:定义一个网络的">
 <p>对Blob有了一定了解之后可以看Layer了，事实上Layer是caffe架构中内容最多的部分，我们在写配置文件的时候其实都是在组合layer构成一个网络，很多运算操作在caffe中都是以layer的形式存在的，如argmax和elementwise运算等等.许多对caffe的扩展其实也是继承Layer层重新定义了具有新功能的层</p>
 <p>layer的工作模式类似数学中的函数概念，给定一个输入(bottom blobs),layer内部完成自己的功能，返回一个输出(top blobs)</p>
 <p>caffe中的layer分两种，common layer和vision layer: - data_layers.hpp中声明了神经网络与输入数据之间的交互层，如导入/导出hdf5数据，从图像中导入数据等等 - common_layers.hpp中声明了许多常用的包含基础功能(flatten, softmax等)的层 - vision_layers.hpp中主要包含对针对图像处理的层(convolutional, pooling等) - neuron_layers.hpp中主要包含与神经元的定义与操作相关的层(dropout,ReLu等) - loss_layers.hpp中主要包含了计算网络Loss的层，除了我们常见的softmax loss之外还包括了比较常用多euclidean loss, hinge loss等等 看了下vision layer中居然还包含了SPPnet这种处理image scale的层，除此之外还有deconvolution layer,确实是很给力啊</p>
-<p>caffe还提供了layer_factory供其他人快速实现自己的layer</p>
+<p>caffe还提供了layer_factory供我们快速实现自己的layer</p>
 <p>所有的Layer层都包含Forward和Backward的函数，这两个函数包含了整个layer的计算功能，对于开发者而言如果想实现自己的layer，其实主要就是完成这两个函数逻辑</p>
 <p>具体的某一种Layer的代码解析不在本文的范畴里，以后会另开blog详细描述常用的layer代码实现</p>
 <h3 id="net">Net</h3>
