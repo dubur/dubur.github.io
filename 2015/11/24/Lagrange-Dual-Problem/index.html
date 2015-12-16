@@ -41,7 +41,7 @@
 
 <meta name="description" content="理解SVM原理一直是一个比较难的问题，因为牵涉到的数学知识比较多，网上SVM相关的资料非常多，但大部分的教程中的推导都大同小异，笔者认为July的SVM的三层境界和pluskid的支持向量机系列博文都是非常好的入门资源，多数的参考资料多多少少都照搬了许多Andrew NG的Machine Learning讲义内容，可惜的是笔者翻来覆去看了好几遍还是不能融会贯通，特别是当推导到对偶问题与KKT条件时">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Lagrange_Dual_Problem">
+<meta property="og:title" content="Lagrange Dual Problem">
 <meta property="og:url" content="http://yoursite.com/2015/11/24/Lagrange-Dual-Problem/index.html">
 <meta property="og:site_name" content="Duburs Blog">
 <meta property="og:description" content="理解SVM原理一直是一个比较难的问题，因为牵涉到的数学知识比较多，网上SVM相关的资料非常多，但大部分的教程中的推导都大同小异，笔者认为July的SVM的三层境界和pluskid的支持向量机系列博文都是非常好的入门资源，多数的参考资料多多少少都照搬了许多Andrew NG的Machine Learning讲义内容，可惜的是笔者翻来覆去看了好几遍还是不能融会贯通，特别是当推导到对偶问题与KKT条件时">
@@ -51,9 +51,9 @@
 <meta property="og:image" content="http://yoursite.com/img/Lagrange/KKT.png">
 <meta property="og:image" content="http://yoursite.com/img/Lagrange/Zero_Gradient.png">
 <meta property="og:image" content="http://yoursite.com/img/Lagrange/Blocks.png">
-<meta property="og:updated_time" content="2015-12-07T11:54:34.000Z">
+<meta property="og:updated_time" content="2015-12-10T05:47:10.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Lagrange_Dual_Problem">
+<meta name="twitter:title" content="Lagrange Dual Problem">
 <meta name="twitter:description" content="理解SVM原理一直是一个比较难的问题，因为牵涉到的数学知识比较多，网上SVM相关的资料非常多，但大部分的教程中的推导都大同小异，笔者认为July的SVM的三层境界和pluskid的支持向量机系列博文都是非常好的入门资源，多数的参考资料多多少少都照搬了许多Andrew NG的Machine Learning讲义内容，可惜的是笔者翻来覆去看了好几遍还是不能融会贯通，特别是当推导到对偶问题与KKT条件时">
 
 
@@ -64,7 +64,7 @@
   };
 </script>
 
-  <title> Lagrange_Dual_Problem | Duburs Blog </title>
+  <title> Lagrange Dual Problem | Duburs Blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zsaf">
@@ -189,7 +189,7 @@
           
           
             
-              Lagrange_Dual_Problem
+              Lagrange Dual Problem
             
           
         </h1>
@@ -245,9 +245,9 @@
 </script>
 <h2 id="lagrange对偶函数">Lagrange对偶函数</h2>
 <p>首先我们定义优化问题：<img src="/img/Lagrange/Primal_problem.png" alt="transformation"></p>
-<p>我们称这个问题为原始问题（primal problem），对于这样的优化问题，相信之前学习过Lagrange乘数法的话会比较熟悉，但是与一般问题不同的是上面的问题包含不等式约束，这里我们先放一放， 首先写出目标函数L： <span class="math">\[L(x,\lambda,\upsilon) ＝ f_0(x) + \sum\_{i=1}^m (\alpha_if_i(x)) + \sum\_{j=1}^p(\beta_jh_j(x))\]</span></p>
+<p>我们称这个问题为原始问题（primal problem），对于这样的优化问题，相信之前学习过Lagrange乘数法的话会比较熟悉，但是与一般问题不同的是上面的问题包含不等式约束，这里我们先放一放， 首先写出目标函数L： <span class="math">\[L(x,\lambda,\upsilon) ＝ f_0(x) + \sum_{i=1}^m (\alpha_if_i(x)) + \sum_{j=1}^p(\beta_jh_j(x))\]</span></p>
 <p>该函数在Convex Optimization一书中被称为Lagrangian，式中<span class="math">\(\alpha\)</span>和<span class="math">\(\beta\)</span>是Lagrange乘子（我们假设alpha大于0），显然Lagrangian函数是关于x，<span class="math">\(\alpha\)</span>和<span class="math">\(\beta\)</span>的函数</p>
-<p>对于每一组<span class="math">\(\alpha\)</span>，<span class="math">\(\beta\)</span>，我们在<span class="math">\(f(x)\)</span>的定义域上求取Lagrangian的下确界，产生的新的函数表达式如下： <span class="math">\[g(\alpha,\beta) = \mathop{inf} \limits_{x\in D}L(x,\alpha,\beta) = \mathop{inf}\_{x\in D}(f_0(x)+\sum\_{i=1}^m (\alpha_if_i(x)) + \sum\_{j=1}^p(\beta_jh_j(x))\]</span> <span class="math">\(g(alpha，beta)\)</span>这个函数就称为Lagrange对偶函数</p>
+<p>对于每一组<span class="math">\(\alpha\)</span>，<span class="math">\(\beta\)</span>，我们在<span class="math">\(f(x)\)</span>的定义域上求取Lagrangian的下确界，产生的新的函数表达式如下： <span class="math">\[g(\alpha,\beta) = \mathop{inf} \limits_{x\in D}L(x,\alpha,\beta) = \mathop{inf}_{x\in D}(f_0(x)+\sum_{i=1}^m (\alpha_if_i(x)) + \sum_{j=1}^p(\beta_jh_j(x))\]</span> <span class="math">\(g(alpha，beta)\)</span>这个函数就称为Lagrange对偶函数</p>
 <p>那么对偶函数有什么用呢？</p>
 <p>从定义上看，<strong>对偶函数定义了原问题所有可行解的下界</strong>，因为对于任何一个可行解<span class="math">\(\mathop{x}^\sim\)</span>,无论<span class="math">\(\alpha\)</span>和<span class="math">\(\beta\)</span>的值为多少，Lagrangian后面两项的和不会大于0,所以<span class="math">\(Lagrangian(\mathop{x}^\sim)\)</span> 的值一定小于等于<span class="math">\(f(\mathop{x}^\sim)\)</span>，而对偶函数又是Lagrangian的下确界，所以我们有：</p>
 <p><span class="math">\[g(\alpha,\beta) \leq p^*\]</span></p>
@@ -324,6 +324,8 @@ As above, let x⋆ and (λ⋆,ν⋆) be any primal and dual optimal points with 
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2015/12/10/Leetcode总结/" rel="prev">Leetcode总结</a>
+            
           </div>
 
           <div class="post-nav-next post-nav-item">
@@ -354,7 +356,7 @@ As above, let x⋆ and (λ⋆,ν⋆) be any primal and dual optimal points with 
           <div class="comments" id="comments">
             
               <div class="ds-thread" data-thread-key="2015/11/24/Lagrange-Dual-Problem/"
-                   data-title="Lagrange_Dual_Problem" data-url="http://yoursite.com/2015/11/24/Lagrange-Dual-Problem/">
+                   data-title="Lagrange Dual Problem" data-url="http://yoursite.com/2015/11/24/Lagrange-Dual-Problem/">
               </div>
             
           </div>
@@ -394,21 +396,21 @@ As above, let x⋆ and (λ⋆,ν⋆) be any primal and dual optimal points with 
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">12</span>
+              <span class="site-state-item-count">13</span>
               <span class="site-state-item-name">文章</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
             <a href="/categories">
-              <span class="site-state-item-count">6</span>
+              <span class="site-state-item-count">7</span>
               <span class="site-state-item-name">分類</span>
               </a>
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">8</span>
+              <span class="site-state-item-count">9</span>
               <span class="site-state-item-name">標籤</span>
               </a>
           </div>

@@ -52,7 +52,7 @@ caffe的example中给出了Alexnet和Goo">
 <meta property="og:image" content="http://yoursite.com/img/CNN/OverFeat.png">
 <meta property="og:image" content="http://yoursite.com/img/CNN/Pooling.png">
 <meta property="og:image" content="http://yoursite.com/img/CNN/SlidingWindow.png">
-<meta property="og:updated_time" content="2015-12-10T04:42:38.000Z">
+<meta property="og:updated_time" content="2015-12-10T05:45:35.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CNN经典论文集">
 <meta name="twitter:description" content="这篇日志主要用来整合近几年在ImageNet竞赛中获得较高成绩的CNN网络相关论文的笔记，因为思想都是基于CNN，在实际训练网络或者网络结构上有创新的地方，因此就统一写成一篇文档了，实验结果部分就省略了，主要集中在文章亮点的地方，一共有4篇相关的论文(Alexnet, GoogleNet, VGGnet和OverFeat)，会保持长期更新。
@@ -258,7 +258,11 @@ caffe的example中给出了Alexnet和Goo">
 <h3 id="training-details">Training Details</h3>
 <h4 id="data-augmentation">Data Augmentation</h4>
 <p>笔者认为这一部分内容在工业界相当有用，Deep learning需要大量的数据，而当数据集不够充足的时候如何做好数据增量十分关键，同时还能减少overfitting</p>
-<p>文中介绍了两种方法： - generating image translations and horizontal reflections(截取部分图像和镜像翻转) - alter the intensities of the RGB channels(借助PCA改变RGB通道的像素值)</p>
+<p>文中介绍了两种方法：</p>
+<ul>
+<li>generating image translations and horizontal reflections(截取部分图像和镜像翻转)</li>
+<li>alter the intensities of the RGB channels(借助PCA改变RGB通道的像素值)</li>
+</ul>
 <h4 id="dropout">Dropout</h4>
 <p>Dropout有专门的文献介绍，简单来说就是每次Forward的时候神经元以某概率输出0，这样在BP的时候该神经元的权重也不会更改</p>
 <h2 id="googlenet">GoogleNet</h2>
@@ -409,21 +413,21 @@ caffe的example中给出了Alexnet和Goo">
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">12</span>
+              <span class="site-state-item-count">13</span>
               <span class="site-state-item-name">文章</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
             <a href="/categories">
-              <span class="site-state-item-count">6</span>
+              <span class="site-state-item-count">7</span>
               <span class="site-state-item-name">分類</span>
               </a>
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">8</span>
+              <span class="site-state-item-count">9</span>
               <span class="site-state-item-name">標籤</span>
               </a>
           </div>
