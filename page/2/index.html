@@ -184,6 +184,309 @@
           
           
             
+              <a class="post-title-link" href="/2015/08/23/CNN经典论文集/" itemprop="url">
+                CNN经典论文集
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          發表於
+          <time itemprop="dateCreated" datetime="2015-08-23T20:27:23+08:00" content="2015-08-23">
+            2015-08-23
+          </time>
+        </span>
+
+        
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分類於
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
+                  <span itemprop="name">Deep Learning</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+              &nbsp; | &nbsp;
+              <a href="/2015/08/23/CNN经典论文集/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/23/CNN经典论文集/" itemprop="commentsCount"></span>
+              </a>
+            </span>
+          
+        
+      </div>
+    </header>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody"><p>这篇日志主要用来整合近几年在ImageNet竞赛中获得较高成绩的CNN网络相关论文的笔记，因为思想都是基于CNN，在实际训练网络或者网络结构上有创新的地方，因此就统一写成一篇文档了，实验结果部分就省略了，主要集中在文章亮点的地方，一共有4篇相关的论文(Alexnet, GoogleNet, VGGnet和OverFeat)，会保持长期更新。</p>
+<p>caffe的example中给出了Alexnet和GoogleNet的模型，熟悉caffe的话可以直接看对应的depoly.prototxt,比较直观</p>
+<h2 id="alexnet">AlexNet</h2>
+<h3 id="architecture">Architecture</h3>
+<p>Alexnet是ILSVRC2012的冠军，网络结构比较深但是很有规律，关于这篇论文有许多在实际train网络时候的一些比较有用的trick，AlexNet的训练过程如下：</p>
+<ul>
+<li>rescale the image such that the shorter side is of length 256, and crop the centeral 256*256 patch from the resulting image 先rescale后crop的方式处理图像scale的问题</li>
+<li>5个卷积层3个pooling 层，且神经元的激活函数使用的是ReLu，降低计算量</li>
+<li>Training on multiple GPUs，现在看来GPU并不是非常好，但是多GPU并行计算</li>
+<li><p><strong><em>LRN（Local Response Normalization） Normalization</em></strong> 笔者认为这是本文的亮点，虽然ReLu不需要输入normalization但是引入LRN可以提升1.4%至1.2%的准确率，简单来说就是对ReLu层的输出进行归一化，归一化公式如下： <span class="math">\[b_{x,y}^{i} = a_{x,y}^{i}/(k+\alpha\sum_{j=max(0,i-n/2)}^{min(N-1,i+n/2)}(a_{x,y}^j)^2)\]</span> 其中i和j表示第i/j个卷积的kernel，而a表示ReLu的输出，b表示归一化后的结果</p>
+注：caffe的LRN层实现中提供两种Normalization的方式：通道内归一化和通道间归一化，这个在caffe源码笔记中会详细讲解</li>
+<li><p>Overlapping Pooling 传统的pooling方式将feature map分成独立的grid每个grid进行pooling，而本文中采用滑动窗口的方式，每次滑动的stride小于窗口的大小，实验证明，这样的方法能提升0.4%－0.3％的准确率</p></li>
+</ul>
+<p>整体网络结构直接上图：<img src="/img/CNN/AlexNet.jpeg" alt="AlexNet"></p>
+<h3 id="training-details">Training Details</h3>
+<h4 id="data-augmentation">Data Augmentation</h4>
+<p>笔者认为这一部分内容在工业界相当有用，Deep learning需要大量的数据，而当数据集不够充足的时候如何做好数据增量十分关键，同时还能减少overfitting</p>
+<p>文中介绍了两种方法：</p>
+<ul>
+<li>generating image translations and horizontal reflections(截取部分图像和镜像翻转)</li>
+<li>alter the intensities of the RGB channels(借助PCA改变RGB通道的像素值)</li>
+</ul>
+<h4 id="dropout">Dropout</h4>
+<p>Dropout有专门的文献介绍，简单来说就是每次Forward的时候神经元以某概率输出0，这样在BP的时候该神经元的权重也不会更改</p>
+<h2 id="googlenet">GoogleNet</h2>
+<p>GoogleNet以及其复杂的网络结构而闻名，ILSVRC2014的冠军，一共22层的网络看上去复杂但依旧有规律可循，文章中主要的亮点在于Inception结构</p>
+<h3 id="motivation">Motivation</h3>
+<p>单纯加深网络会导致过拟合问题出现，且由于90%的计算量集中在最后的全连接层，为了降低计算量，文中提出了将全连接层替换为稀疏连接层。</p>
+<h3 id="architecture-1">Architecture</h3>
+<p>Inception Module是构成整个GoogleNet的关键组件，其主要思想就是用密集的组件来逼近稀疏的卷积网络结构</p>
+<p>Naive Inception结构如下图，假设每个Inception视作一个部件component，Inception在接收上一层的结果后，用不同尺寸的卷积层(1*1,3*3,5*5)和pooling层并行计算结果，将每层的结果合并起来，最后经过一个滤波器进行分组</p>
+<p>但是会带来一个问题：即使是一个合适数量的卷积，也会因为大量的滤波而变得特别expensive。经过pooling层输出的合并，最终可能会导致数量级增大不可避免。处理效率不高导致计算崩溃。</p>
+<p>因此改进方案是：在需要大量计算的地方进行降维。压缩信息以聚合。1*1卷积不仅用来降维，还用来引入非线性特性。</p>
+<h3 id="googlenet-1">GoogleNet</h3>
+<div class="figure">
+<img src="/img/CNN/googlenet.jpg" alt="GoogleNet">
+<p class="caption">GoogleNet</p>
+</div>
+<p>比较有趣的地方是网络中有三个softmax分类器，文中作者提到对于浅层网络而言，中间网络产生的特征非常有辨识力，在这些层中增加一些额外的分类器能增加BP的梯度同时提供额外的正则化，每3个Inception module会增加一个Softmax分类器。在训练过程中，损失会根据权重叠加，而在测试时丢弃。</p>
+<p>Training的时候使用了AlexNet中的trick</p>
+<h3 id="insights">Insights</h3>
+<ul>
+<li>approximating the expected optimal sparse structure by readily available dense building blocks is a viable method for improving neural net- works for computer vision.(虽然增加了计算量但是能显著提高分类的准确率)</li>
+<li>For both classification and detection, it is expected that similar quality of result can be achieved by much more ex- pensive non-Inception-type networks of similar depth and width.(没有使用bounding box regression,说明Inception同样适用于detection和localization的task)</li>
+</ul>
+<h2 id="vgg-net">VGG net</h2>
+<p>VGG Net是ILSCVRC2014 classification的第二名，localization的第一名，网络结构上比其他网络都要来得复杂(实验过程中卷积层最多有16个)，但是文章中对如何构造复杂网络和训练网络的描述非常详尽，相信对research会有很多帮助</p>
+<h3 id="network-configuration">Network Configuration</h3>
+<h3 id="training">Training</h3>
+<p>网络的training借鉴了AlexNet在训练中使用的方法，同样是momentum SGD＋dropout，处理图像尺寸的方法相同，做数据增量的方法也相同，但是由于一共有5个网络需要训练，且网络深度依次递增，因此在参数初始化时作者提出：</p>
+<p>最简单的网络使用随机初始化，而后面的网络中最前面的4个卷积层与最后3个全连接层参数用先前网络的参数初始化,其他层使用随机初始化，这种<strong><em>首先训练简单网络，随后使用其参数来初始化复杂网络的训练方法是一种非常合理且高效的方式</em></strong></p>
+<p>值得一提的是文中对比了7*7的卷积层与三个3*3的卷积层之间的对比，相比较而言多个小的卷积层级联能在引入更多的linear rectify之外同时还能降低卷积层参数的数量。</p>
+<p>整个训练过程如下：</p>
+<ul>
+<li>Classification
+<ul>
+<li>设计结构复杂度依次递增的网络</li>
+<li>在Image size的处理上，作者提出single-scale和multi－scale的方法, single-scale的方法与AlexNet相同，先resize后crop，multi－scale的方法类似于随机采样，每次rescale之前在一个固定区间内（如[256,512]）选取一个scale，这样每个图像的尺寸就不同了，但是怎么处理feature长度不同的问题作者似乎没有说明</li>
+<li>每次训练新的网络之前用之前网络的参数进行初始化以加快收敛速度</li>
+</ul></li>
+<li>Localization
+<ul>
+<li>Training Localization的方法与classification相同，只不过用的是Euclidean Loss</li>
+</ul></li>
+</ul>
+<h3 id="testing">Testing</h3>
+<p>在testing阶段，网络接收图像数据之前首先需要把图像rescale到固定大小，作者称之为test scale，之后首先通过fc层计算，我们把fc层看作一个卷积窗口为1*1的卷积层，得到的feature map维度与object类别相同。</p>
+<p>这样做的好处是对比首先crop再通过卷积计算feature map的做法，直接通过fc层计算可以减少许多重复的卷积计算量，crop出来的图像之间必然会有重叠的部分，这些重叠部分增加了测试时卷积的计算量，但是笔者认为既然在训练时使用crop来做数据增量，测试时用crop可以增加网络输出的置信度（每个crop输出分类结果，这个结果甚至可以用来做类似bagging的训练），如果面对实时性要求比较高的情况，对整张图片应用fc层是比较可行的方法。</p>
+<h2 id="overfeat">OverFeat</h2>
+<p>OverFeat最出彩的地方在于使用一个CNN解决Classfication、Localization和Detection的任务，以及Sliding Window和CNN的结合，每个任务使用的神经网络不同之处只在最后的分类器，大牛Yann LeCun的文章</p>
+<p>网络结构的前五层与Alexnet相同，Alexnet的网络结构已经成为feature extraction的经典结构了,如下图所示： <img src="/img/CNN/OverFeat.png" alt="OverFeat"></p>
+<h3 id="multiscale-training">Multiscale training</h3>
+<p>训练时大多数人都会碰到Multiscale的问题，本文中作者提出在pooling时引入偏移量的方法，具体过程如下图 <img src="/img/CNN/Pooling.png" alt="Pooling"> 按照笔者理解，原始的3*3pooling的起始位置为(0,1,2),其实就是使用stride步长为1的pooling层，之后按照原始stride进行分组，得到多个分组的pooling向量之后使用滑动窗口的方式得到feature map，重新将原先分组的结果合并成一个向量作为整张图片的feature map,无论图像的尺寸多大，使用stride为1的pooling层能最大程度上保持原始信息，并且分组之后每一个feature map向量长度保持一致。</p>
+<h3 id="sliding-window">Sliding Window</h3>
+<p>训练CNN时要求输入图像的大小固定，但是如果输入的图像尺寸比原先大怎么办呢？对于一个训练好的CNN来说，卷积核的大小和数量以及每一层feature map的个数是固定的，但是feature map的大小是可以改变的。</p>
+<p>当测试样本和训练样本大小相同时，CNN最后一层的每一个节点分别输出一个0~1的实数，代表测试样本属于某一类的概率；当测试样本比训练样本大时，CNN最后一层每一个节点的输出为一个矩阵，矩阵中的每一个元素表示对应的图像块属于某一类的概率，其结果相当于通过滑动窗口从图像中进行采样，然后分别对采样到的图像块进行操作 <img src="/img/CNN/SlidingWindow.png" alt="Sliding"></p>
+<h3 id="localization">Localization</h3>
+<p>将原先classification网络的最后一层softmax替换为Bounding box回归: 最后一个pooling层输出的feature map通过两个全连接层映射到一个输出层，输出被看作一个由4维向量构成的矩阵，每个向量对应了原始图像某一块区域中的object的bounding box的位置，之后开始合并各个区域中的bounding box直到两个bounding box之间的match score足够大。</p>
+<p>值得注意的是这个regression网络对于每一个object类别都会输出一个bounding box，前面一节中提到的classification的网络会输出图像分类的概率值，于是每一类的bounding box都会对应一个置信度，在合并之后网络会输出一个置信度，这个置信度就是原先所有class置信度的最大值，因此完成合并之后网络的输出是一个带有最大confidence的bounding box</p>
+<h3 id="detection">Detection</h3>
+<p>物体检测的方法其实就是结合了classification以及localization，但是文中没有给出具体的训练细节，笔者认为与Localization非常相似，因为直观上只要根据置信度删选Localization输出的bounding box，之后取每一个图像块中置信度最大bounding box就可以了，可以看出相对于RCNN的做法，OverFeat比较暴力一些，对每块图像区域都会输出1000类的预测结果，其计算量想必也不小</p>
+</span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      
+      
+        <h1 class="post-title" itemprop="name headline">
+          
+          
+            
+              <a class="post-title-link" href="/2015/08/16/Faster RCNN论文笔记/" itemprop="url">
+                Faster RCNN论文笔记
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          發表於
+          <time itemprop="dateCreated" datetime="2015-08-16T17:10:30+08:00" content="2015-08-16">
+            2015-08-16
+          </time>
+        </span>
+
+        
+          <span class="post-category" >
+            &nbsp; | &nbsp; 分類於
+            
+              <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
+                <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
+                  <span itemprop="name">Deep Learning</span>
+                </a>
+              </span>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+              &nbsp; | &nbsp;
+              <a href="/2015/08/16/Faster RCNN论文笔记/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/16/Faster RCNN论文笔记/" itemprop="commentsCount"></span>
+              </a>
+            </span>
+          
+        
+      </div>
+    </header>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <span itemprop="articleBody"><p>本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考</p>
+<p><a href="http://arxiv.org/pdf/1504.08083v1.pdf" target="_blank" rel="external">Fast RCNN</a></p>
+<p>或者我的Fast RCNN笔记</p>
+<p><a href="http://dubur.github.io/2015/08/12/Fast%20RCNN%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/" target="_blank" rel="external">Notes on Fast RCNN</a></p>
+<p>从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的方法，进一步提升检测速度的同时还提升了检测的准确率.</p>
+<h2 id="motivation">Motivation</h2>
+<ul>
+<li>Fast RCNN ignores the time spent on region proposals</li>
+<li>Region proposal methods used in research are implemented on the CPU</li>
+<li><strong><em>The feature maps can also be used for generating region proposals</em></strong> 简单说就是提取proposal的步骤太花时间，而且作者希望尽可能用GPU完成所有的计算。</li>
+</ul>
+<h2 id="region-proposal-networks-rpn">Region Proposal Networks (RPN)</h2>
+<h3 id="basic-notions">Basic Notions</h3>
+<ul>
+<li>Fully-convolutional network for generating region proposals</li>
+<li>Share computation of convolutions with start-of-art object detection networks</li>
+</ul>
+<h3 id="architecture">Architecture</h3>
+<ul>
+<li>RPN与卷积层共享权重，也就是说RPN的输入就是最后一个卷积层的输出的feature map，得到输入后使用滑动窗口的方式得到更低维的向量</li>
+<li>将得到的向量输入到两个并联的全连接层
+<ol style="list-style-type: decimal">
+<li>box-regression layer (bounding box regressor)</li>
+<li>box-classification layer (objectness)</li>
+</ol></li>
+</ul>
+<p>类似于Fast RCNN的RoI pooling层后面的架构，feature用来训练两个分类器，一个用来判断这个RoI是否包含object，另一个用来做bounding box回归(即给定一个anchor判断bounding box的位置)</p>
+<ul>
+<li><p>每个滑动窗口中心记作一个anchor，对应9种variant，相当于对于每一个feature map用9种sliding window计算vector，后面的输出也变成9倍，这么做是为了对图像的transformation有更好的鲁棒性 <img src="/img/Faster_RCNN/RPN.png" alt="RPN"></p></li>
+<li><p>Loss Function的定义与Fast RCNN类似</p></li>
+</ul>
+<!--<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>-->
+<p><span class="math">\[ L(p_{i},t_{i}) = L_{cls}(p_{i},{p_{i}}^{*}) + \lambda{p_{i}}^{*}L_{reg}(t_{i},{t_{i}}^{*}) \]</span></p>
+<p>由两部分构成：regression的Loss和classification的Loss，通过<span class="math">\(\lambda\)</span>控制两类Loss的比重 公式中<span class="math">\(p_{i}\)</span>表示一个region中包含object的概率，<span class="math">\({p_{i}}^{*}\)</span>表示ground truth， 是一个0-1指示器，当某个anchor被标注为含有一个object时它的值才是1，否则为0, <span class="math">\(L_{cls}(p_{i},{p_{i}}^{*})\)</span>的定义方式与Fast RCNN中相同</p>
+<h2 id="training-rpn">Training RPN</h2>
+<ul>
+<li>mini batch构成
+<ol style="list-style-type: decimal">
+<li>随机选取一张图片的256个anchor，正负样本为1:1</li>
+<li>用高斯分布初始化权重</li>
+</ol></li>
+<li>Trainging的四个步骤 这里引用一下原文:
+<ol style="list-style-type: decimal">
+<li>First, train the RPN is initialized with an ImageNet-pre-trained model and fine-tuned end-to-end for the region proposal task.</li>
+<li>In the second step, we train a separate detection network by Fast R-CNN using the proposals generated by the step-1 RPN. This detection network is also initialized by the ImageNet-pre-trained model.</li>
+<li>In the third step, we use the detector network to initialize RPN training, but we fix the shared conv layers and only fine-tune the layers unique to RPN.</li>
+<li>Now the two networks share conv layers. Finally, keeping the shared conv layers fixed, we fine-tune the fc layers of the Fast R-CNN.</li>
+</ol></li>
+</ul>
+<p>总体而言训练方式在训练Fast RCNN的基础上做了改进，Fast RCNN输入的region proposal由RPN提供，之后用Fast RCNN的权重重新初始化RPN的参数，做到权重共享，保持这些权重不变，只对RPN中的几层进行微调，最后再对全连接层进行微调。</p>
+<p>这样做的好处显而易见，实时检测时，前面卷积层提取feature map直接送给RPN， Fast RCNN等待RPN计算proposal，用GPU计算proposal速度很快，与Fast RCNN不同的是不需要selective search，提取proposal的步骤与detection合并，在原先的卷积层与RoI pooling层之间加入了一个RPN提取proposal，之后Fast RCNN的全连接层利用RPN的输出向量进行detection</p>
+<p>笔者认为从RCNN到这里的Faster RCNN，有一点bounding box regression和object classification的joint learning的味道了。</p>
+<p>最后RPN结合Fast RCNN可以做到单纯用神经网络进行object detection，不依靠selective search这样的low-level feature的方法，完全依靠deep learning进行图像的理解。</p>
+<p>不过有时间还是要把selective search也看一下，毕竟这篇论文有很高的引用量。</p>
+</span>
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      
+      
+        <h1 class="post-title" itemprop="name headline">
+          
+          
+            
               <a class="post-title-link" href="/2015/08/12/RCNN论文笔记/" itemprop="url">
                 RCNN论文笔记
               </a>
@@ -814,21 +1117,21 @@ else:
         <nav class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">13</span>
+              <span class="site-state-item-count">15</span>
               <span class="site-state-item-name">文章</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
             <a href="/categories">
-              <span class="site-state-item-count">7</span>
+              <span class="site-state-item-count">8</span>
               <span class="site-state-item-name">分類</span>
               </a>
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">9</span>
+              <span class="site-state-item-count">10</span>
               <span class="site-state-item-name">標籤</span>
               </a>
           </div>
@@ -862,7 +1165,7 @@ else:
       <div class="footer-inner"> <div class="copyright" >
   
   &copy; &nbsp; 
-  <span itemprop="copyrightYear">2015</span>
+  <span itemprop="copyrightYear">2016</span>
   <span class="with-love">
     <i class="icon-next-heart"></i>
   </span>

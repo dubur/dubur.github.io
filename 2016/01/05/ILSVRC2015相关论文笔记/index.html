@@ -30,7 +30,7 @@
 
 
 
-  <meta name="keywords" content="Deep Learning,Paper Notes," />
+  <meta name="keywords" content="Deep learning,Paper Notes," />
 
 
 
@@ -39,29 +39,33 @@
   <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.5.1" />
 
 
-<meta name="description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
-Fast RCNN
-或者我的Fast RCNN笔记
-Notes on Fast RCNN
-从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的方法，进一步提升检测">
+<meta name="description" content="今年的ILSVRC的DET和LOC比赛都被MSRA拔得头筹，其中DET的mean AP比第二名高了近9％，研究工作有两篇论文：
+
+Deep Residual Learning for Image Recognition
+Instance-aware Semantic Segmentation via Multi-task Network Cascades
+
+PS.因为实习和学校里的事情，好久没认真">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Faster RCNN论文笔记">
-<meta property="og:url" content="http://yoursite.com/2015/08/16/Faster RCNN论文笔记/index.html">
+<meta property="og:title" content="ILSVRC2015相关论文笔记">
+<meta property="og:url" content="http://yoursite.com/2016/01/05/ILSVRC2015相关论文笔记/index.html">
 <meta property="og:site_name" content="Duburs Blog">
-<meta property="og:description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
-Fast RCNN
-或者我的Fast RCNN笔记
-Notes on Fast RCNN
-从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的方法，进一步提升检测">
-<meta property="og:image" content="http://yoursite.com/img/Faster_RCNN/RPN.png">
-<meta property="og:updated_time" content="2015-12-10T04:36:02.000Z">
+<meta property="og:description" content="今年的ILSVRC的DET和LOC比赛都被MSRA拔得头筹，其中DET的mean AP比第二名高了近9％，研究工作有两篇论文：
+
+Deep Residual Learning for Image Recognition
+Instance-aware Semantic Segmentation via Multi-task Network Cascades
+
+PS.因为实习和学校里的事情，好久没认真">
+<meta property="og:image" content="http://yoursite.com/img/ILSVRC15/residual_block.png">
+<meta property="og:image" content="http://yoursite.com/img/ILSVRC15/response.png">
+<meta property="og:updated_time" content="2016-01-05T16:09:57.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Faster RCNN论文笔记">
-<meta name="twitter:description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
-Fast RCNN
-或者我的Fast RCNN笔记
-Notes on Fast RCNN
-从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的方法，进一步提升检测">
+<meta name="twitter:title" content="ILSVRC2015相关论文笔记">
+<meta name="twitter:description" content="今年的ILSVRC的DET和LOC比赛都被MSRA拔得头筹，其中DET的mean AP比第二名高了近9％，研究工作有两篇论文：
+
+Deep Residual Learning for Image Recognition
+Instance-aware Semantic Segmentation via Multi-task Network Cascades
+
+PS.因为实习和学校里的事情，好久没认真">
 
 
 <script type="text/javascript" id="hexo.configuration">
@@ -71,7 +75,7 @@ Notes on Fast RCNN
   };
 </script>
 
-  <title> Faster RCNN论文笔记 | Duburs Blog </title>
+  <title> ILSVRC2015相关论文笔记 | Duburs Blog </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zsaf">
@@ -196,7 +200,7 @@ Notes on Fast RCNN
           
           
             
-              Faster RCNN论文笔记
+              ILSVRC2015相关论文笔记
             
           
         </h1>
@@ -205,8 +209,8 @@ Notes on Fast RCNN
       <div class="post-meta">
         <span class="post-time">
           發表於
-          <time itemprop="dateCreated" datetime="2015-08-16T17:10:30+08:00" content="2015-08-16">
-            2015-08-16
+          <time itemprop="dateCreated" datetime="2016-01-05T20:53:13+08:00" content="2016-01-05">
+            2016-01-05
           </time>
         </span>
 
@@ -215,8 +219,8 @@ Notes on Fast RCNN
             &nbsp; | &nbsp; 分類於
             
               <span itemprop="about" itemscope itemtype="https://schema.org/Thing">
-                <a href="/categories/Deep-Learning/" itemprop="url" rel="index">
-                  <span itemprop="name">Deep Learning</span>
+                <a href="/categories/Deep-learning/" itemprop="url" rel="index">
+                  <span itemprop="name">Deep learning</span>
                 </a>
               </span>
 
@@ -231,8 +235,8 @@ Notes on Fast RCNN
           
             <span class="post-comments-count">
               &nbsp; | &nbsp;
-              <a href="/2015/08/16/Faster RCNN论文笔记/#comments" itemprop="discussionUrl">
-                <span class="post-comments-count ds-thread-count" data-thread-key="2015/08/16/Faster RCNN论文笔记/" itemprop="commentsCount"></span>
+              <a href="/2016/01/05/ILSVRC2015相关论文笔记/#comments" itemprop="discussionUrl">
+                <span class="post-comments-count ds-thread-count" data-thread-key="2016/01/05/ILSVRC2015相关论文笔记/" itemprop="commentsCount"></span>
               </a>
             </span>
           
@@ -246,62 +250,36 @@ Notes on Fast RCNN
       
 
       
-        <span itemprop="articleBody"><p>本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考</p>
-<p><a href="http://arxiv.org/pdf/1504.08083v1.pdf" target="_blank" rel="external">Fast RCNN</a></p>
-<p>或者我的Fast RCNN笔记</p>
-<p><a href="http://dubur.github.io/2015/08/12/Fast%20RCNN%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/" target="_blank" rel="external">Notes on Fast RCNN</a></p>
-<p>从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的方法，进一步提升检测速度的同时还提升了检测的准确率.</p>
-<h2 id="motivation">Motivation</h2>
+        <span itemprop="articleBody"><p>今年的ILSVRC的DET和LOC比赛都被MSRA拔得头筹，其中DET的mean AP比第二名高了近9％，研究工作有两篇论文：</p>
 <ul>
-<li>Fast RCNN ignores the time spent on region proposals</li>
-<li>Region proposal methods used in research are implemented on the CPU</li>
-<li><strong><em>The feature maps can also be used for generating region proposals</em></strong> 简单说就是提取proposal的步骤太花时间，而且作者希望尽可能用GPU完成所有的计算。</li>
+<li>Deep Residual Learning for Image Recognition</li>
+<li>Instance-aware Semantic Segmentation via Multi-task Network Cascades</li>
 </ul>
-<h2 id="region-proposal-networks-rpn">Region Proposal Networks (RPN)</h2>
-<h3 id="basic-notions">Basic Notions</h3>
-<ul>
-<li>Fully-convolutional network for generating region proposals</li>
-<li>Share computation of convolutions with start-of-art object detection networks</li>
-</ul>
-<h3 id="architecture">Architecture</h3>
-<ul>
-<li>RPN与卷积层共享权重，也就是说RPN的输入就是最后一个卷积层的输出的feature map，得到输入后使用滑动窗口的方式得到更低维的向量</li>
-<li>将得到的向量输入到两个并联的全连接层
-<ol style="list-style-type: decimal">
-<li>box-regression layer (bounding box regressor)</li>
-<li>box-classification layer (objectness)</li>
-</ol></li>
-</ul>
-<p>类似于Fast RCNN的RoI pooling层后面的架构，feature用来训练两个分类器，一个用来判断这个RoI是否包含object，另一个用来做bounding box回归(即给定一个anchor判断bounding box的位置)</p>
-<ul>
-<li><p>每个滑动窗口中心记作一个anchor，对应9种variant，相当于对于每一个feature map用9种sliding window计算vector，后面的输出也变成9倍，这么做是为了对图像的transformation有更好的鲁棒性 <img src="/img/Faster_RCNN/RPN.png" alt="RPN"></p></li>
-<li><p>Loss Function的定义与Fast RCNN类似</p></li>
-</ul>
-<!--<script type="text/x-mathjax-config">
+<p>PS.因为实习和学校里的事情，好久没认真研究论文，写论文笔记了</p>
+<p>首先看Residual Network ## Motivation - Degradation problem: Training Error increases with the network gets deeper - If the added layers can be constructed as identity mappings，a deeper model should produce no higher training error than its shallower counterpart 如果我们增加层数之后可以做到全等映射的话，那么对于更深的网络，training error不可能比shallow的更高，我们知道单隐层的神经网络是可以无限逼近任何一个非线性函数的，因此训练全等映射是可行的。</p>
+<p>作者指出，比起重头开始训练一个全等映射，我们尝试在原始输入上添加一个小的扰动（噪声），通过将扰动最小化让它逼近0来做到全等映射更加容易一些，这也就是residual learning的概念</p>
+<script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
-</script>-->
-<p><span class="math">\[ L(p_{i},t_{i}) = L_{cls}(p_{i},{p_{i}}^{*}) + \lambda{p_{i}}^{*}L_{reg}(t_{i},{t_{i}}^{*}) \]</span></p>
-<p>由两部分构成：regression的Loss和classification的Loss，通过<span class="math">\(\lambda\)</span>控制两类Loss的比重 公式中<span class="math">\(p_{i}\)</span>表示一个region中包含object的概率，<span class="math">\({p_{i}}^{*}\)</span>表示ground truth， 是一个0-1指示器，当某个anchor被标注为含有一个object时它的值才是1，否则为0, <span class="math">\(L_{cls}(p_{i},{p_{i}}^{*})\)</span>的定义方式与Fast RCNN中相同</p>
-<h2 id="training-rpn">Training RPN</h2>
+</script>
+<h2 id="deep-residual-learning">Deep Residual Learning</h2>
+<p>我们把degradation问题视作一个优化问题，为了解决这个问题，作者将原先的层与层之间的映射转化成两部分： * 与输入相同的Identity mapping * 输入与原先输出部分的残余Residual mapping 体现在神经网络的结构上如下图: <img src="/img/ILSVRC15/residual_block.png" alt="Residual building"></p>
+<p>这个概念是整篇文章的核心，图中x表示输入，$ H(x) ＝ F(x) + x<span class="math">\(， 式中\)</span>H<span class="math">\(就是原先的mapping函数，\)</span> F$和x分别代表Residual mapping和Identity mapping.该结构不仅仅适用于全连接层，卷积层同样也适用。</p>
+<p>图中identity映射部分叫做shortcut，这里我们可以不加参数使其完全等于输入x，或者我们也可以添加权重使identity变为projection，将identity转化为projection的做法主要是为了解决经过卷积层后输入与输出维度不同的问题。</p>
+<p>同时我们注意到如果是identity全等映射，那么这里没有任何需要训练的参数，因此一个block的参数数量与普通的神经网络相同，这对于训练速度是非常大的帮助。</p>
+<h3 id="advantages-of-residual-learning">Advantages of Residual Learning</h3>
 <ul>
-<li>mini batch构成
-<ol style="list-style-type: decimal">
-<li>随机选取一张图片的256个anchor，正负样本为1:1</li>
-<li>用高斯分布初始化权重</li>
-</ol></li>
-<li>Trainging的四个步骤 这里引用一下原文:
-<ol style="list-style-type: decimal">
-<li>First, train the RPN is initialized with an ImageNet-pre-trained model and fine-tuned end-to-end for the region proposal task.</li>
-<li>In the second step, we train a separate detection network by Fast R-CNN using the proposals generated by the step-1 RPN. This detection network is also initialized by the ImageNet-pre-trained model.</li>
-<li>In the third step, we use the detector network to initialize RPN training, but we fix the shared conv layers and only fine-tune the layers unique to RPN.</li>
-<li>Now the two networks share conv layers. Finally, keeping the shared conv layers fixed, we fine-tune the fc layers of the Fast R-CNN.</li>
-</ol></li>
+<li>Easy to optimize, converge fast</li>
+<li>Small number of parameters</li>
+<li>Accuracy gains from greatly increased depth 笔者认为Residual learning最大的好处在于降低了设计deep neural network网络结构的难度，过去在设计网络时我们很难想象当网络达到几十层甚至上百层之后对网络的性能会有多大的负面影响，因此为了避免非常深的网络，转而通过增加网络宽度，或者引入其他的算法来改进网络结构，但是引入residual之后，仅仅是将网络加深却能得到非常好的效果，可以预见到16年的CV必然会有非常大的突破</li>
 </ul>
-<p>总体而言训练方式在训练Fast RCNN的基础上做了改进，Fast RCNN输入的region proposal由RPN提供，之后用Fast RCNN的权重重新初始化RPN的参数，做到权重共享，保持这些权重不变，只对RPN中的几层进行微调，最后再对全连接层进行微调。</p>
-<p>这样做的好处显而易见，实时检测时，前面卷积层提取feature map直接送给RPN， Fast RCNN等待RPN计算proposal，用GPU计算proposal速度很快，与Fast RCNN不同的是不需要selective search，提取proposal的步骤与detection合并，在原先的卷积层与RoI pooling层之间加入了一个RPN提取proposal，之后Fast RCNN的全连接层利用RPN的输出向量进行detection</p>
-<p>笔者认为从RCNN到这里的Faster RCNN，有一点bounding box regression和object classification的joint learning的味道了。</p>
-<p>最后RPN结合Fast RCNN可以做到单纯用神经网络进行object detection，不依靠selective search这样的low-level feature的方法，完全依靠deep learning进行图像的理解。</p>
-<p>不过有时间还是要把selective search也看一下，毕竟这篇论文有很高的引用量。</p>
+<p>笔者个人猜测：可能引入residual之后原先的优化问题中local minimal会少很多，使得优化过程更加容易到达global minimal或者比较好的local minimal，同时residual部分的值都非常小，因此相对而言在BP过程中梯度不会小到接近vanish的状态。 同时这里有一个细节，训练时并没有使用dropout来避免过拟合，但是最后结果也令人非常满意</p>
+<h2 id="details">Details</h2>
+<h3 id="shortcut-options">Shortcut Options</h3>
+<p>前面提到过identity部分可以转化为projection，作者在这里给出了三种方案： * (A) zero-padding shortcuts are used for increasing dimensions * (B) projec- tion shortcuts are used for increasing dimensions, and other shortcuts are identity * (C) all shortcuts are projections. 实验结果证明三种方案都能提升效果，但是C引入了更多的参数，而实际效果并没有比A和B好多少，但是训练时间和成本却高得多，因此前两种方案比较可行。</p>
+<h3 id="layer-responses">Layer Responses</h3>
+<p>实验过程中经过观察发现residual部分的输出值缺失非常接近0，验证了开头的设想，同时增加网络深度之后，residual的值变得更小，说明了这样的网络结构能很好地解决degredation的问题 <img src="/img/ILSVRC15/response.png" alt="Layer_response"></p>
+<p>总体而言文章中experimental insight不多，但是使用了非常浅显易懂的方式成功解决了深度神经网络的热点问题，对于deep learning而言着实是非常大的进步。</p>
+<p>下面是第二篇</p>
 </span>
       
     </div>
@@ -310,7 +288,7 @@ Notes on Fast RCNN
       
         <div class="post-tags">
           
-            <a href="/tags/Deep-Learning/" rel="tag">#Deep Learning</a>
+            <a href="/tags/Deep-learning/" rel="tag">#Deep learning</a>
           
             <a href="/tags/Paper-Notes/" rel="tag">#Paper Notes</a>
           
@@ -321,13 +299,11 @@ Notes on Fast RCNN
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2015/08/23/CNN经典论文集/" rel="prev">CNN经典论文集</a>
-            
           </div>
 
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2015/08/12/RCNN论文笔记/" rel="next">RCNN论文笔记</a>
+              <a href="/2015/12/17/Kaggle-Competition/" rel="next">Kaggle Competition</a>
             
           </div>
         </div>
@@ -352,8 +328,8 @@ Notes on Fast RCNN
         
           <div class="comments" id="comments">
             
-              <div class="ds-thread" data-thread-key="2015/08/16/Faster RCNN论文笔记/"
-                   data-title="Faster RCNN论文笔记" data-url="http://yoursite.com/2015/08/16/Faster RCNN论文笔记/">
+              <div class="ds-thread" data-thread-key="2016/01/05/ILSVRC2015相关论文笔记/"
+                   data-title="ILSVRC2015相关论文笔记" data-url="http://yoursite.com/2016/01/05/ILSVRC2015相关论文笔记/">
               </div>
             
           </div>
@@ -435,7 +411,7 @@ Notes on Fast RCNN
           <div class="post-toc">
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#motivation"><span class="nav-number">1.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#region-proposal-networks-rpn"><span class="nav-number">2.</span> <span class="nav-text">Region Proposal Networks (RPN)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#basic-notions"><span class="nav-number">2.1.</span> <span class="nav-text">Basic Notions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#architecture"><span class="nav-number">2.2.</span> <span class="nav-text">Architecture</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#training-rpn"><span class="nav-number">3.</span> <span class="nav-text">Training RPN</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#deep-residual-learning"><span class="nav-number">1.</span> <span class="nav-text">Deep Residual Learning</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#advantages-of-residual-learning"><span class="nav-number">1.1.</span> <span class="nav-text">Advantages of Residual Learning</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#details"><span class="nav-number">2.</span> <span class="nav-text">Details</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#shortcut-options"><span class="nav-number">2.1.</span> <span class="nav-text">Shortcut Options</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#layer-responses"><span class="nav-number">2.2.</span> <span class="nav-text">Layer Responses</span></a></li></ol></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>
