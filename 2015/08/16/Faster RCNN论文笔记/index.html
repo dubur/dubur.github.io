@@ -54,7 +54,7 @@ Fast RCNN
 Notes on Fast RCNN
 从RCNN到Fast RCNN，所有的detection任务都使用了selective search来提取region proposal，因此诞生了用神经网络来提取region proposal的方法，进一步提升检测">
 <meta property="og:image" content="http://yoursite.com/img/Faster_RCNN/RPN.png">
-<meta property="og:updated_time" content="2015-12-10T04:36:02.000Z">
+<meta property="og:updated_time" content="2016-01-06T12:44:34.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Faster RCNN论文笔记">
 <meta name="twitter:description" content="本笔记中会多次提到Fast RCNN的架构，对Fast RCNN的概念与架构有疑问的可以参考
@@ -272,7 +272,7 @@ Notes on Fast RCNN
 <li>box-classification layer (objectness)</li>
 </ol></li>
 </ul>
-<p>类似于Fast RCNN的RoI pooling层后面的架构，feature用来训练两个分类器，一个用来判断这个RoI是否包含object，另一个用来做bounding box回归(即给定一个anchor判断bounding box的位置)</p>
+<p>类似于Fast RCNN的RoI pooling层后面的架构，RPN输出的feature用来训练两个分类器，一个用来判断这个RoI是否包含object，另一个用来做bounding box回归(即给定一个anchor判断bounding box的位置)</p>
 <ul>
 <li><p>每个滑动窗口中心记作一个anchor，对应9种variant，相当于对于每一个feature map用9种sliding window计算vector，后面的输出也变成9倍，这么做是为了对图像的transformation有更好的鲁棒性 <img src="/img/Faster_RCNN/RPN.png" alt="RPN"></p></li>
 <li><p>Loss Function的定义与Fast RCNN类似</p></li>

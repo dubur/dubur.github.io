@@ -57,7 +57,8 @@ Instance-aware Semantic Segmentation via Multi-task Network Cascades
 PS.因为实习和学校里的事情，好久没认真">
 <meta property="og:image" content="http://yoursite.com/img/ILSVRC15/residual_block.png">
 <meta property="og:image" content="http://yoursite.com/img/ILSVRC15/response.png">
-<meta property="og:updated_time" content="2016-01-05T16:09:57.000Z">
+<meta property="og:image" content="http://yoursite.com/img/ILSVRC15/cascades.png">
+<meta property="og:updated_time" content="2016-01-06T15:36:56.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ILSVRC2015相关论文笔记">
 <meta name="twitter:description" content="今年的ILSVRC的DET和LOC比赛都被MSRA拔得头筹，其中DET的mean AP比第二名高了近9％，研究工作有两篇论文：
@@ -278,8 +279,28 @@ PS.因为实习和学校里的事情，好久没认真">
 <p>前面提到过identity部分可以转化为projection，作者在这里给出了三种方案： * (A) zero-padding shortcuts are used for increasing dimensions * (B) projec- tion shortcuts are used for increasing dimensions, and other shortcuts are identity * (C) all shortcuts are projections. 实验结果证明三种方案都能提升效果，但是C引入了更多的参数，而实际效果并没有比A和B好多少，但是训练时间和成本却高得多，因此前两种方案比较可行。</p>
 <h3 id="layer-responses">Layer Responses</h3>
 <p>实验过程中经过观察发现residual部分的输出值缺失非常接近0，验证了开头的设想，同时增加网络深度之后，residual的值变得更小，说明了这样的网络结构能很好地解决degredation的问题 <img src="/img/ILSVRC15/response.png" alt="Layer_response"></p>
-<p>总体而言文章中experimental insight不多，但是使用了非常浅显易懂的方式成功解决了深度神经网络的热点问题，对于deep learning而言着实是非常大的进步。</p>
-<p>下面是第二篇</p>
+<p>总体而言文章通过实验验证experimental insight不多，但是使用了非常浅显易懂的方式成功解决了深度神经网络的热点问题，对于deep learning而言着实是非常大的进步。值得注意的是related work中提到了highway network，与本文的思想非常接近，有空又得读了……</p>
+<p>下面是第二篇Instance-aware Semantic Segmentation via Multi-task Network Cascades ## Multi-task Network Cascades abstract中就已经提到三个网络级联构成一个新的框架 instance-aware semantic segmentation task can be decomposed into three sub-tasks</p>
+<ul>
+<li>Differentiating instances —— <strong>Bounding box indicating instances</strong></li>
+<li>Estimating masks —— <strong>pixel-level mask</strong></li>
+<li>Categorizing objects —— <strong>category-wise label</strong> <img src="/img/ILSVRC15/cascades.png" alt="cascades"></li>
+</ul>
+<p>三个子任务共享卷积网络的feature，但是后面的任务接受feature和前一个任务的输出作为输入。 整个框架其实是首先用bounding box框出instance(类似于RPN)，之后在每个bounding box中生成pixel wise的mask，最后给每个instance分类</p>
+<p>值得一提的是本文中使用了ResNet来提取feature ### Regressing Box-level Instances 做法类似于RPN，给定一副图像输出含有instance的bbox，稍有不同的是本文中使用了<span class="math">\(1\times1\)</span> 的convolutional layer做box regression和object classifying</p>
+<h3 id="regressing-mask-level-instances">Regressing Mask-level Instances</h3>
+<p>借助Fast RCNN中的Roi pooling，在第二阶段对每个ROI生成相同维度的feature，后面再接两个fc层，一个降维到256，另一个做pixel－wise regression,</p>
+<p>值得一提的是到这一步Loss function需要修改，由于第二部的结果依赖于第一步的输出，因此该步骤的Loss function为: <span class="math">\[L_2 = L_2(M(\theta) | B(\theta))\]</span></p>
+<p><span class="math">\(B(\theta))\)</span>表示第一阶段用于生成bounding box的参数，M()表示用于生成mask的参数</p>
+<h3 id="categorizing-instances">Categorizing Instances</h3>
+<p>到了第三步，我们接收第二步的feature对每个mask重新计算feature： <span class="math">\[\mathcal F_i^{Mask}(\theta) = \mathcal F_i^{RoI}(\theta) \cdot M_i(\theta)\]</span></p>
+<p><span class="math">\(M_i(\theta)\)</span>表示第二步输出的mask，<span class="math">\(\mathcal F_i^{RoI}\)</span>就是经过RoI pooling的feature map，做点乘得到Mask的feature，后面接两个4096维的fc层，这被称为mask-based pathway, 类似的对RoI pooling输出的feature也做相同的处理,即box-based pathway, 这两个pathway的输出连接起来feed到softmax中进行分类</p>
+<p>同样，第三阶段的Loss function计算公式为: <span class="math">\[L_3 = L_3(C(\theta) | M(\theta), B(\theta))\]</span></p>
+<h2 id="training-method">Training Method</h2>
+<p>整个网络结构梳理完毕，三个阶段的Loss function相加就可以得到总的损失函数，但是由于参数之间的依赖性，BP的时候第一阶段Bounding box的梯度传播是个比较大的难题。</p>
+<p>对比Fast RCNN， 用Selective Search生成的RoI在训练网络时是固定的，并且又不能像RPN那样直接对bbox regression的Loss做反向传播（因为bbox只是中间过程的输出而已），为此作者提出可以求导的RoI Warping Layers来将残差传递给bounding box层。</p>
+<h3 id="roi-warping-layer">RoI Warping Layer</h3>
+<p>Crops a feature map region and warps it into a target size by interpolation 显然，在RoI pooling层前面添加一层warping layer, 每个RoI都被crop和warp到固定size,转化方法如下： <span class="math">\[\mathcal F_{i(u^&#39;,v^&#39;)}^{RoI}\]</span> * add the RoI warping layer in front of the RoI pooling layer *</p>
 </span>
       
     </div>
@@ -411,7 +432,7 @@ PS.因为实习和学校里的事情，好久没认真">
           <div class="post-toc">
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#deep-residual-learning"><span class="nav-number">1.</span> <span class="nav-text">Deep Residual Learning</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#advantages-of-residual-learning"><span class="nav-number">1.1.</span> <span class="nav-text">Advantages of Residual Learning</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#details"><span class="nav-number">2.</span> <span class="nav-text">Details</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#shortcut-options"><span class="nav-number">2.1.</span> <span class="nav-text">Shortcut Options</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#layer-responses"><span class="nav-number">2.2.</span> <span class="nav-text">Layer Responses</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#deep-residual-learning"><span class="nav-number">1.</span> <span class="nav-text">Deep Residual Learning</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#advantages-of-residual-learning"><span class="nav-number">1.1.</span> <span class="nav-text">Advantages of Residual Learning</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#details"><span class="nav-number">2.</span> <span class="nav-text">Details</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#shortcut-options"><span class="nav-number">2.1.</span> <span class="nav-text">Shortcut Options</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#layer-responses"><span class="nav-number">2.2.</span> <span class="nav-text">Layer Responses</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#regressing-mask-level-instances"><span class="nav-number">2.3.</span> <span class="nav-text">Regressing Mask-level Instances</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#categorizing-instances"><span class="nav-number">2.4.</span> <span class="nav-text">Categorizing Instances</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#training-method"><span class="nav-number">3.</span> <span class="nav-text">Training Method</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#roi-warping-layer"><span class="nav-number">3.1.</span> <span class="nav-text">RoI Warping Layer</span></a></li></ol></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>

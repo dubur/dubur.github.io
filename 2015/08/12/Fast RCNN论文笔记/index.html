@@ -57,7 +57,7 @@ RCNN的训练方式按照一个一个阶段分的比较开
 在进行detection">
 <meta property="og:image" content="http://yoursite.com/img/Fast_RCNN/fast-rcnn.jpeg">
 <meta property="og:image" content="http://yoursite.com/img/Fast_RCNN/training_time.png">
-<meta property="og:updated_time" content="2015-12-10T04:40:08.000Z">
+<meta property="og:updated_time" content="2016-01-06T12:49:28.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Fast RCNN论文笔记">
 <meta name="twitter:description" content="Fast RCNN在RCNN的基础上修改了网络结构，同时加快了训练速度并且降低了训练成本，从工程角度说RCNN提出了思路而Fast RCNN的实用性更强
@@ -260,7 +260,7 @@ RCNN的训练方式按照一个一个阶段分的比较开
 <h2 id="fast-rcnn-training">Fast RCNN Training</h2>
 <p>文章的亮点在于对原来网络结构的改进</p>
 <ul>
-<li>RoI Pooling Layer 按照作者所述，该层的思想类似于SPPnet，我们假设最后一个卷积层得到输入N个feature map(这些feature map包含原始图像的所有信息)，而我们只想提取感兴趣的部分，因此这就需要引入RoI了</li>
+<li>RoI Pooling Layer 按照作者所述，该层的思想类似于SPPnet，我们假设最后一个卷积层得到N个feature map(这些feature map包含原始图像的所有信息)，而我们只想提取感兴趣的部分，因此这就需要引入RoI了</li>
 </ul>
 <p>将这N个feature map和selective search得到的R个region proposal输入到RoI pooling层中，根据RoI中指定的区域对原始的feature map进行pooling得到这R个region proposal的N个feature map</p>
 <p>由于各个RoI的大小不一样，而为了使得每个RoI pooling出来的feature长度相同，采用不同大小的pooling窗口而已</p>
