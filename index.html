@@ -274,13 +274,16 @@
 <li>Categorizing objects —— <strong>category-wise label</strong> <img src="/img/ILSVRC15/cascades.jpeg" alt="cascades"></li>
 </ul>
 <p>三个子任务共享卷积网络的feature，但是后面的任务接受feature和前一个任务的输出作为输入。 整个框架其实是首先用bounding box框出instance(类似于RPN)，之后在每个bounding box中生成pixel wise的mask，最后给每个instance分类</p>
-<p>值得一提的是本文中使用了ResNet来提取feature ### Regressing Box-level Instances 做法类似于RPN，给定一副图像输出含有instance的bbox，稍有不同的是本文中使用了<span class="math">\(1\times1\)</span> 的convolutional layer做box regression和object classifying</p>
-<h3 id="regressing-mask-level-instances">Regressing Mask-level Instances</h3>
-<p>借助Fast RCNN中的Roi pooling，在第二阶段对每个ROI生成相同维度的feature，后面再接两个fc层，一个降维到256，另一个做pixel－wise regression,</p>
+<p>本文中使用了ResNet来提取feature</p>
+<ul>
+<li><p>Regressing Box-level Instances 做法类似于RPN，给定一副图像输出含有instance的bbox，稍有不同的是本文中使用了<span class="math">\(1\times1\)</span> 的convolutional layer做box regression和object classifying</p></li>
+<li><p>Regressing Mask-level Instances 借助Fast RCNN中的Roi pooling，在第二阶段对每个ROI生成相同维度的feature，后面再接两个fc层，一个降维到256，另一个做pixel－wise regression,</p></li>
+</ul>
 <p>值得一提的是到这一步Loss function需要修改，由于第二部的结果依赖于第一步的输出，因此该步骤的Loss function为: <span class="math">\[L_2 = L_2(M(\theta) | B(\theta))\]</span></p>
 <p><span class="math">\(B(\theta))\)</span>表示第一阶段用于生成bounding box的参数，M()表示用于生成mask的参数</p>
-<h3 id="categorizing-instances">Categorizing Instances</h3>
-<p>到了第三步，我们接收第二步的feature对每个mask重新计算feature： <span class="math">\[\mathcal F_i^{Mask}(\theta) = \mathcal F_i^{RoI}(\theta) \cdot M_i(\theta)\]</span></p>
+<ul>
+<li>Categorizing Instances 到了第三步，我们接收第二步的feature对每个mask重新计算feature： <span class="math">\[\mathcal F_i^{Mask}(\theta) = \mathcal F_i^{RoI}(\theta) \cdot M_i(\theta)\]</span></li>
+</ul>
 <p><span class="math">\(M_i(\theta)\)</span>表示第二步输出的mask，<span class="math">\(\mathcal F_i^{RoI}\)</span>就是经过RoI pooling的feature map，做点乘得到Mask的feature，后面接两个4096维的fc层，这被称为mask-based pathway, 类似的对RoI pooling输出的feature也做相同的处理,即box-based pathway, 这两个pathway的输出连接起来feed到softmax中进行分类</p>
 <p>同样，第三阶段的Loss function计算公式为: <span class="math">\[L_3 = L_3(C(\theta) | M(\theta), B(\theta))\]</span></p>
 <h2 id="training-method">Training Method</h2>
@@ -1670,14 +1673,14 @@ int main(){
 
           <div class="site-state-item site-state-categories">
             <a href="/categories">
-              <span class="site-state-item-count">8</span>
+              <span class="site-state-item-count">7</span>
               <span class="site-state-item-name">分類</span>
               </a>
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">10</span>
+              <span class="site-state-item-count">9</span>
               <span class="site-state-item-name">標籤</span>
               </a>
           </div>
